@@ -224,34 +224,94 @@
 
         const criarGrupoHTML = (titulo, lista, detalheExtra = null) => {
             if (lista.length === 0) return '';
-            let grupoHtml = `<div class="neuron-grupo-header"><h5>${titulo} (${lista.length})</h5></div>`;
-            grupoHtml += `<div class="neuron-grupo-lista collapsed">`;
+            
+            // Create group container
+            const grupoContainer = document.createElement('div');
+            
+            // Create and add header
+            const header = document.createElement('div');
+            header.className = 'neuron-grupo-header';
+            const headerTitle = document.createElement('h5');
+            headerTitle.textContent = `${titulo} (${lista.length})`; // Safe text assignment
+            header.appendChild(headerTitle);
+            grupoContainer.appendChild(header);
+            
+            // Create and add list container
+            const listaContainer = document.createElement('div');
+            listaContainer.className = 'neuron-grupo-lista collapsed';
+            
             lista.forEach(d => {
                 const isDone = demandasConcluidas.has(d.numero);
-                let detalheTexto = (detalheExtra === 'prazo' && d.diasRestantes != null) ? `<span class="neuron-link-detalhe">Prazo em ${d.diasRestantes} dias</span>` : '';
-                grupoHtml += `
-                    <div class="neuron-item-notificacao ${isDone ? 'done' : ''}" data-numero="${d.numero}">
-                        <div class="neuron-link-wrapper" data-href="${d.href || '#'}"><span class="neuron-link-numero">${d.numero}</span>${detalheTexto}</div>
-                        <input type="checkbox" class="neuron-done-check" title="Marcar como concluído" ${isDone ? 'checked' : ''}>
-                    </div>`;
+                
+                // Create item container
+                const itemDiv = document.createElement('div');
+                itemDiv.className = `neuron-item-notificacao ${isDone ? 'done' : ''}`;
+                itemDiv.setAttribute('data-numero', d.numero);
+                
+                // Create link wrapper
+                const linkWrapper = document.createElement('div');
+                linkWrapper.className = 'neuron-link-wrapper';
+                linkWrapper.setAttribute('data-href', d.href || '#');
+                
+                // Create and add number span (sanitized)
+                const numeroSpan = document.createElement('span');
+                numeroSpan.className = 'neuron-link-numero';
+                numeroSpan.textContent = d.numero; // Safe text assignment
+                linkWrapper.appendChild(numeroSpan);
+                
+                // Add detail span if needed (sanitized)
+                if (detalheExtra === 'prazo' && d.diasRestantes != null) {
+                    const detalheSpan = document.createElement('span');
+                    detalheSpan.className = 'neuron-link-detalhe';
+                    detalheSpan.textContent = `Prazo em ${d.diasRestantes} dias`; // Safe text assignment
+                    linkWrapper.appendChild(detalheSpan);
+                }
+                
+                itemDiv.appendChild(linkWrapper);
+                
+                // Create and add checkbox
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'neuron-done-check';
+                checkbox.title = 'Marcar como concluído';
+                checkbox.checked = isDone;
+                itemDiv.appendChild(checkbox);
+                
+                listaContainer.appendChild(itemDiv);
             });
-            return grupoHtml + '</div>';
+            
+            grupoContainer.appendChild(listaContainer);
+            return grupoContainer;
         };
 
         const prazosCurtos = notificacoesRelevantes.map(d => ({ ...d, diasRestantes: calcularDiasRestantes(d.prazo) })).filter(d => d.diasRestantes !== null && d.diasRestantes <= 2).sort((a, b) => a.diasRestantes - b.diasRestantes);
         
-        let corpoHTML = 
-            criarGrupoHTML('Prazos Curtos (<= 2 dias)', prazosCurtos, 'prazo') +
-            criarGrupoHTML('Possíveis Respondidas', notificacoesRelevantes.filter(d => d.possivelRespondida)) +
-            criarGrupoHTML('Com Observação', notificacoesRelevantes.filter(d => d.possivelobservacao)) +
-            criarGrupoHTML('Demandas Prorrogadas', notificacoesRelevantes.filter(d => d.situacao.includes('Prorrogada'))) +
-            criarGrupoHTML('Demandas Complementadas', notificacoesRelevantes.filter(d => d.situacao.includes('Complementada')));
+        // Clear the panel body first
+        corpoDoPainel.innerHTML = '';
+        
+        // Create and append groups using DOM elements
+        const grupos = [
+            { titulo: 'Prazos Curtos (<= 2 dias)', lista: prazosCurtos, detalhe: 'prazo' },
+            { titulo: 'Possíveis Respondidas', lista: notificacoesRelevantes.filter(d => d.possivelRespondida), detalhe: null },
+            { titulo: 'Com Observação', lista: notificacoesRelevantes.filter(d => d.possivelobservacao), detalhe: null },
+            { titulo: 'Demandas Prorrogadas', lista: notificacoesRelevantes.filter(d => d.situacao.includes('Prorrogada')), detalhe: null },
+            { titulo: 'Demandas Complementadas', lista: notificacoesRelevantes.filter(d => d.situacao.includes('Complementada')), detalhe: null }
+        ];
+        
+        let hasContent = false;
+        grupos.forEach(grupo => {
+            const grupoElement = criarGrupoHTML(grupo.titulo, grupo.lista, grupo.detalhe);
+            if (grupoElement) {
+                corpoDoPainel.appendChild(grupoElement);
+                hasContent = true;
+            }
+        });
 
-        if (!corpoHTML) {
-             corpoHTML = `<p>Nenhuma notificação relevante encontrada.</p>`;
+        if (!hasContent) {
+            const mensagem = document.createElement('p');
+            mensagem.textContent = 'Nenhuma notificação relevante encontrada.';
+            corpoDoPainel.appendChild(mensagem);
         }
-
-        corpoDoPainel.innerHTML = corpoHTML;
 
         adicionarEventListenersAosItens();
         atualizarContadorEIcone();
