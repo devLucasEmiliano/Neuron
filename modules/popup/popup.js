@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let leaves = [];
     const numberOfLeaves = 50;
     const LEAF_COLOR = '#ffd401';
+    let animationFrameId = null;
 
     async function carregarConfiguracoes() {
         if (!chrome?.storage?.local) return {};
@@ -126,14 +127,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        requestAnimationFrame(animarCena);
+        animationFrameId = requestAnimationFrame(animarCena);
+    }
+
+    function stopAnimation() {
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
     }
 
     function inicializarAnimacao() {
         redimensionarCanvas();
         criarFolhas();
-        requestAnimationFrame(animarCena);
+        animationFrameId = requestAnimationFrame(animarCena);
     }
+
+    // Cleanup animation when popup is unloaded
+    window.addEventListener('beforeunload', stopAnimation);
 
     inicializarControlos();
     inicializarAnimacao();

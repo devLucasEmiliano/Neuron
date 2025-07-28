@@ -106,8 +106,8 @@
 
         lockPane.classList.remove(NEURON_LOADING_CSS_CLASS);
         const lockPaneText = document.getElementById(LOCK_PANE_TEXT_ID);
-        if (lockPaneText) {
-            lockPaneText.innerHTML = originalPaneTextInnerHTML || '';
+        if (lockPaneText && originalPaneTextInnerHTML !== null) {
+            lockPaneText.innerHTML = originalPaneTextInnerHTML;
             originalPaneTextInnerHTML = null;
         }
         isNeuronStyleApplied = false;

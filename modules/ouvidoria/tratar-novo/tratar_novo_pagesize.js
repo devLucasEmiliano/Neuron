@@ -16,7 +16,7 @@
             const config = result[CONFIG_KEY] || {};
             return config.masterEnableNeuron !== false && config.featureSettings?.[SCRIPT_ID]?.enabled !== false;
         } catch (error) {
-            console.warn(`%cNeuron (${SCRIPT_ID}): Não foi possível ler as configurações.`, "color: goldenrod;", error.message);
+            console.warn(`%cNeuron (${SCRIPT_ID}): Não foi possível ler as configurações.`, "color: goldenrod;", error);
             return false;
         }
     }

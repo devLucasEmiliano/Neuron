@@ -11,7 +11,8 @@
             const result = await chrome.storage.local.get(CONFIG_KEY);
             const config = result[CONFIG_KEY] || {};
             return config.masterEnableNeuron !== false && config.featureSettings?.[SCRIPT_ID]?.enabled !== false;
-        } catch {
+        } catch (error) {
+            console.warn(`%cNeuron (${SCRIPT_ID}): Erro ao verificar configurações.`, "color: goldenrod;", error);
             return false;
         }
     }

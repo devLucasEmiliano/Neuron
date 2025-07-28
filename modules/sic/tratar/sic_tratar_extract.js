@@ -36,8 +36,17 @@
      * Função principal que processa a tabela de manifestações do SIC.
      */
     async function processarTabelaSic() {
+        // Aguarda até que DateUtils esteja disponível com retry
+        let attempts = 0;
+        const maxAttempts = 50; // 5 segundos máximo (50 * 100ms)
+        
+        while (typeof window.DateUtils === 'undefined' && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
         if (typeof window.DateUtils === 'undefined') {
-            console.error('[Neuron|SIC] Erro: A biblioteca date_utils.js não foi encontrada. Verifique o manifest.json.');
+            console.error('[Neuron|SIC] Erro: A biblioteca date_utils.js não foi carregada após aguardar. Verifique o manifest.json.');
             return;
         }
         await window.DateUtils.ready;
