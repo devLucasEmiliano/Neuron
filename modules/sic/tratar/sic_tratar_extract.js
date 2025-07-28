@@ -46,7 +46,8 @@
         }
         
         if (typeof window.DateUtils === 'undefined') {
-            console.error('[Neuron|SIC] Erro: A biblioteca date_utils.js não foi carregada após aguardar. Verifique o manifest.json.');
+            const logger = window.NeuronLogger.createLogger('sic_tratar');
+            logger.error('A biblioteca date_utils.js não foi carregada após aguardar. Verifique o manifest.json');
             return;
         }
         await window.DateUtils.ready;

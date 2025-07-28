@@ -16,10 +16,13 @@
     let config = {};
     let isFeatureActive = false;
 
+    // Create standardized logger
+    const logger = window.NeuronLogger.createLogger(SCRIPT_ID);
+
     async function carregarConfiguracoes() {
         const result = await chrome.storage.local.get(CONFIG_KEY);
         config = result[CONFIG_KEY] || {};
-        console.log(`%cNeuron (${SCRIPT_ID}): Configurações carregadas.`, "color: blue; font-weight: bold;");
+        logger.info('Configurações carregadas');
     }
 
     function isScriptAtivo() {
@@ -46,7 +49,7 @@
             </div>`;
         
         containerOriginal.insertAdjacentHTML('afterend', novoDropdownHTML);
-        console.log(`%cNeuron (${SCRIPT_ID}): UI de resposta criada.`, "color: green;");
+        logger.success('UI de resposta criada');
     }
 
     function removerUI() {
@@ -107,7 +110,7 @@
         if (inputPrincipal && inputPrincipal.value) {
             const textoSelecionado = inputPrincipal.value.trim();
             if (textoSelecionado) {
-                console.log(`%cNeuron (${SCRIPT_ID}): Estado inicial detectado: "${textoSelecionado}". Renderizando opções.`, "color: purple; font-weight: bold;");
+                logger.debug(`Estado inicial detectado: "${textoSelecionado}". Renderizando opções`);
                 renderizarOpcoesDeResposta(textoSelecionado);
             }
         }
@@ -150,7 +153,7 @@
         // Adicionado um pequeno delay para garantir que a UI da página alvo foi totalmente renderizada.
         setTimeout(verificarTipoRespostaInicial, 200);
 
-        console.log(`%cNeuron (${SCRIPT_ID}): Funcionalidade ATIVADA.`, "color: green; font-weight: bold;");
+        logger.success('Funcionalidade ATIVADA');
     }
 
     function desativarFuncionalidade() {
@@ -158,7 +161,7 @@
         removerUI();
         document.removeEventListener('click', handleUiInteraction);
         isFeatureActive = false;
-        console.log(`%cNeuron (${SCRIPT_ID}): Funcionalidade DESATIVADA.`, "color: red; font-weight: bold;");
+        logger.warning('Funcionalidade DESATIVADA');
     }
 
     async function verificarEstadoAtualEAgir() {
@@ -172,7 +175,7 @@
     
     chrome.storage.onChanged.addListener((changes, namespace) => {
         if (namespace === 'local' && changes[CONFIG_KEY]) {
-            console.log(`%cNeuron (${SCRIPT_ID}): Configuração alterada. Reavaliando...`, "color: orange; font-weight: bold;");
+            logger.config('Configuração alterada. Reavaliando...');
             verificarEstadoAtualEAgir();
         }
     });

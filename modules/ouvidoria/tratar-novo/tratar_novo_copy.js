@@ -5,6 +5,9 @@
     const CONFIG_KEY = 'neuronUserConfig';
     let observer = null;
 
+    // Create standardized logger
+    const logger = window.NeuronLogger.createLogger(SCRIPT_ID);
+
     async function isScriptAtivo() {
         if (!chrome.runtime?.id) return false;
         try {
@@ -12,7 +15,7 @@
             const config = result[CONFIG_KEY] || {};
             return config.masterEnableNeuron !== false && config.featureSettings?.[SCRIPT_ID]?.enabled !== false;
         } catch (error) {
-            console.warn(`%cNeuron (${SCRIPT_ID}): Erro ao verificar configurações.`, "color: goldenrod;", error);
+            logger.warning('Erro ao verificar configurações', error);
             return false;
         }
     }

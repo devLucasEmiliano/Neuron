@@ -9,6 +9,9 @@
     let observer = null;
     let debounceTimer;
 
+    // Create standardized logger
+    const logger = window.NeuronLogger.createLogger(SCRIPT_ID);
+
     async function isScriptAtivo() {
         if (!chrome.runtime?.id) return false;
         try {
@@ -16,7 +19,7 @@
             const config = result[CONFIG_KEY] || {};
             return config.masterEnableNeuron !== false && config.featureSettings?.[SCRIPT_ID]?.enabled !== false;
         } catch (error) {
-            console.warn(`%cNeuron (${SCRIPT_ID}): Não foi possível ler as configurações.`, "color: goldenrod;", error);
+            logger.warning('Não foi possível ler as configurações', error);
             return false;
         }
     }
@@ -35,7 +38,7 @@
             return;
         }
 
-        console.log(`%cNeuron (${SCRIPT_ID}): Corrigindo paginação para ${itensPorPaginaDesejado}...`, "color: orange;");
+                    logger.info(`Corrigindo paginação para ${itensPorPaginaDesejado}`);
         campoTamanho.value = itensPorPaginaDesejado;
         botaoConfirmar.click();
     }

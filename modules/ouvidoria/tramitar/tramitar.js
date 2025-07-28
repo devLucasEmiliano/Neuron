@@ -11,10 +11,13 @@
 
     let config = {};
 
+    // Create standardized logger
+    const logger = window.NeuronLogger.createLogger(SCRIPT_ID);
+
     async function carregarConfiguracoes() {
         const result = await chrome.storage.local.get(CONFIG_KEY);
         config = result[CONFIG_KEY] || {};
-        console.log(`%cNeuron (${SCRIPT_ID}): Configurações carregadas.`, "color: blue; font-weight: bold;");
+        logger.info('Configurações carregadas');
     }
 
     function isScriptAtivo() {

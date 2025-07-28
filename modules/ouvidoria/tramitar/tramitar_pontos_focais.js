@@ -7,10 +7,13 @@
 
     let config = {};
 
+    // Create standardized logger
+    const logger = window.NeuronLogger.createLogger(SCRIPT_ID);
+
     async function carregarConfiguracoes() {
         const result = await chrome.storage.local.get(CONFIG_KEY);
         config = result[CONFIG_KEY] || {};
-        console.log(`%cNeuron (${SCRIPT_ID}): Configurações de pontos focais carregadas.`, "color: blue; font-weight: bold;");
+        logger.info('Configurações de pontos focais carregadas');
     }
 
     function isScriptAtivo() {
@@ -161,7 +164,7 @@
     
     chrome.storage.onChanged.addListener((changes, namespace) => {
         if (namespace === 'local' && changes[CONFIG_KEY]) {
-            console.log(`%cNeuron (${SCRIPT_ID}): Configuração alterada. Reavaliando...`, "color: orange; font-weight: bold;");
+            logger.config('Configuração alterada. Reavaliando...');
             verificarEstadoAtualEAgir();
         }
     });
