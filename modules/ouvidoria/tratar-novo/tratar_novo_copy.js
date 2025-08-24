@@ -5,13 +5,17 @@
     const CONFIG_KEY = 'neuronUserConfig';
     let observer = null;
 
+    // Create standardized logger
+    const logger = window.NeuronLogger.createLogger(SCRIPT_ID);
+
     async function isScriptAtivo() {
         if (!chrome.runtime?.id) return false;
         try {
             const result = await chrome.storage.local.get(CONFIG_KEY);
             const config = result[CONFIG_KEY] || {};
             return config.masterEnableNeuron !== false && config.featureSettings?.[SCRIPT_ID]?.enabled !== false;
-        } catch {
+        } catch (error) {
+            logger.warning('Erro ao verificar configurações', error);
             return false;
         }
     }

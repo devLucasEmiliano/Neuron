@@ -16,6 +16,9 @@
     let filtroUsuarioAtivado = true; // O padrão será começar com o filtro ativado
     // ----- FIM DA ALTERAÇÃO -----
 
+    // Create standardized logger
+    const logger = window.NeuronLogger.createLogger(SCRIPT_ID);
+
     async function carregarConfiguracoes() {
         const result = await chrome.storage.local.get([CONFIG_KEY, STORAGE_KEY_FILTRO_USUARIO]);
         config = result[CONFIG_KEY] || {};
@@ -390,7 +393,7 @@
                 desativarFuncionalidade();
             }
         } catch (error) {
-            console.error(`Neuron (${SCRIPT_ID}): Erro fatal durante a inicialização!`, error);
+            logger.error('Erro fatal durante a inicialização', error);
             desativarFuncionalidade();
         }
     }

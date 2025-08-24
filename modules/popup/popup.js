@@ -13,6 +13,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let leaves = [];
     const numberOfLeaves = 50;
     const LEAF_COLOR = '#ffd401';
+    let animationFrameId = null;
+
+    // Create standardized logger (popup doesn't have access to content script logger)
+    const logger = {
+        info: (message, data) => console.log(`%c[Neuron|popup] ${new Date().toLocaleTimeString('pt-BR', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 })} ${message}`, 'color: #2196F3; font-weight: bold;', data || ''),
+        success: (message, data) => console.log(`%c[Neuron|popup] ${new Date().toLocaleTimeString('pt-BR', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 })} ${message}`, 'color: #4CAF50; font-weight: bold;', data || ''),
+        warning: (message, data) => console.warn(`%c[Neuron|popup] ${new Date().toLocaleTimeString('pt-BR', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 })} ${message}`, 'color: #FF9800; font-weight: bold;', data || ''),
+        error: (message, data) => console.error(`%c[Neuron|popup] ${new Date().toLocaleTimeString('pt-BR', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 })} ${message}`, 'color: #F44336; font-weight: bold;', data || '')
+    };
 
     async function carregarConfiguracoes() {
         if (!chrome?.storage?.local) return {};
@@ -20,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await chrome.storage.local.get(CONFIG_KEY);
             return result?.[CONFIG_KEY] || {};
         } catch (error) {
-            console.error("Neuron (Popup): Erro ao carregar configurações.", error);
+            logger.error('Erro ao carregar configurações', error);
             return {};
         }
     }
@@ -30,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await chrome.storage.local.set({ [CONFIG_KEY]: userConfig });
         } catch (error) {
-            console.error("Neuron (Popup): Erro ao salvar configurações.", error);
+            logger.error('Erro ao salvar configurações', error);
         }
     }
 
@@ -126,14 +135,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        requestAnimationFrame(animarCena);
+        animationFrameId = requestAnimationFrame(animarCena);
+    }
+
+    function stopAnimation() {
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
     }
 
     function inicializarAnimacao() {
         redimensionarCanvas();
         criarFolhas();
-        requestAnimationFrame(animarCena);
+        animationFrameId = requestAnimationFrame(animarCena);
     }
+
+    // Cleanup animation when popup is unloaded
+    window.addEventListener('beforeunload', stopAnimation);
 
     inicializarControlos();
     inicializarAnimacao();

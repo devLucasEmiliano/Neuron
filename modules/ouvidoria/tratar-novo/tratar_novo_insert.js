@@ -5,6 +5,9 @@
     const CONFIG_KEY = 'neuronUserConfig';
     let isListenerAtivo = false;
 
+    // Create standardized logger
+    const logger = window.NeuronLogger.createLogger(SCRIPT_ID);
+
     async function isScriptAtivo() {
         if (!chrome.runtime?.id) return false;
         try {
@@ -76,7 +79,7 @@
                 
                 containerPrazo.insertAdjacentElement('afterend', nossoBloco);
             } catch (error) {
-                console.error(`%cNeuron (${SCRIPT_ID}): Erro ao processar demanda ${demanda.numero}`, "color: red;", error);
+                logger.error(`Erro ao processar demanda ${demanda.numero}`, error);
             }
         });
     }

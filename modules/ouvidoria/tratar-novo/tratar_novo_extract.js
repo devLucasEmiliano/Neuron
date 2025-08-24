@@ -5,6 +5,9 @@
     let observer = null;
     let debounceTimer;
 
+    // Create standardized logger
+    const logger = window.NeuronLogger.createLogger(SCRIPT_ID);
+
     async function isScriptAtivo() {
         if (!chrome.runtime?.id) return false;
         try {
@@ -76,7 +79,7 @@
                     idCadastroOriginal: cadastroElement?.id || null
                 });
             } catch (error) {
-                console.error(`%cNeuron (${SCRIPT_ID}): Erro ao extrair demanda: ${linkNumero.innerText.trim()}`, "color: red;", error);
+                logger.error(`Erro ao extrair demanda: ${linkNumero.innerText.trim()}`, error);
             }
         });
 

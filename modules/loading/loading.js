@@ -16,10 +16,13 @@
     let isNeuronStyleApplied = false;
     let originalPaneTextInnerHTML = null;
 
+    // Create standardized logger
+    const logger = window.NeuronLogger.createLogger(SCRIPT_ID);
+
     async function carregarConfiguracoes() {
         const result = await chrome.storage.local.get(CONFIG_KEY);
         config = result[CONFIG_KEY] || {};
-        console.log(`[Neuron|${SCRIPT_ID}] Configurações carregadas.`);
+        logger.info('Configurações carregadas');
     }
 
     function isScriptAtivo() {
@@ -33,7 +36,7 @@
                 manifestVersion = "v" + manifest.version;
             }
         } catch (e) {
-            console.warn(`[Neuron|${SCRIPT_ID}] Não foi possível obter a versão do manifest.`, e);
+            logger.warning('Não foi possível obter a versão do manifest', e);
         }
     }
 
@@ -94,7 +97,7 @@
             isNeuronStyleApplied = true;
             iniciarAnimacao();
         } catch (error) {
-            console.error(`[Neuron|${SCRIPT_ID}] Falha ao aplicar estilo de loading.`, error);
+            logger.error('Falha ao aplicar estilo de loading', error);
             reverterEstiloNeuron();
         }
     }
@@ -106,8 +109,8 @@
 
         lockPane.classList.remove(NEURON_LOADING_CSS_CLASS);
         const lockPaneText = document.getElementById(LOCK_PANE_TEXT_ID);
-        if (lockPaneText) {
-            lockPaneText.innerHTML = originalPaneTextInnerHTML || '';
+        if (lockPaneText && originalPaneTextInnerHTML !== null) {
+            lockPaneText.innerHTML = originalPaneTextInnerHTML;
             originalPaneTextInnerHTML = null;
         }
         isNeuronStyleApplied = false;
@@ -158,7 +161,7 @@
     
     chrome.storage.onChanged.addListener((changes, namespace) => {
         if (namespace === 'local' && changes[CONFIG_KEY]) {
-            console.warn(`[Neuron|${SCRIPT_ID}] Configuração alterada. Reavaliando...`);
+            logger.config('Configuração alterada. Reavaliando...');
             verificarEstadoAtualEAgir();
         }
     });
