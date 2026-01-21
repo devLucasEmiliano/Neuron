@@ -13,8 +13,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     const canvas = document.getElementById('falling-leaves-canvas');
     const ctx = canvas.getContext('2d');
 
+    // Notification settings elements
+    const notificationSettingsSection = document.getElementById('notification-settings');
+    const deadlineThresholdInput = document.getElementById('deadlineThreshold');
+    const dangerCountThresholdInput = document.getElementById('dangerCountThreshold');
+    const filterDefaultInput = document.getElementById('filterDefault');
+    const catPrazosCurtosInput = document.getElementById('catPrazosCurtos');
+    const catPossiveisRespondidasInput = document.getElementById('catPossiveisRespondidas');
+    const catComObservacaoInput = document.getElementById('catComObservacao');
+    const catProrrogadasInput = document.getElementById('catProrrogadas');
+    const catComplementadasInput = document.getElementById('catComplementadas');
+
+    // Default notification settings
+    const DEFAULT_NOTIFICACOES_SETTINGS = {
+        deadlineThreshold: 2,
+        dangerCountThreshold: 5,
+        filterDefault: true,
+        categoryVisibility: {
+            prazosCurtos: true,
+            possiveisRespondidas: true,
+            comObservacao: true,
+            prorrogadas: true,
+            complementadas: true
+        }
+    };
+
     let userConfig = {};
     let debounceTimer;
+    let notificacoesDebounceTimer;
     let leaves = [];
     let animationFrameId = null;
     const numberOfLeaves = 50;
@@ -71,8 +97,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const isEnabled = masterSwitch.checked;
         if (isEnabled) {
             itemsCard.classList.remove('disabled');
+            notificationSettingsSection?.classList.remove('disabled');
         } else {
             itemsCard.classList.add('disabled');
+            notificationSettingsSection?.classList.add('disabled');
         }
         itemsInput.disabled = !isEnabled;
     }
@@ -95,15 +123,77 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 500);
     }
 
+    function handleNotificacoesSettingChange() {
+        clearTimeout(notificacoesDebounceTimer);
+        notificacoesDebounceTimer = setTimeout(async () => {
+            if (!userConfig.notificacoesSettings) {
+                userConfig.notificacoesSettings = { ...DEFAULT_NOTIFICACOES_SETTINGS };
+            }
+
+            // Update threshold values
+            const deadlineVal = parseInt(deadlineThresholdInput?.value, 10);
+            userConfig.notificacoesSettings.deadlineThreshold = isNaN(deadlineVal) || deadlineVal < 1 ? 2 : deadlineVal;
+
+            const dangerVal = parseInt(dangerCountThresholdInput?.value, 10);
+            userConfig.notificacoesSettings.dangerCountThreshold = isNaN(dangerVal) || dangerVal < 1 ? 5 : dangerVal;
+
+            // Update filter default
+            userConfig.notificacoesSettings.filterDefault = filterDefaultInput?.checked ?? true;
+
+            // Update category visibility
+            if (!userConfig.notificacoesSettings.categoryVisibility) {
+                userConfig.notificacoesSettings.categoryVisibility = { ...DEFAULT_NOTIFICACOES_SETTINGS.categoryVisibility };
+            }
+            userConfig.notificacoesSettings.categoryVisibility.prazosCurtos = catPrazosCurtosInput?.checked ?? true;
+            userConfig.notificacoesSettings.categoryVisibility.possiveisRespondidas = catPossiveisRespondidasInput?.checked ?? true;
+            userConfig.notificacoesSettings.categoryVisibility.comObservacao = catComObservacaoInput?.checked ?? true;
+            userConfig.notificacoesSettings.categoryVisibility.prorrogadas = catProrrogadasInput?.checked ?? true;
+            userConfig.notificacoesSettings.categoryVisibility.complementadas = catComplementadasInput?.checked ?? true;
+
+            await salvarConfiguracoes();
+        }, 300);
+    }
+
     async function inicializarControlos() {
         userConfig = await carregarConfiguracoes();
         masterSwitch.checked = userConfig.masterEnableNeuron !== false;
         itemsInput.value = userConfig.generalSettings?.qtdItensTratarTriar || 50;
 
+        // Load notification settings
+        const notifSettings = userConfig.notificacoesSettings || DEFAULT_NOTIFICACOES_SETTINGS;
+        if (deadlineThresholdInput) {
+            deadlineThresholdInput.value = notifSettings.deadlineThreshold ?? DEFAULT_NOTIFICACOES_SETTINGS.deadlineThreshold;
+        }
+        if (dangerCountThresholdInput) {
+            dangerCountThresholdInput.value = notifSettings.dangerCountThreshold ?? DEFAULT_NOTIFICACOES_SETTINGS.dangerCountThreshold;
+        }
+        if (filterDefaultInput) {
+            filterDefaultInput.checked = notifSettings.filterDefault ?? DEFAULT_NOTIFICACOES_SETTINGS.filterDefault;
+        }
+
+        // Load category visibility
+        const catVis = notifSettings.categoryVisibility || DEFAULT_NOTIFICACOES_SETTINGS.categoryVisibility;
+        if (catPrazosCurtosInput) catPrazosCurtosInput.checked = catVis.prazosCurtos ?? true;
+        if (catPossiveisRespondidasInput) catPossiveisRespondidasInput.checked = catVis.possiveisRespondidas ?? true;
+        if (catComObservacaoInput) catComObservacaoInput.checked = catVis.comObservacao ?? true;
+        if (catProrrogadasInput) catProrrogadasInput.checked = catVis.prorrogadas ?? true;
+        if (catComplementadasInput) catComplementadasInput.checked = catVis.complementadas ?? true;
+
         atualizarUI();
 
+        // Master switch and items input listeners
         masterSwitch.addEventListener('change', handleMasterSwitchChange);
         itemsInput.addEventListener('input', handleItemsInputChange);
+
+        // Notification settings listeners
+        deadlineThresholdInput?.addEventListener('input', handleNotificacoesSettingChange);
+        dangerCountThresholdInput?.addEventListener('input', handleNotificacoesSettingChange);
+        filterDefaultInput?.addEventListener('change', handleNotificacoesSettingChange);
+        catPrazosCurtosInput?.addEventListener('change', handleNotificacoesSettingChange);
+        catPossiveisRespondidasInput?.addEventListener('change', handleNotificacoesSettingChange);
+        catComObservacaoInput?.addEventListener('change', handleNotificacoesSettingChange);
+        catProrrogadasInput?.addEventListener('change', handleNotificacoesSettingChange);
+        catComplementadasInput?.addEventListener('change', handleNotificacoesSettingChange);
     }
 
     // ========== Canvas Animation ==========

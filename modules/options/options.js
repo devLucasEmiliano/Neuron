@@ -31,6 +31,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const ui = {
         masterEnable: document.getElementById('masterEnableOptions'),
+        enableNotificacoes: document.getElementById('enableNotificacoes'),
+        enablePrazos: document.getElementById('enablePrazos'),
+        enableRespostas: document.getElementById('enableRespostas'),
+        enableModelos: document.getElementById('enableModelos'),
+        enablePontosFocais: document.getElementById('enablePontosFocais'),
         saveAllButton: document.getElementById('saveAllOptionsButton'),
         globalStatus: document.getElementById('globalStatus'),
         sidebar: document.getElementById('optionsSidebar'),
@@ -108,6 +113,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     function populateAllTabs() {
         ui.masterEnable.checked = fullConfig.masterEnableNeuron !== false;
 
+        // Module toggles
+        const modules = fullConfig.modules || {};
+        ui.enableNotificacoes.checked = modules.notificacoes !== false;
+        ui.enablePrazos.checked = modules.prazos !== false;
+        ui.enableRespostas.checked = modules.respostas !== false;
+        ui.enableModelos.checked = modules.modelos !== false;
+        ui.enablePontosFocais.checked = modules.pontosFocais !== false;
+
         const qtdElement = document.getElementById('qtdItensTratarTriar');
         if (qtdElement) qtdElement.value = fullConfig.generalSettings?.qtdItensTratarTriar || 50;
 
@@ -132,6 +145,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function collectSettingsFromUI() {
         fullConfig.masterEnableNeuron = ui.masterEnable.checked;
+
+        // Module toggles
+        fullConfig.modules = {
+            notificacoes: ui.enableNotificacoes.checked,
+            prazos: ui.enablePrazos.checked,
+            respostas: ui.enableRespostas.checked,
+            modelos: ui.enableModelos.checked,
+            pontosFocais: ui.enablePontosFocais.checked
+        };
 
         if (!fullConfig.generalSettings) fullConfig.generalSettings = {};
         const qtdElement = document.getElementById('qtdItensTratarTriar');

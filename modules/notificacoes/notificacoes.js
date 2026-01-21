@@ -12,6 +12,36 @@
     let currentTheme = 'system';
     let dbInitialized = false;
 
+    // Default notification settings
+    const DEFAULT_NOTIFICACOES_SETTINGS = {
+        deadlineThreshold: 2,
+        dangerCountThreshold: 5,
+        filterDefault: true,
+        categoryVisibility: {
+            prazosCurtos: true,
+            possiveisRespondidas: true,
+            comObservacao: true,
+            prorrogadas: true,
+            complementadas: true
+        }
+    };
+
+    function getNotificacoesSettings() {
+        const settings = config.notificacoesSettings || {};
+        return {
+            deadlineThreshold: settings.deadlineThreshold ?? DEFAULT_NOTIFICACOES_SETTINGS.deadlineThreshold,
+            dangerCountThreshold: settings.dangerCountThreshold ?? DEFAULT_NOTIFICACOES_SETTINGS.dangerCountThreshold,
+            filterDefault: settings.filterDefault ?? DEFAULT_NOTIFICACOES_SETTINGS.filterDefault,
+            categoryVisibility: {
+                prazosCurtos: settings.categoryVisibility?.prazosCurtos ?? DEFAULT_NOTIFICACOES_SETTINGS.categoryVisibility.prazosCurtos,
+                possiveisRespondidas: settings.categoryVisibility?.possiveisRespondidas ?? DEFAULT_NOTIFICACOES_SETTINGS.categoryVisibility.possiveisRespondidas,
+                comObservacao: settings.categoryVisibility?.comObservacao ?? DEFAULT_NOTIFICACOES_SETTINGS.categoryVisibility.comObservacao,
+                prorrogadas: settings.categoryVisibility?.prorrogadas ?? DEFAULT_NOTIFICACOES_SETTINGS.categoryVisibility.prorrogadas,
+                complementadas: settings.categoryVisibility?.complementadas ?? DEFAULT_NOTIFICACOES_SETTINGS.categoryVisibility.complementadas
+            }
+        };
+    }
+
     function escapeHtml(str) {
         if (str == null) return '';
         return String(str).replace(/[&<>"']/g, char => ({
@@ -85,7 +115,13 @@
 
     function isScriptAtivo() {
         if (!config || typeof config !== 'object') return false;
-        return config.masterEnableNeuron !== false && config.featureSettings?.[SCRIPT_ID]?.enabled !== false;
+        if (config.masterEnableNeuron === false) return false;
+        // Check modules.notificacoes (new format) or legacy formats
+        const moduleEnabled = config.modules?.notificacoes;
+        const legacyEnabled = config.featureSettings?.[SCRIPT_ID]?.enabled;
+        // If explicitly false in any format, disable
+        if (moduleEnabled === false || legacyEnabled === false) return false;
+        return true;
     }
     
     function getUsuarioLogado() {
@@ -307,14 +343,32 @@
             return grupoHtml + '</div>';
         };
 
-        const prazosCurtos = notificacoesRelevantes.map(d => ({ ...d, diasRestantes: calcularDiasRestantes(d.prazo) })).filter(d => d.diasRestantes !== null && d.diasRestantes <= 2).sort((a, b) => a.diasRestantes - b.diasRestantes);
-        
-        let corpoHTML = 
-            criarGrupoHTML('Prazos Curtos (<= 2 dias)', prazosCurtos, 'prazo') +
-            criarGrupoHTML('Possíveis Respondidas', notificacoesRelevantes.filter(d => d.possivelRespondida)) +
-            criarGrupoHTML('Com Observação', notificacoesRelevantes.filter(d => d.possivelobservacao)) +
-            criarGrupoHTML('Demandas Prorrogadas', notificacoesRelevantes.filter(d => d.situacao.includes('Prorrogada'))) +
-            criarGrupoHTML('Demandas Complementadas', notificacoesRelevantes.filter(d => d.situacao.includes('Complementada')));
+        const settings = getNotificacoesSettings();
+        const catVis = settings.categoryVisibility;
+        const threshold = settings.deadlineThreshold;
+
+        const prazosCurtos = notificacoesRelevantes
+            .map(d => ({ ...d, diasRestantes: calcularDiasRestantes(d.prazo) }))
+            .filter(d => d.diasRestantes !== null && d.diasRestantes <= threshold)
+            .sort((a, b) => a.diasRestantes - b.diasRestantes);
+
+        let corpoHTML = '';
+
+        if (catVis.prazosCurtos) {
+            corpoHTML += criarGrupoHTML(`Prazos Curtos (<= ${threshold} dias)`, prazosCurtos, 'prazo');
+        }
+        if (catVis.possiveisRespondidas) {
+            corpoHTML += criarGrupoHTML('Possíveis Respondidas', notificacoesRelevantes.filter(d => d.possivelRespondida));
+        }
+        if (catVis.comObservacao) {
+            corpoHTML += criarGrupoHTML('Com Observação', notificacoesRelevantes.filter(d => d.possivelobservacao));
+        }
+        if (catVis.prorrogadas) {
+            corpoHTML += criarGrupoHTML('Demandas Prorrogadas', notificacoesRelevantes.filter(d => d.situacao.includes('Prorrogada')));
+        }
+        if (catVis.complementadas) {
+            corpoHTML += criarGrupoHTML('Demandas Complementadas', notificacoesRelevantes.filter(d => d.situacao.includes('Complementada')));
+        }
 
         if (!corpoHTML) {
              corpoHTML = `<p>Nenhuma notificação relevante encontrada.</p>`;
@@ -394,12 +448,13 @@
         });
 
         const total = naoConcluidas.length;
+        const settings = getNotificacoesSettings();
         trigger.className = '';
         if (total > 0) {
-            contador.innerText = total > 99 ? '99+' : total;
+            contador.innerText = total > 999 ? '999+' : total;
             contador.style.display = 'block';
             trigger.classList.add('pulsating');
-            if (total > 5) {
+            if (total > settings.dangerCountThreshold) {
                 trigger.classList.add('status-danger');
             } else {
                 trigger.classList.add('status-warning');
@@ -413,14 +468,19 @@
     function isNotificacaoRelevante(demanda) {
         if (!demanda || typeof demanda !== 'object') return false;
 
+        const settings = getNotificacoesSettings();
+        const catVis = settings.categoryVisibility;
         const situacao = demanda.situacao || '';
         const diasRestantes = calcularDiasRestantes(demanda.prazo);
 
-        return (diasRestantes !== null && diasRestantes <= 2) || 
-               situacao.includes('Prorrogada') || 
-               situacao.includes('Complementada') ||
-               demanda.possivelRespondida ||
-               demanda.possivelobservacao;
+        // Check each category based on visibility settings
+        const isPrazoCurto = catVis.prazosCurtos && diasRestantes !== null && diasRestantes <= settings.deadlineThreshold;
+        const isProrrogada = catVis.prorrogadas && situacao.includes('Prorrogada');
+        const isComplementada = catVis.complementadas && situacao.includes('Complementada');
+        const isPossivelRespondida = catVis.possiveisRespondidas && demanda.possivelRespondida;
+        const isComObservacao = catVis.comObservacao && demanda.possivelobservacao;
+
+        return isPrazoCurto || isProrrogada || isComplementada || isPossivelRespondida || isComObservacao;
     }
 
     function calcularDiasRestantes(dataString) {

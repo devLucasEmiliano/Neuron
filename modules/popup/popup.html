@@ -27,7 +27,7 @@
         </header>
 
         <!-- Main Controls -->
-        <main class="flex-grow-1 p-3">
+        <main class="flex-grow-1 p-3 overflow-auto">
             <!-- Master Enable Card -->
             <div class="card shadow-sm mb-3">
                 <div class="card-body d-flex justify-content-between align-items-center py-3">
@@ -43,7 +43,7 @@
             </div>
 
             <!-- Items Per Page Card -->
-            <div class="card shadow-sm" id="items-per-page-card">
+            <div class="card shadow-sm mb-2" id="items-per-page-card">
                 <div class="card-body d-flex justify-content-between align-items-center py-3">
                     <label for="qtdItensTratarTriar" class="form-label mb-0 fw-medium">
                         Itens por Pagina
@@ -51,6 +51,98 @@
                     <input type="number" class="form-control form-control-sm text-center"
                            id="qtdItensTratarTriar" min="1" max="100"
                            style="width: 70px;">
+                </div>
+            </div>
+
+            <!-- Notification Settings Section -->
+            <div class="notification-settings" id="notification-settings">
+                <div class="settings-section-header">
+                    <i class="bi bi-bell"></i>
+                    <span>Notificacoes</span>
+                </div>
+
+                <!-- Deadline Threshold -->
+                <div class="card shadow-sm card-compact mb-2">
+                    <div class="card-body setting-row">
+                        <label for="deadlineThreshold" class="setting-label">
+                            Prazo curto (dias)
+                        </label>
+                        <input type="number" class="form-control form-control-sm setting-input"
+                               id="deadlineThreshold" min="1" max="30" value="2">
+                    </div>
+                </div>
+
+                <!-- Danger Count Threshold -->
+                <div class="card shadow-sm card-compact mb-2">
+                    <div class="card-body setting-row">
+                        <label for="dangerCountThreshold" class="setting-label">
+                            Limite perigo
+                        </label>
+                        <input type="number" class="form-control form-control-sm setting-input"
+                               id="dangerCountThreshold" min="1" max="100" value="5">
+                    </div>
+                </div>
+
+                <!-- Filter Default -->
+                <div class="card shadow-sm card-compact mb-2">
+                    <div class="card-body setting-row">
+                        <label for="filterDefault" class="setting-label">
+                            Filtro padrao ativo
+                        </label>
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox"
+                                   role="switch" id="filterDefault">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Visibility Collapse -->
+                <div class="mb-2">
+                    <button class="collapse-toggle" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#categoryCollapse"
+                            aria-expanded="false" aria-controls="categoryCollapse">
+                        <span><i class="bi bi-eye me-2"></i>Categorias visiveis</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
+                    <div class="collapse" id="categoryCollapse">
+                        <div class="category-list">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                       id="catPrazosCurtos" checked>
+                                <label class="form-check-label" for="catPrazosCurtos">
+                                    Prazos Curtos
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                       id="catPossiveisRespondidas" checked>
+                                <label class="form-check-label" for="catPossiveisRespondidas">
+                                    Possiveis Respondidas
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                       id="catComObservacao" checked>
+                                <label class="form-check-label" for="catComObservacao">
+                                    Com Observacao
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                       id="catProrrogadas" checked>
+                                <label class="form-check-label" for="catProrrogadas">
+                                    Prorrogadas
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                       id="catComplementadas" checked>
+                                <label class="form-check-label" for="catComplementadas">
+                                    Complementadas
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
