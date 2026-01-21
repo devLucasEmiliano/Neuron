@@ -67,7 +67,30 @@
             return;
         }
 
-        function adicionarProximoNome(index) {
+        function waitForTableChange(tabela, timeout = 10000) {
+            return new Promise((resolve, reject) => {
+                const startRows = tabela.querySelectorAll('tr').length;
+                let resolved = false;
+                const observer = new MutationObserver(() => {
+                    const currentRows = tabela.querySelectorAll('tr').length;
+                    if (currentRows > startRows && !resolved) {
+                        resolved = true;
+                        observer.disconnect();
+                        resolve();
+                    }
+                });
+                observer.observe(tabela, { childList: true, subtree: true });
+                setTimeout(() => {
+                    if (!resolved) {
+                        resolved = true;
+                        observer.disconnect();
+                        reject(new Error('Timeout aguardando atualização da tabela'));
+                    }
+                }, timeout);
+            });
+        }
+
+        async function adicionarProximoNome(index) {
             if (index >= nomesAAdicionar.length) {
                 alert('Tramitação de pontos focais concluída!');
                 return;
@@ -75,14 +98,21 @@
             const nome = nomesAAdicionar[index];
             inputNome.value = nome;
             inputNome.dispatchEvent(new Event('input', { bubbles: true }));
-            
-            setTimeout(() => {
-                inputNome.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-                setTimeout(() => { 
-                    botaoAdd.click();
-                    setTimeout(() => adicionarProximoNome(index + 1), 3000); 
-                }, 1000);
-            }, 500);
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+            inputNome.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            try {
+                const changePromise = waitForTableChange(tabela);
+                botaoAdd.click();
+                await changePromise;
+                await new Promise(resolve => setTimeout(resolve, 300));
+                await adicionarProximoNome(index + 1);
+            } catch (error) {
+                console.error(`Neuron (${SCRIPT_ID}): Erro ao adicionar ${nome}:`, error);
+                alert(`Erro ao adicionar "${nome}". Verifique se foi adicionado manualmente.`);
+            }
         }
         adicionarProximoNome(0);
     }
@@ -130,15 +160,18 @@
         
         selectElement.addEventListener('change', () => {
             exibirNomesParaSecretaria(selectElement, ulElement);
-            localStorage.setItem('neuronSecretariaSelecionadaTramitar', selectElement.value);
+            chrome.storage.local.set({ neuronSecretariaSelecionadaTramitar: selectElement.value });
             btnAutotramitar.disabled = !selectElement.value;
         });
 
-        const salvo = localStorage.getItem('neuronSecretariaSelecionadaTramitar');
-        if (salvo && selectElement.querySelector(`option[value="${salvo}"]`)) {
-           selectElement.value = salvo; 
-           exibirNomesParaSecretaria(selectElement, ulElement);
-        }
+        chrome.storage.local.get('neuronSecretariaSelecionadaTramitar', (result) => {
+            const salvo = result.neuronSecretariaSelecionadaTramitar;
+            if (salvo && selectElement.querySelector(`option[value="${salvo}"]`)) {
+               selectElement.value = salvo;
+               exibirNomesParaSecretaria(selectElement, ulElement);
+               btnAutotramitar.disabled = false;
+            }
+        });
         btnAutotramitar.disabled = !selectElement.value;
         
         btnAutotramitar.addEventListener('click', configurarAutotramitar);

@@ -164,10 +164,20 @@
     });
 
     async function init() {
-        await new Promise(resolve => {
+        const MAX_ATTEMPTS = 100;
+        let attempts = 0;
+
+        await new Promise((resolve, reject) => {
             const checkElement = () => {
-                if (document.getElementById(LOCK_PANE_ID)) resolve();
-                else setTimeout(checkElement, 100);
+                if (document.getElementById(LOCK_PANE_ID)) {
+                    resolve();
+                } else if (attempts >= MAX_ATTEMPTS) {
+                    console.warn(`[Neuron|${SCRIPT_ID}] Elemento ${LOCK_PANE_ID} não encontrado após ${MAX_ATTEMPTS} tentativas.`);
+                    resolve();
+                } else {
+                    attempts++;
+                    setTimeout(checkElement, 100);
+                }
             };
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', checkElement, { once: true });
@@ -175,7 +185,7 @@
                 checkElement();
             }
         });
-        
+
         carregarVersaoManifest();
         verificarEstadoAtualEAgir();
     }

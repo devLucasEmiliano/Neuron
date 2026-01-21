@@ -1,0 +1,307 @@
+/* Neuron Theme System - CSS Custom Properties */
+
+/* Transition duration for theme changes */
+:root {
+    --neuron-transition-duration: 0.3s;
+}
+
+/* Apply smooth transitions when theme changes */
+[data-bs-theme] {
+    transition:
+        background-color var(--neuron-transition-duration) ease,
+        color var(--neuron-transition-duration) ease,
+        border-color var(--neuron-transition-duration) ease,
+        box-shadow var(--neuron-transition-duration) ease;
+}
+
+/* ========== Light Theme (Default) ========== */
+:root,
+[data-bs-theme="light"] {
+    /* Brand Colors */
+    --neuron-primary: #0278bc;
+    --neuron-primary-hover: #025a8e;
+    --neuron-primary-light: #e8f4fa;
+    --neuron-primary-rgb: 2, 120, 188;
+
+    --neuron-accent: #ffd401;
+    --neuron-accent-hover: #f0c300;
+    --neuron-accent-light: #fff9e0;
+    --neuron-accent-rgb: 255, 212, 1;
+
+    /* Status Colors */
+    --neuron-success: #198754;
+    --neuron-success-light: #d1e7dd;
+    --neuron-warning: #ffc107;
+    --neuron-warning-light: #fff3cd;
+    --neuron-danger: #dc3545;
+    --neuron-danger-light: #f8d7da;
+    --neuron-info: #0dcaf0;
+    --neuron-info-light: #cff4fc;
+
+    /* Surface Colors */
+    --neuron-bg-primary: #ffffff;
+    --neuron-bg-secondary: #f8f9fa;
+    --neuron-bg-tertiary: #e9ecef;
+
+    /* Text Colors */
+    --neuron-text-primary: #212529;
+    --neuron-text-secondary: #6c757d;
+    --neuron-text-muted: #adb5bd;
+
+    /* Border Colors */
+    --neuron-border-color: #dee2e6;
+    --neuron-border-light: #f1f3f5;
+
+    /* Shadows */
+    --neuron-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --neuron-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --neuron-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+
+    /* Override Bootstrap primary */
+    --bs-primary: var(--neuron-primary);
+    --bs-primary-rgb: var(--neuron-primary-rgb);
+}
+
+/* ========== Dark Theme ========== */
+[data-bs-theme="dark"] {
+    /* Brand Colors - Adjusted for dark mode accessibility */
+    --neuron-primary: #3a9fd5;
+    --neuron-primary-hover: #5eb5e3;
+    --neuron-primary-light: #1a3a4d;
+    --neuron-primary-rgb: 58, 159, 213;
+
+    --neuron-accent: #ffe566;
+    --neuron-accent-hover: #ffed99;
+    --neuron-accent-light: #3d3a1f;
+    --neuron-accent-rgb: 255, 229, 102;
+
+    /* Status Colors - Adjusted for dark mode */
+    --neuron-success: #75b798;
+    --neuron-success-light: #1a3d2e;
+    --neuron-warning: #ffda6a;
+    --neuron-warning-light: #3d3a1f;
+    --neuron-danger: #ea868f;
+    --neuron-danger-light: #3d1f24;
+    --neuron-info: #6edff6;
+    --neuron-info-light: #1a3d42;
+
+    /* Surface Colors */
+    --neuron-bg-primary: #1a1d21;
+    --neuron-bg-secondary: #212529;
+    --neuron-bg-tertiary: #2b3035;
+
+    /* Text Colors */
+    --neuron-text-primary: #e9ecef;
+    --neuron-text-secondary: #adb5bd;
+    --neuron-text-muted: #6c757d;
+
+    /* Border Colors */
+    --neuron-border-color: #495057;
+    --neuron-border-light: #343a40;
+
+    /* Shadows - More subtle in dark mode */
+    --neuron-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --neuron-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --neuron-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+
+    /* Override Bootstrap primary */
+    --bs-primary: var(--neuron-primary);
+    --bs-primary-rgb: var(--neuron-primary-rgb);
+}
+
+/* ========== Custom Button Styles ========== */
+.btn-neuron-primary {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: var(--neuron-primary);
+    --bs-btn-border-color: var(--neuron-primary);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: var(--neuron-primary-hover);
+    --bs-btn-hover-border-color: var(--neuron-primary-hover);
+    --bs-btn-focus-shadow-rgb: var(--neuron-primary-rgb);
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: var(--neuron-primary-hover);
+    --bs-btn-active-border-color: var(--neuron-primary-hover);
+}
+
+.btn-neuron-accent {
+    --bs-btn-color: #333;
+    --bs-btn-bg: var(--neuron-accent);
+    --bs-btn-border-color: var(--neuron-accent);
+    --bs-btn-hover-color: #333;
+    --bs-btn-hover-bg: var(--neuron-accent-hover);
+    --bs-btn-hover-border-color: var(--neuron-accent-hover);
+    --bs-btn-focus-shadow-rgb: var(--neuron-accent-rgb);
+    --bs-btn-active-color: #333;
+    --bs-btn-active-bg: var(--neuron-accent-hover);
+    --bs-btn-active-border-color: var(--neuron-accent-hover);
+}
+
+.btn-outline-neuron-primary {
+    --bs-btn-color: var(--neuron-primary);
+    --bs-btn-border-color: var(--neuron-primary);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: var(--neuron-primary);
+    --bs-btn-hover-border-color: var(--neuron-primary);
+    --bs-btn-focus-shadow-rgb: var(--neuron-primary-rgb);
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: var(--neuron-primary);
+    --bs-btn-active-border-color: var(--neuron-primary);
+}
+
+/* ========== Form Controls Customization ========== */
+.form-check-input:checked {
+    background-color: var(--neuron-primary);
+    border-color: var(--neuron-primary);
+}
+
+.form-check-input:focus {
+    border-color: var(--neuron-primary);
+    box-shadow: 0 0 0 0.25rem rgba(var(--neuron-primary-rgb), 0.25);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--neuron-primary);
+    box-shadow: 0 0 0 0.25rem rgba(var(--neuron-primary-rgb), 0.25);
+}
+
+/* ========== Nav Tabs Customization ========== */
+.nav-tabs .nav-link.active {
+    border-bottom-color: var(--neuron-accent);
+    border-bottom-width: 3px;
+    color: var(--neuron-primary);
+    font-weight: 600;
+}
+
+.nav-tabs .nav-link:hover:not(.active) {
+    color: var(--neuron-primary);
+}
+
+/* ========== Card Customization ========== */
+.card {
+    border-color: var(--neuron-border-color);
+    box-shadow: var(--neuron-shadow-sm);
+}
+
+.card-header {
+    background-color: var(--neuron-bg-secondary);
+    border-bottom-color: var(--neuron-border-color);
+}
+
+/* ========== Accordion Customization ========== */
+.accordion-button:not(.collapsed) {
+    background-color: var(--neuron-primary-light);
+    color: var(--neuron-primary);
+}
+
+.accordion-button:focus {
+    border-color: var(--neuron-primary);
+    box-shadow: 0 0 0 0.25rem rgba(var(--neuron-primary-rgb), 0.25);
+}
+
+/* ========== Alert Customization ========== */
+.alert-neuron-primary {
+    color: var(--neuron-primary);
+    background-color: var(--neuron-primary-light);
+    border-color: var(--neuron-primary);
+}
+
+.alert-neuron-accent {
+    color: #664d03;
+    background-color: var(--neuron-accent-light);
+    border-color: var(--neuron-accent);
+}
+
+/* ========== Badge Customization ========== */
+.badge-neuron-primary {
+    background-color: var(--neuron-primary);
+    color: #fff;
+}
+
+.badge-neuron-accent {
+    background-color: var(--neuron-accent);
+    color: #333;
+}
+
+/* ========== Utility Classes ========== */
+.text-neuron-primary {
+    color: var(--neuron-primary) !important;
+}
+
+.text-neuron-accent {
+    color: var(--neuron-accent) !important;
+}
+
+.bg-neuron-primary {
+    background-color: var(--neuron-primary) !important;
+}
+
+.bg-neuron-accent {
+    background-color: var(--neuron-accent) !important;
+}
+
+.border-neuron-primary {
+    border-color: var(--neuron-primary) !important;
+}
+
+.border-neuron-accent {
+    border-color: var(--neuron-accent) !important;
+}
+
+/* ========== Header Gradient ========== */
+.neuron-header-gradient {
+    background: linear-gradient(135deg, var(--neuron-primary), var(--neuron-primary-hover));
+    color: #fff;
+}
+
+/* ========== Theme Toggle Button ========== */
+.btn-theme-toggle {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.btn-theme-toggle:hover {
+    transform: scale(1.1);
+}
+
+.btn-theme-toggle i {
+    font-size: 1.1rem;
+}
+
+/* ========== Scrollbar Customization ========== */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--neuron-bg-secondary);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--neuron-text-muted);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--neuron-text-secondary);
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-track {
+    background: var(--neuron-bg-tertiary);
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: var(--neuron-border-color);
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: var(--neuron-text-secondary);
+}

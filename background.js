@@ -3,9 +3,24 @@
  * @description Background service worker for Neuron extension
  */
 
-// Ensure proper extension initialization
-chrome.runtime.onInstalled.addListener(() => {
+// Import idb library and NeuronDB
+importScripts('lib/idb.min.js', 'shared/js/neuron-db.js');
+
+// Ensure proper extension initialization and run migration
+chrome.runtime.onInstalled.addListener(async (details) => {
     console.log('Neuron extension installed/updated successfully');
+
+    // Run migration on install or update
+    if (details.reason === 'install' || details.reason === 'update') {
+        try {
+            const migrated = await NeuronDB.migrateFromChromeStorage();
+            if (migrated) {
+                console.log('Neuron: Data migration completed on', details.reason);
+            }
+        } catch (error) {
+            console.error('Neuron: Migration error during', details.reason, error);
+        }
+    }
 });
 
 // Handle extension startup

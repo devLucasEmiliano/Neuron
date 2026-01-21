@@ -1,18 +1,51 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     'use strict';
+
+    // Initialize theme first to prevent flash
+    await ThemeManager.init();
 
     const CONFIG_KEY = 'neuronUserConfig';
     const masterSwitch = document.getElementById('masterEnableNeuron');
     const itemsInput = document.getElementById('qtdItensTratarTriar');
     const itemsCard = document.getElementById('items-per-page-card');
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
     const canvas = document.getElementById('falling-leaves-canvas');
     const ctx = canvas.getContext('2d');
 
     let userConfig = {};
     let debounceTimer;
     let leaves = [];
+    let animationFrameId = null;
     const numberOfLeaves = 50;
     const LEAF_COLOR = '#ffd401';
+
+    // ========== Theme Management ==========
+
+    async function updateThemeIcon() {
+        const preference = await ThemeManager.getPreference();
+        if (themeIcon) {
+            themeIcon.className = `bi ${ThemeManager.getIconClass(preference)}`;
+        }
+        if (themeToggle) {
+            themeToggle.title = ThemeManager.getLabel(preference);
+        }
+    }
+
+    if (themeToggle) {
+        themeToggle.addEventListener('click', async () => {
+            await ThemeManager.cycle();
+            await updateThemeIcon();
+        });
+    }
+
+    // Listen for theme changes from other pages
+    document.addEventListener('neuron-theme-change', updateThemeIcon);
+
+    // Initialize theme icon
+    await updateThemeIcon();
+
+    // ========== Configuration Management ==========
 
     async function carregarConfiguracoes() {
         if (!chrome?.storage?.local) return {};
@@ -20,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await chrome.storage.local.get(CONFIG_KEY);
             return result?.[CONFIG_KEY] || {};
         } catch (error) {
-            console.error("Neuron (Popup): Erro ao carregar configurações.", error);
+            console.error("Neuron (Popup): Erro ao carregar configuracoes.", error);
             return {};
         }
     }
@@ -30,14 +63,17 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await chrome.storage.local.set({ [CONFIG_KEY]: userConfig });
         } catch (error) {
-            console.error("Neuron (Popup): Erro ao salvar configurações.", error);
+            console.error("Neuron (Popup): Erro ao salvar configuracoes.", error);
         }
     }
 
     function atualizarUI() {
         const isEnabled = masterSwitch.checked;
-        itemsCard.style.opacity = isEnabled ? '1' : '0.6';
-        itemsCard.style.pointerEvents = isEnabled ? 'auto' : 'none';
+        if (isEnabled) {
+            itemsCard.classList.remove('disabled');
+        } else {
+            itemsCard.classList.add('disabled');
+        }
         itemsInput.disabled = !isEnabled;
     }
 
@@ -53,7 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!userConfig.generalSettings) {
                 userConfig.generalSettings = {};
             }
-            userConfig.generalSettings.qtdItensTratarTriar = parseInt(itemsInput.value, 10) || 50;
+            const parsedValue = parseInt(itemsInput.value, 10);
+            userConfig.generalSettings.qtdItensTratarTriar = isNaN(parsedValue) || parsedValue < 1 ? 50 : parsedValue;
             await salvarConfiguracoes();
         }, 500);
     }
@@ -62,12 +99,14 @@ document.addEventListener('DOMContentLoaded', () => {
         userConfig = await carregarConfiguracoes();
         masterSwitch.checked = userConfig.masterEnableNeuron !== false;
         itemsInput.value = userConfig.generalSettings?.qtdItensTratarTriar || 50;
-        
+
         atualizarUI();
 
         masterSwitch.addEventListener('change', handleMasterSwitchChange);
         itemsInput.addEventListener('input', handleItemsInputChange);
     }
+
+    // ========== Canvas Animation ==========
 
     function redimensionarCanvas() {
         canvas.width = window.innerWidth;
@@ -94,13 +133,13 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.save();
         ctx.translate(leaf.x, leaf.y);
         ctx.rotate(leaf.rotation * Math.PI / 180);
-        
+
         ctx.beginPath();
         ctx.moveTo(0, 0);
         const size = leaf.size;
         ctx.quadraticCurveTo(size * 0.5, -size * 0.4, size, 0);
         ctx.quadraticCurveTo(size * 0.5, size * 0.4, 0, 0);
-        
+
         ctx.fillStyle = `${LEAF_COLOR}${Math.floor(leaf.opacity * 255).toString(16).padStart(2, '0')}`;
         ctx.fill();
         ctx.restore();
@@ -108,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function animarCena() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         leaves.forEach(leaf => {
             leaf.y += leaf.speedY;
             leaf.x += leaf.speedX;
@@ -126,15 +165,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        requestAnimationFrame(animarCena);
+        animationFrameId = requestAnimationFrame(animarCena);
     }
 
     function inicializarAnimacao() {
         redimensionarCanvas();
         criarFolhas();
-        requestAnimationFrame(animarCena);
+        animationFrameId = requestAnimationFrame(animarCena);
     }
 
-    inicializarControlos();
+    function pararAnimacao() {
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
+    }
+
+    window.addEventListener('unload', pararAnimacao);
+
+    // ========== Initialize ==========
+
+    await inicializarControlos();
     inicializarAnimacao();
 });

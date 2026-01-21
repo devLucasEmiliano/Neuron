@@ -5,6 +5,13 @@
     const CONFIG_KEY = 'neuronUserConfig';
     let isListenerAtivo = false;
 
+    function escapeHtml(str) {
+        if (str == null) return '';
+        return String(str).replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[char]);
+    }
+
     async function isScriptAtivo() {
         if (!chrome.runtime?.id) return false;
         try {
@@ -60,17 +67,17 @@
 
                 let htmlImprorrogavel = '';
                 if (!demanda.situacao.includes('Prorrogada')) {
-                    htmlImprorrogavel = `<div style="color: #e0a800; font-weight: bold;"><strong>Improrrogável em:</strong> ${DU.formatarData(improrrogavelFinal)}<span style="color: #6c757d; font-style: italic;"> ${DU.calcularDiasRestantes(improrrogavelFinal)}</span></div>`;
+                    htmlImprorrogavel = `<div style="color: #e0a800; font-weight: bold;"><strong>Improrrogável em:</strong> ${escapeHtml(DU.formatarData(improrrogavelFinal))}<span style="color: #6c757d; font-style: italic;"> ${escapeHtml(DU.calcularDiasRestantes(improrrogavelFinal))}</span></div>`;
                 }
 
                 const nossoBloco = document.createElement('div');
                 nossoBloco.style.cssText = "border: 1px solid #e0e0e0; border-radius: 5px; padding: 5px; margin-top: 5px; font-size: 0.8em; line-height: 1.8; width: 290px;";
                 nossoBloco.innerHTML = `
-                    <div style="padding-bottom: 2px; margin-bottom: 2px; border-bottom: 1px dashed #ccc;"><strong>Modo:</strong> ${modoTexto}</div>
-                    <div><strong>Cadastro:</strong> ${demanda.dataCadastro}<span style="color: #6c757d; font-style: italic;"> ${DU.calcularDiasRestantes(demanda.dataCadastro)}</span></div>
-                    <div><strong>Prazo Original:</strong> ${DU.formatarData(dataBase)}<span style="color: #6c757d; font-style: italic;"> ${DU.calcularDiasRestantes(dataBase)}</span></div>
-                    <div style="color: #0056b3;"><strong>Prazo Interno:</strong> ${DU.formatarData(prazoFinal)}<span style="color: #6c757d; font-style: italic;"> ${DU.calcularDiasRestantes(prazoFinal)}</span></div>
-                    <div style="color: #c82333;"><strong>Cobrança Interna em:</strong> ${DU.formatarData(cobrancaFinal)}<span style="color: #6c757d; font-style: italic;"> ${DU.calcularDiasRestantes(cobrancaFinal)}</span></div>
+                    <div style="padding-bottom: 2px; margin-bottom: 2px; border-bottom: 1px dashed #ccc;"><strong>Modo:</strong> ${escapeHtml(modoTexto)}</div>
+                    <div><strong>Cadastro:</strong> ${escapeHtml(demanda.dataCadastro)}<span style="color: #6c757d; font-style: italic;"> ${escapeHtml(DU.calcularDiasRestantes(demanda.dataCadastro))}</span></div>
+                    <div><strong>Prazo Original:</strong> ${escapeHtml(DU.formatarData(dataBase))}<span style="color: #6c757d; font-style: italic;"> ${escapeHtml(DU.calcularDiasRestantes(dataBase))}</span></div>
+                    <div style="color: #0056b3;"><strong>Prazo Interno:</strong> ${escapeHtml(DU.formatarData(prazoFinal))}<span style="color: #6c757d; font-style: italic;"> ${escapeHtml(DU.calcularDiasRestantes(prazoFinal))}</span></div>
+                    <div style="color: #c82333;"><strong>Cobrança Interna em:</strong> ${escapeHtml(DU.formatarData(cobrancaFinal))}<span style="color: #6c757d; font-style: italic;"> ${escapeHtml(DU.calcularDiasRestantes(cobrancaFinal))}</span></div>
                     ${htmlImprorrogavel}
                 `;
                 
@@ -83,6 +90,12 @@
 
     function removerBlocosInseridos() {
         document.querySelectorAll('div[data-calculado="true"]').forEach(container => {
+            container.style.display = '';
+            delete container.dataset.calculado;
+            const nossoBloco = container.nextElementSibling;
+            if (nossoBloco && nossoBloco.style.cssText.includes('border-radius: 5px')) {
+                nossoBloco.remove();
+            }
         });
     }
 

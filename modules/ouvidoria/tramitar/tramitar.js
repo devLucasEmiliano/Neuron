@@ -108,7 +108,7 @@
     async function verificarEstadoAtualEAgir() {
         await carregarConfiguracoes();
 
-        if (window.DateUtils && typeof window.DateUtils.ready.then === 'function') {
+        if (window.DateUtils?.ready && typeof window.DateUtils.ready.then === 'function') {
             await window.DateUtils.ready;
         }
 

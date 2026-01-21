@@ -2,19 +2,77 @@
     'use strict';
     const SCRIPT_ID = 'notificacoes';
     const CONFIG_KEY = 'neuronUserConfig';
-    const STORAGE_KEY_DEMANDAS = 'neuronDemandasMestra';
-    const STORAGE_KEY_CONCLUIDAS = 'neuronDemandasConcluidas';
-    // ----- INÍCIO DA ALTERAÇÃO -----
     const STORAGE_KEY_FILTRO_USUARIO = 'neuronFiltroUsuarioAtivado';
-    // ----- FIM DA ALTERAÇÃO -----
+    const STORAGE_KEY_THEME = 'neuronThemePreference';
 
     let config = {};
     let demandasConcluidas = new Set();
     let memoriaDeDemandas = {};
     let isFeatureActive = false;
-    // ----- INÍCIO DA ALTERAÇÃO -----
-    let filtroUsuarioAtivado = true; // O padrão será começar com o filtro ativado
-    // ----- FIM DA ALTERAÇÃO -----
+    let currentTheme = 'system';
+    let dbInitialized = false;
+
+    function escapeHtml(str) {
+        if (str == null) return '';
+        return String(str).replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[char]);
+    }
+
+    let filtroUsuarioAtivado = true;
+
+    // Theme detection and application
+    function getSystemTheme() {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    function getEffectiveTheme(preference) {
+        if (preference === 'system') {
+            return getSystemTheme();
+        }
+        return preference;
+    }
+
+    function applyTheme(preference) {
+        currentTheme = preference;
+        const effectiveTheme = getEffectiveTheme(preference);
+        const painel = document.getElementById('neuron-notificacao-painel');
+        const trigger = document.getElementById('neuron-notificacao-trigger');
+
+        if (painel) {
+            if (effectiveTheme === 'dark') {
+                painel.classList.add('neuron-dark');
+            } else {
+                painel.classList.remove('neuron-dark');
+            }
+        }
+
+        if (trigger) {
+            if (effectiveTheme === 'dark') {
+                trigger.classList.add('neuron-dark');
+            } else {
+                trigger.classList.remove('neuron-dark');
+            }
+        }
+    }
+
+    async function loadThemePreference() {
+        try {
+            const result = await chrome.storage.local.get(STORAGE_KEY_THEME);
+            const preference = result[STORAGE_KEY_THEME] || 'system';
+            applyTheme(preference);
+        } catch (error) {
+            console.error(`Neuron (${SCRIPT_ID}): Error loading theme preference:`, error);
+            applyTheme('system');
+        }
+    }
+
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (currentTheme === 'system') {
+            applyTheme('system');
+        }
+    });
 
     async function carregarConfiguracoes() {
         const result = await chrome.storage.local.get([CONFIG_KEY, STORAGE_KEY_FILTRO_USUARIO]);
@@ -51,9 +109,6 @@
 
         const painel = document.createElement('div');
         painel.id = 'neuron-notificacao-painel';
-        
-        // ----- INÍCIO DA ALTERAÇÃO -----
-        // Adiciona o HTML do interruptor no cabeçalho do painel
         painel.innerHTML = `
             <div class="neuron-painel-header">
                 <div class="neuron-header-content">
@@ -83,23 +138,6 @@
                 </div>
             </div>
         `;
-        // Adiciona o CSS necessário para o novo interruptor
-        const style = document.createElement('style');
-        style.textContent = `
-            .neuron-painel-header { display: flex; justify-content: space-between; align-items: center; }
-            .neuron-header-content { display: flex; flex-direction: column; }
-            .neuron-filtro-wrapper { display: flex; align-items: center; margin-top: 5px; cursor: pointer; }
-            #neuron-filtro-label { font-size: 12px; color: #555; margin-left: 8px; font-weight: 500;}
-            .neuron-switch { position: relative; display: inline-block; width: 34px; height: 20px; }
-            .neuron-switch input { opacity: 0; width: 0; height: 0; }
-            .neuron-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; }
-            .neuron-slider.round { border-radius: 34px; }
-            .neuron-slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-            input:checked + .neuron-slider { background-color: #28a745; }
-            input:checked + .neuron-slider:before { transform: translateX(14px); }
-        `;
-        document.head.appendChild(style);
-        // ----- FIM DA ALTERAÇÃO -----
 
         document.body.appendChild(painel);
     }
@@ -118,10 +156,14 @@
         setTimeout(() => toast.remove(), 5000);
     }
 
-    function limparLista() {
+    async function limparLista() {
         memoriaDeDemandas = {};
         demandasConcluidas = new Set();
-        chrome.storage.local.remove([STORAGE_KEY_DEMANDAS, STORAGE_KEY_CONCLUIDAS]);
+        try {
+            await NeuronDB.clearAll();
+        } catch (error) {
+            console.error(`Neuron (${SCRIPT_ID}): Error clearing data:`, error);
+        }
         renderizarPainel();
         fecharConfirmacaoLimpar();
     }
@@ -133,19 +175,55 @@
 
     async function inicializarDadosNotificacoes() {
         await carregarConfiguracoes();
-        chrome.storage.local.get([STORAGE_KEY_CONCLUIDAS, STORAGE_KEY_DEMANDAS], (result) => {
-            demandasConcluidas = new Set(result[STORAGE_KEY_CONCLUIDAS] || []);
-            memoriaDeDemandas = result[STORAGE_KEY_DEMANDAS] || {};
+        try {
+            // Initialize NeuronDB and run migration if needed
+            await NeuronDB.init();
+
+            // Check if migration is needed (first time using IndexedDB)
+            if (await NeuronDB.needsMigration()) {
+                await NeuronDB.migrateFromChromeStorage();
+            }
+
+            // Load data from IndexedDB
+            const [demandas, concluidas] = await Promise.all([
+                NeuronDB.getAllDemandasAsObject(),
+                NeuronDB.getConcluidas()
+            ]);
+
+            memoriaDeDemandas = demandas;
+            demandasConcluidas = concluidas;
+            dbInitialized = true;
+
             renderizarPainel();
-        });
+        } catch (error) {
+            console.error(`Neuron (${SCRIPT_ID}): Error loading data from IndexedDB:`, error);
+            // Fallback: initialize with empty data
+            memoriaDeDemandas = {};
+            demandasConcluidas = new Set();
+            renderizarPainel();
+        }
     }
 
-    const handleDadosExtraidos = (event) => {
+    const handleDadosExtraidos = async (event) => {
         if (!event.detail || !Array.isArray(event.detail)) return;
+
+        const newDemandas = [];
         event.detail.forEach(demanda => {
-            if (demanda && demanda.numero) memoriaDeDemandas[demanda.numero] = demanda;
+            if (demanda && demanda.numero) {
+                memoriaDeDemandas[demanda.numero] = demanda;
+                newDemandas.push(demanda);
+            }
         });
-        chrome.storage.local.set({ [STORAGE_KEY_DEMANDAS]: memoriaDeDemandas });
+
+        // Save to IndexedDB
+        if (newDemandas.length > 0) {
+            try {
+                await NeuronDB.saveDemandas(newDemandas);
+            } catch (error) {
+                console.error(`Neuron (${SCRIPT_ID}): Error saving demandas:`, error);
+            }
+        }
+
         renderizarPainel();
     };
 
@@ -153,15 +231,13 @@
         const target = event.target;
         const targetId = target.id;
 
-        // ----- INÍCIO DA ALTERAÇÃO -----
-        // Lógica para o novo interruptor de filtro
+        // Handle filter toggle
         if (targetId === 'neuron-filtro-usuario-toggle') {
             filtroUsuarioAtivado = target.checked;
             chrome.storage.local.set({ [STORAGE_KEY_FILTRO_USUARIO]: filtroUsuarioAtivado });
-            renderizarPainel(); // Re-renderiza o painel com a nova preferência
-            return; // Interrompe para não fechar o painel
+            renderizarPainel();
+            return;
         }
-        // ----- FIM DA ALTERAÇÃO -----
 
         if (targetId === 'neuron-notificacao-trigger' || target.closest('#neuron-notificacao-trigger')) {
             const painel = document.getElementById('neuron-notificacao-painel');
@@ -193,32 +269,25 @@
         const corpoDoPainel = document.getElementById('neuron-painel-body');
         if (!corpoDoPainel) return;
 
-        // ----- INÍCIO DA ALTERAÇÃO -----
-        // Atualiza o estado visual do interruptor e do seu texto
+        // Update toggle visual state
         const toggle = document.getElementById('neuron-filtro-usuario-toggle');
         const label = document.getElementById('neuron-filtro-label');
         if (toggle) toggle.checked = filtroUsuarioAtivado;
         if (label) label.textContent = filtroUsuarioAtivado ? 'Minhas Demandas' : 'Todas as Demandas';
-        // ----- FIM DA ALTERAÇÃO -----
 
         const usuarioLogado = getUsuarioLogado();
 
         const notificacoesRelevantes = Object.values(memoriaDeDemandas).filter(demanda => {
-            // ----- INÍCIO DA ALTERAÇÃO -----
-            // A lógica de filtro agora depende do estado do interruptor
-            let isDoUsuario = true; // Começa assumindo que a demanda deve ser mostrada
-            if (filtroUsuarioAtivado) { // Se o filtro estiver LIGADO
+            let isDoUsuario = true;
+            if (filtroUsuarioAtivado) {
                 if (!usuarioLogado || !Array.isArray(demanda.responsaveis) || demanda.responsaveis.length === 0) {
-                    isDoUsuario = false; // Se não tem como verificar, esconde
+                    isDoUsuario = false;
                 } else {
-                    // Verifica se o nome do usuário está na lista de responsáveis
                     isDoUsuario = demanda.responsaveis.some(
-                        resp => resp.trim().toLowerCase() === usuarioLogado.trim().toLowerCase()
+                        resp => resp && typeof resp === 'string' && resp.trim().toLowerCase() === usuarioLogado.trim().toLowerCase()
                     );
                 }
             }
-            // ----- FIM DA ALTERAÇÃO -----
-            
             return isDoUsuario && isNotificacaoRelevante(demanda);
         });
 
@@ -228,10 +297,10 @@
             grupoHtml += `<div class="neuron-grupo-lista collapsed">`;
             lista.forEach(d => {
                 const isDone = demandasConcluidas.has(d.numero);
-                let detalheTexto = (detalheExtra === 'prazo' && d.diasRestantes != null) ? `<span class="neuron-link-detalhe">Prazo em ${d.diasRestantes} dias</span>` : '';
+                let detalheTexto = (detalheExtra === 'prazo' && d.diasRestantes != null) ? `<span class="neuron-link-detalhe">Prazo em ${escapeHtml(d.diasRestantes)} dias</span>` : '';
                 grupoHtml += `
-                    <div class="neuron-item-notificacao ${isDone ? 'done' : ''}" data-numero="${d.numero}">
-                        <div class="neuron-link-wrapper" data-href="${d.href || '#'}"><span class="neuron-link-numero">${d.numero}</span>${detalheTexto}</div>
+                    <div class="neuron-item-notificacao ${isDone ? 'done' : ''}" data-numero="${escapeHtml(d.numero)}">
+                        <div class="neuron-link-wrapper" data-href="${escapeHtml(d.href || '#')}"><span class="neuron-link-numero">${escapeHtml(d.numero)}</span>${detalheTexto}</div>
                         <input type="checkbox" class="neuron-done-check" title="Marcar como concluído" ${isDone ? 'checked' : ''}>
                     </div>`;
             });
@@ -285,15 +354,23 @@
             });
 
             const checkbox = item.querySelector('.neuron-done-check');
-            checkbox.addEventListener('change', (e) => {
-                if (e.target.checked) {
+            checkbox.addEventListener('change', async (e) => {
+                const isDone = e.target.checked;
+                if (isDone) {
                     demandasConcluidas.add(numero);
                     item.classList.add('done');
                 } else {
                     demandasConcluidas.delete(numero);
                     item.classList.remove('done');
                 }
-                chrome.storage.local.set({ [STORAGE_KEY_CONCLUIDAS]: Array.from(demandasConcluidas) });
+
+                // Save to IndexedDB
+                try {
+                    await NeuronDB.markConcluida(numero, isDone);
+                } catch (error) {
+                    console.error(`Neuron (${SCRIPT_ID}): Error marking concluida:`, error);
+                }
+
                 atualizarContadorEIcone();
             });
         });
@@ -306,15 +383,13 @@
         
         const usuarioLogado = getUsuarioLogado();
         const naoConcluidas = Object.values(memoriaDeDemandas).filter(d => {
-            // ----- INÍCIO DA ALTERAÇÃO -----
             let isDoUsuario = true;
             if (filtroUsuarioAtivado) {
                 if (!usuarioLogado || !Array.isArray(d.responsaveis) || d.responsaveis.length === 0) return false;
                 isDoUsuario = d.responsaveis.some(
-                    resp => resp.trim().toLowerCase() === usuarioLogado.trim().toLowerCase()
+                    resp => resp && typeof resp === 'string' && resp.trim().toLowerCase() === usuarioLogado.trim().toLowerCase()
                 );
             }
-            // ----- FIM DA ALTERAÇÃO -----
             return isDoUsuario && isNotificacaoRelevante(d) && !demandasConcluidas.has(d.numero);
         });
 
@@ -352,9 +427,13 @@
         if (!dataString) return null;
         const partes = dataString.split('/');
         if (partes.length !== 3) return null;
-        const dataAlvo = new Date(partes[2], partes[1] - 1, partes[0]);
+        const dia = parseInt(partes[0], 10);
+        const mes = parseInt(partes[1], 10) - 1;
+        const ano = parseInt(partes[2], 10);
+        if (isNaN(dia) || isNaN(mes) || isNaN(ano)) return null;
+        const dataAlvo = new Date(ano, mes, dia);
         if (isNaN(dataAlvo.getTime())) return null;
-        
+
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
 
@@ -363,10 +442,11 @@
 
     async function ativarFuncionalidade() {
         if (isFeatureActive) return;
-        await carregarConfiguracoes(); // Carrega as configurações antes de criar a UI
+        await carregarConfiguracoes();
         criarUI();
+        await loadThemePreference(); // Apply theme after UI is created
         document.addEventListener('click', handleUiInteraction);
-        document.addEventListener('change', handleUiInteraction); // Adiciona listener para o toggle
+        document.addEventListener('change', handleUiInteraction);
         document.addEventListener('dadosExtraidosNeuron', handleDadosExtraidos);
         inicializarDadosNotificacoes();
         isFeatureActive = true;
@@ -396,8 +476,14 @@
     }
 
     chrome.storage.onChanged.addListener((changes, namespace) => {
-        if (namespace === 'local' && (changes[CONFIG_KEY] || changes[STORAGE_KEY_FILTRO_USUARIO])) {
-            verificarEstadoAtualEAgir();
+        if (namespace === 'local') {
+            if (changes[CONFIG_KEY] || changes[STORAGE_KEY_FILTRO_USUARIO]) {
+                verificarEstadoAtualEAgir();
+            }
+            // React to theme changes from popup/options
+            if (changes[STORAGE_KEY_THEME] && isFeatureActive) {
+                applyTheme(changes[STORAGE_KEY_THEME].newValue || 'system');
+            }
         }
     });
 

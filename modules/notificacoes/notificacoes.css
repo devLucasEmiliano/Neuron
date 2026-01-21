@@ -1,23 +1,102 @@
+/* Neuron Notificacoes - Content Script Styles
+   All selectors prefixed with #neuron- or .neuron- for isolation */
+
+/* ========== CSS Custom Properties ========== */
+:root {
+    /* Light theme (default) */
+    --neuron-panel-bg: #ffffff;
+    --neuron-panel-border: #dee2e6;
+    --neuron-header-bg: #f8f9fa;
+    --neuron-body-bg: #fdfdfd;
+    --neuron-text-primary: #212529;
+    --neuron-text-secondary: #6c757d;
+    --neuron-text-muted: #adb5bd;
+    --neuron-border-color: #dee2e6;
+    --neuron-border-light: #f1f1f1;
+    --neuron-link-color: #0056b3;
+    --neuron-link-hover: #003d80;
+    --neuron-accent-color: #e85d04;
+    --neuron-group-bg: #e9ecef;
+    --neuron-group-hover: #d1d9e0;
+    --neuron-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    --neuron-shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.2);
+
+    /* Status colors */
+    --neuron-ok: #28a745;
+    --neuron-warning: #ffc107;
+    --neuron-danger: #dc3545;
+    --neuron-primary: #007bff;
+    --neuron-primary-hover: #0056b3;
+
+    /* Toast */
+    --neuron-toast-bg: #ffc107;
+    --neuron-toast-text: #333;
+
+    /* Modal overlay */
+    --neuron-modal-overlay: rgba(255, 255, 255, 0.95);
+}
+
+/* ========== Dark Theme ========== */
+.neuron-dark {
+    --neuron-panel-bg: #1a1d21;
+    --neuron-panel-border: #495057;
+    --neuron-header-bg: #212529;
+    --neuron-body-bg: #1e2125;
+    --neuron-text-primary: #e9ecef;
+    --neuron-text-secondary: #adb5bd;
+    --neuron-text-muted: #6c757d;
+    --neuron-border-color: #495057;
+    --neuron-border-light: #343a40;
+    --neuron-link-color: #6ea8fe;
+    --neuron-link-hover: #9ec5fe;
+    --neuron-accent-color: #ff9e6d;
+    --neuron-group-bg: #2b3035;
+    --neuron-group-hover: #343a40;
+    --neuron-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+    --neuron-shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.5);
+
+    /* Status colors - slightly adjusted for dark mode */
+    --neuron-ok: #75b798;
+    --neuron-warning: #ffda6a;
+    --neuron-danger: #ea868f;
+    --neuron-primary: #6ea8fe;
+    --neuron-primary-hover: #9ec5fe;
+
+    /* Toast */
+    --neuron-toast-bg: #3d3a1f;
+    --neuron-toast-text: #ffda6a;
+
+    /* Modal overlay */
+    --neuron-modal-overlay: rgba(26, 29, 33, 0.95);
+}
+
+/* ========== Trigger Button (FAB) ========== */
 #neuron-notificacao-trigger {
     position: fixed;
     bottom: 25px;
     right: 25px;
     width: 60px;
     height: 60px;
-    background-color: #007bff;
+    background-color: var(--neuron-primary);
     color: white;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--neuron-shadow-lg);
     z-index: 9998;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    border: none;
 }
 
 #neuron-notificacao-trigger:hover {
     transform: scale(1.1);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+}
+
+#neuron-notificacao-trigger:active {
+    transform: scale(1.05);
 }
 
 #neuron-notificacao-trigger.pulsating {
@@ -25,60 +104,81 @@
 }
 
 #neuron-notificacao-trigger.status-ok {
-    background-color: #28a745;
-}
-#neuron-notificacao-trigger.status-warning {
-    background-color: #ffc107;
-}
-#neuron-notificacao-trigger.status-danger {
-    background-color: #dc3545;
+    background-color: var(--neuron-ok);
 }
 
+#neuron-notificacao-trigger.status-warning {
+    background-color: var(--neuron-warning);
+}
+
+#neuron-notificacao-trigger.status-danger {
+    background-color: var(--neuron-danger);
+}
+
+/* ========== Badge Counter ========== */
 .neuron-contador {
     position: absolute;
-    top: 0px;
-    right: 0px;
-    background-color: #dc3545;
+    top: -2px;
+    right: -2px;
+    background-color: var(--neuron-danger);
     color: white;
-    border-radius: 50%;
-    padding: 2px 6px;
+    border-radius: 12px;
+    padding: 2px 8px;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 600;
     border: 2px solid white;
-    min-width: 22px;
+    min-width: 24px;
     text-align: center;
     box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.4;
 }
 
+.neuron-dark .neuron-contador {
+    border-color: var(--neuron-panel-bg);
+}
+
+/* ========== Panel Container ========== */
 #neuron-notificacao-painel {
     position: fixed;
     bottom: 100px;
     right: 25px;
-    width: 350px;
+    width: 380px;
     max-height: 600px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+    background-color: var(--neuron-panel-bg);
+    border-radius: 12px;
+    box-shadow: var(--neuron-shadow-lg);
     z-index: 9999;
     display: none;
     flex-direction: column;
     overflow: hidden;
-    border: 1px solid #ddd;
+    border: 1px solid var(--neuron-panel-border);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
+/* ========== Panel Header ========== */
 .neuron-painel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 15px;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+    padding: 12px 16px;
+    background-color: var(--neuron-header-bg);
+    border-bottom: 1px solid var(--neuron-border-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .neuron-painel-header h4 {
     margin: 0;
     font-size: 16px;
-    color: #333;
+    font-weight: 600;
+    color: var(--neuron-text-primary);
+    transition: color 0.3s ease;
+}
+
+.neuron-header-content {
+    display: flex;
+    flex-direction: column;
 }
 
 .neuron-painel-close {
@@ -86,34 +186,137 @@
     border: none;
     font-size: 24px;
     cursor: pointer;
-    color: #6c757d;
+    color: var(--neuron-text-secondary);
     padding: 0 5px;
-}
-.neuron-painel-close:hover {
-    color: #343a40;
+    line-height: 1;
+    transition: color 0.2s ease, transform 0.2s ease;
+    border-radius: 4px;
 }
 
+.neuron-painel-close:hover {
+    color: var(--neuron-text-primary);
+    transform: scale(1.1);
+}
+
+/* ========== Filter Toggle ========== */
+.neuron-filtro-wrapper {
+    display: flex;
+    align-items: center;
+    margin-top: 6px;
+    cursor: pointer;
+}
+
+#neuron-filtro-label {
+    font-size: 12px;
+    color: var(--neuron-text-secondary);
+    margin-left: 8px;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.neuron-switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+}
+
+.neuron-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.neuron-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--neuron-text-muted);
+    transition: background-color 0.3s ease;
+}
+
+.neuron-slider.round {
+    border-radius: 20px;
+}
+
+.neuron-slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: transform 0.3s ease;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+input:checked + .neuron-slider {
+    background-color: var(--neuron-ok);
+}
+
+input:checked + .neuron-slider:before {
+    transform: translateX(16px);
+}
+
+/* ========== Panel Body ========== */
 .neuron-painel-body {
     flex-grow: 1;
     overflow-y: auto;
-    padding: 10px;
-    background-color: #fdfdfd;
+    padding: 12px;
+    background-color: var(--neuron-body-bg);
+    color: var(--neuron-text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.neuron-grupo-header {
-    background-color: #e9ecef;
-    padding: 8px 12px;
-    margin-top: 8px;
+.neuron-painel-body p {
+    margin: 0;
+    padding: 16px;
+    text-align: center;
+    color: var(--neuron-text-secondary);
+}
+
+/* Custom scrollbar for panel body */
+.neuron-painel-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.neuron-painel-body::-webkit-scrollbar-track {
+    background: var(--neuron-body-bg);
     border-radius: 4px;
+}
+
+.neuron-painel-body::-webkit-scrollbar-thumb {
+    background: var(--neuron-text-muted);
+    border-radius: 4px;
+}
+
+.neuron-painel-body::-webkit-scrollbar-thumb:hover {
+    background: var(--neuron-text-secondary);
+}
+
+/* ========== Group Header (Collapsible) ========== */
+.neuron-grupo-header {
+    background-color: var(--neuron-group-bg);
+    padding: 10px 14px;
+    margin-top: 10px;
+    border-radius: 8px;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
     transition: background-color 0.2s ease;
+    user-select: none;
 }
+
 .neuron-grupo-header:hover {
-    background-color: #d1d9e0;
+    background-color: var(--neuron-group-hover);
 }
+
 .neuron-grupo-header:first-child {
     margin-top: 0;
 }
@@ -122,209 +325,267 @@
     margin: 0;
     font-size: 14px;
     font-weight: 600;
+    color: var(--neuron-text-primary);
+    transition: color 0.3s ease;
 }
 
 .neuron-grupo-header::after {
-    content: '▲'; 
-    font-size: 12px;
-    transition: transform 0.3s ease;
+    content: '\25B2';
+    font-size: 10px;
+    color: var(--neuron-text-secondary);
+    transition: transform 0.3s ease, color 0.3s ease;
 }
+
 .neuron-grupo-header.open::after {
     transform: rotate(180deg);
 }
 
+/* ========== Group List (Collapsible Content) ========== */
 .neuron-grupo-lista {
-    padding-left: 10px;
-    border-left: 2px solid #e9ecef;
-    margin-top: 8px;
+    padding-left: 12px;
+    border-left: 3px solid var(--neuron-primary);
+    margin-top: 10px;
     max-height: 500px;
     overflow: hidden;
-    transition: max-height 0.4s ease-in-out;
+    transition: max-height 0.4s ease-in-out, margin-top 0.3s ease;
 }
+
 .neuron-grupo-lista.collapsed {
     max-height: 0;
     margin-top: 0;
-    padding-left: 10px;
+    padding-left: 12px;
 }
 
+/* ========== Notification Item ========== */
 .neuron-item-notificacao {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 5px;
-    border-bottom: 1px solid #f1f1f1;
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--neuron-border-light);
+    transition: background-color 0.2s ease, border-color 0.3s ease;
+    border-radius: 4px;
 }
+
 .neuron-item-notificacao:last-child {
     border-bottom: none;
 }
 
+.neuron-item-notificacao:hover {
+    background-color: var(--neuron-group-bg);
+}
+
+/* ========== Link Wrapper ========== */
 .neuron-link-wrapper {
     flex-grow: 1;
     cursor: pointer;
     display: flex;
     flex-direction: column;
+    padding-right: 10px;
 }
 
 .neuron-link-numero {
     font-size: 14px;
-    color: #0056b3;
+    color: var(--neuron-link-color);
     font-weight: 500;
     transition: color 0.2s ease;
 }
+
 .neuron-link-wrapper:hover .neuron-link-numero {
-    color: #003d80;
+    color: var(--neuron-link-hover);
     text-decoration: underline;
 }
 
 .neuron-link-detalhe {
     font-size: 12px;
-    color: #e85d04;
-    font-weight: bold;
+    color: var(--neuron-accent-color);
+    font-weight: 600;
+    margin-top: 2px;
+    transition: color 0.3s ease;
 }
 
+/* ========== Done Checkbox ========== */
 .neuron-done-check {
     margin-left: 10px;
     cursor: pointer;
-    transform: scale(1.2);
+    width: 18px;
+    height: 18px;
+    accent-color: var(--neuron-primary);
+}
+
+/* ========== Done State ========== */
+.neuron-item-notificacao.done {
+    opacity: 0.7;
 }
 
 .neuron-item-notificacao.done .neuron-link-numero,
 .neuron-item-notificacao.done .neuron-link-detalhe {
     text-decoration: line-through;
-    color: #6c757d;
+    color: var(--neuron-text-muted);
     font-weight: normal;
 }
 
+/* ========== Panel Footer ========== */
 .neuron-painel-footer {
-    padding: 10px;
-    border-top: 1px solid #dee2e6;
-    background-color: #f8f9fa;
+    padding: 12px;
+    border-top: 1px solid var(--neuron-border-color);
+    background-color: var(--neuron-header-bg);
     display: flex;
     justify-content: space-around;
     gap: 10px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .neuron-footer-btn {
     flex-grow: 1;
-    border: 1px solid #ced4da;
-    background-color: #fff;
-    padding: 8px 12px;
-    border-radius: 5px;
+    border: 1px solid var(--neuron-border-color);
+    background-color: var(--neuron-panel-bg);
+    color: var(--neuron-text-primary);
+    padding: 10px 14px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 13px;
     font-weight: 500;
     transition: all 0.2s ease;
+    font-family: inherit;
 }
+
 .neuron-footer-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.neuron-footer-btn:active {
+    transform: translateY(0);
 }
 
 .neuron-btn-atualizar:hover {
-    background-color: #e9ecef;
-    border-color: #adb5bd;
+    background-color: var(--neuron-group-bg);
+    border-color: var(--neuron-text-muted);
 }
 
 .neuron-btn-limpar {
-    background-color: #f8d7da;
-    color: #721c24;
-    border-color: #f5c6cb;
-}
-.neuron-btn-limpar:hover {
-    background-color: #f1b0b7;
-    border-color: #f5c6cb;
+    background-color: rgba(220, 53, 69, 0.1);
+    color: var(--neuron-danger);
+    border-color: var(--neuron-danger);
 }
 
+.neuron-dark .neuron-btn-limpar {
+    background-color: rgba(234, 134, 143, 0.15);
+}
+
+.neuron-btn-limpar:hover {
+    background-color: var(--neuron-danger);
+    color: white;
+    border-color: var(--neuron-danger);
+}
+
+/* ========== Toast Notification ========== */
 .neuron-toast-aviso {
     position: fixed;
     top: 20px;
     right: 20px;
-    background-color: #ffc107;
-    color: #333;
-    padding: 15px 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    background-color: var(--neuron-toast-bg);
+    color: var(--neuron-toast-text);
+    padding: 16px 20px;
+    border-radius: 10px;
+    box-shadow: var(--neuron-shadow-lg);
     z-index: 10000;
     display: flex;
     align-items: center;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    font-size: 15px;
+    font-size: 14px;
+    font-weight: 500;
     opacity: 0;
     transform: translateX(100%);
     animation: neuron-toast-in 0.5s forwards, neuron-toast-out 0.5s 4.5s forwards;
 }
 
 .neuron-toast-aviso::before {
-    content: '⚠️';
+    content: '\26A0\FE0F';
     font-size: 20px;
     margin-right: 12px;
 }
 
+/* ========== Confirmation Modal ========== */
 .neuron-confirm-modal {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: var(--neuron-modal-overlay);
     z-index: 10001;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 15px;
-    padding: 20px;
+    gap: 20px;
+    padding: 24px;
     text-align: center;
+    transition: background-color 0.3s ease;
 }
 
 .neuron-confirm-mensagem {
-    font-size: 16px;
-    color: #333;
+    font-size: 15px;
+    color: var(--neuron-text-primary);
     font-weight: 500;
     margin-bottom: 0;
+    line-height: 1.5;
+    transition: color 0.3s ease;
 }
 
 .neuron-confirm-botoes {
     display: flex;
-    gap: 15px;
+    gap: 12px;
     width: 100%;
     justify-content: center;
 }
 
 .neuron-btn {
-    padding: 10px 15px;
-    border-radius: 5px;
+    padding: 12px 20px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    border: 1px solid #ced4da;
-    background-color: #f8f9fa;
-    color: #495057;
+    font-weight: 500;
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--neuron-border-color);
+    background-color: var(--neuron-panel-bg);
+    color: var(--neuron-text-primary);
     text-align: center;
     text-decoration: none;
     flex-grow: 1;
-    max-width: 150px;
+    max-width: 140px;
+    font-family: inherit;
 }
+
+.neuron-btn:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 .neuron-btn:active {
     transform: scale(0.98);
 }
 
 .neuron-btn-perigo {
-    background-color: #dc3545;
+    background-color: var(--neuron-danger);
     color: white;
-    border-color: #dc3545;
+    border-color: var(--neuron-danger);
 }
+
 .neuron-btn-perigo:hover {
     background-color: #c82333;
     border-color: #bd2130;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);
 }
 
+/* ========== Animations ========== */
 @keyframes neuron-pulse {
     0% {
         box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
     }
     70% {
-        box-shadow: 0 0 0 15px rgba(255, 193, 7, 0);
+        box-shadow: 0 0 0 18px rgba(255, 193, 7, 0);
     }
     100% {
         box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
@@ -346,5 +607,22 @@
     to {
         opacity: 0;
         transform: translateX(100%);
+    }
+}
+
+/* ========== Responsive Adjustments ========== */
+@media (max-width: 420px) {
+    #neuron-notificacao-painel {
+        width: calc(100vw - 20px);
+        right: 10px;
+        bottom: 90px;
+        max-height: calc(100vh - 120px);
+    }
+
+    #neuron-notificacao-trigger {
+        width: 52px;
+        height: 52px;
+        right: 15px;
+        bottom: 15px;
     }
 }

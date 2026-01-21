@@ -103,6 +103,7 @@
                 onMutation();
             }
         } else {
+            clearTimeout(debounceTimer);
             if (observer) {
                 observer.disconnect();
                 observer = null;

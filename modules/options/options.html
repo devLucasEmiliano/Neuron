@@ -1,166 +1,507 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-bs-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <title>Neuron - Opções de Configuração</title>
-  <link rel="stylesheet" href="/modules/options/options.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuron - Configuracoes</title>
+    <link rel="stylesheet" href="../../lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../lib/bootstrap/icons/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../../shared/css/theme.css">
+    <link rel="stylesheet" href="options.css">
+    <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
-  <div class="container">
-    <header class="options-header">
-      <img src="/images/neuronon128.png" alt="Neuron Logo" id="headerLogo" />
-      <div class="header-text">
-        <h1>Neuron - Configurações Avançadas</h1>
-        <p>Personalize o comportamento detalhado da extensão Neuron.</p>
-      </div>
+    <!-- Header -->
+    <header class="options-header border-bottom">
+        <div class="d-flex align-items-center">
+            <img src="../../images/neuronon128.png" alt="Neuron" width="40" height="40" class="me-3">
+            <div>
+                <h1 class="h5 mb-0 text-neuron-primary fw-bold">Neuron</h1>
+                <p class="text-body-secondary mb-0 small d-none d-sm-block">Configuracoes Avancadas</p>
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline-secondary btn-theme-toggle" id="themeToggle" title="Alternar tema">
+            <i class="bi bi-moon-fill" id="themeIcon"></i>
+        </button>
     </header>
-    <nav class="tabs">
-      <button class="tab-link active" data-tab="tab-general">Geral</button>
-      <button class="tab-link" data-tab="tab-prazos">Prazos & Feriados</button>
-      <button class="tab-link" data-tab="tab-respostas">Respostas Automáticas</button>
-      <button class="tab-link" data-tab="tab-textos">Modelos de Texto</button>
-      <button class="tab-link" data-tab="tab-pontosfocais">Pontos Focais</button>
-      <button class="tab-link" data-tab="tab-config-raw">Configuração JSON</button>
-    </nav>
 
-    <main class="options-content">
-      <section id="tab-general" class="tab-content active">
-        <h2>Configurações Gerais</h2>
-        <div class="setting-item master-switch">
-          <label for="masterEnableOptions">Habilitar Neuron Globalmente</label>
-          <input type="checkbox" id="masterEnableOptions" name="masterEnableOptions" />
-        </div>
-        <hr>
-        <h3>Configurações de Funcionalidades:</h3>
-        <div class="setting-item">
-          <label for="qtdItensTratarTriar">Itens por Página (Telas Triar/Tratar):</label>
-          <input type="number" id="qtdItensTratarTriar" name="qtdItensTratarTriar" min="5" max="100" step="5"/>
-        </div>
-      </section>
+    <div class="options-layout">
+        <!-- Sidebar Navigation -->
+        <nav class="options-sidebar" id="optionsSidebar">
+            <ul class="sidebar-nav" role="tablist">
+                <li class="sidebar-nav-item" role="presentation">
+                    <a href="#section-dashboard" class="sidebar-nav-link active" data-section="dashboard" role="tab" aria-selected="true">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item" role="presentation">
+                    <a href="#section-general" class="sidebar-nav-link" data-section="general" role="tab">
+                        <i class="bi bi-gear"></i>
+                        <span>Geral</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item" role="presentation">
+                    <a href="#section-prazos" class="sidebar-nav-link" data-section="prazos" role="tab">
+                        <i class="bi bi-calendar-event"></i>
+                        <span>Prazos</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item" role="presentation">
+                    <a href="#section-respostas" class="sidebar-nav-link" data-section="respostas" role="tab">
+                        <i class="bi bi-chat-dots"></i>
+                        <span>Respostas</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item" role="presentation">
+                    <a href="#section-textos" class="sidebar-nav-link" data-section="textos" role="tab">
+                        <i class="bi bi-file-text"></i>
+                        <span>Modelos</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item" role="presentation">
+                    <a href="#section-pontosfocais" class="sidebar-nav-link" data-section="pontosfocais" role="tab">
+                        <i class="bi bi-people"></i>
+                        <span>Pontos Focais</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item" role="presentation">
+                    <a href="#section-json" class="sidebar-nav-link" data-section="json" role="tab">
+                        <i class="bi bi-code-slash"></i>
+                        <span>JSON</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
 
-      <section id="tab-prazos" class="tab-content">
-         <h2>Configurações de Prazos e Feriados</h2>
-         
-         <h3>Prazos para Tela Tratar/Triar (Novo)</h3>
-         <div class="prazo-group">
-            <div class="setting-item">
-                <label for="tratarNovoPrazoInternoDias">Offset para Prazo Interno (dias):</label>
-                <input type="number" id="tratarNovoPrazoInternoDias" name="tratarNovoPrazoInternoDias">
-            </div>
-            <div class="setting-item">
-                <label for="tratarNovoCobrancaInternaDias">Offset para Cobrança Interna (dias):</label>
-                <input type="number" id="tratarNovoCobrancaInternaDias" name="tratarNovoCobrancaInternaDias">
-            </div>
-            <div class="setting-item">
-              <label for="tratarNovoModoCalculo">Modo de Cálculo de Offset:</label>
-              <select id="tratarNovoModoCalculo" name="tratarNovoModoCalculo">
-                <option value="diasCorridos">Dias Corridos</option>
-                <option value="diasUteis">Dias Úteis</option>
-              </select>
-            </div>
-            <div class="setting-item">
-              <label for="tratarNovoAjusteFds">Ajuste de Data (Fim de Semana):</label>
-              <select id="tratarNovoAjusteFds" name="tratarNovoAjusteFds">
-                <option value="modo1">Anterior (Sáb/Dom -> Sex)</option>
-                <option value="modo2">Próximo (Sáb/Dom -> Seg)</option>
-                <option value="modo3">Dividido (Sáb -> Sex, Dom -> Seg)</option>
-                <option value="none">Não ajustar</option>
-              </select>
-            </div>
-            <div class="setting-item">
-              <label for="tratarNovoAjusteFeriado">Ajuste de Data (Feriados):</label>
-              <select id="tratarNovoAjusteFeriado" name="tratarNovoAjusteFeriado">
-                <option value="proximo_dia">Mover para Próximo Dia Útil</option>
-                <option value="dia_anterior">Mover para Dia Útil Anterior</option>
-                <option value="none">Não ajustar</option>
-              </select>
-            </div>
-         </div>
-         <hr>
+        <!-- Main Content -->
+        <main class="options-content">
+            <!-- Dashboard Section -->
+            <section id="section-dashboard" class="options-section active" role="tabpanel">
+                <div class="section-header">
+                    <h2 class="h5 text-neuron-primary mb-0">
+                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                    </h2>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="refreshDashboard" title="Atualizar dados">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
 
-         <h3>Configuração de Feriados</h3>
-         <div class="holiday-manager">
-          <div class="holiday-input-group">
-            <input type="text" id="holidayInput" placeholder="DD/MM/AAAA">
-            <input type="text" id="holidayDescriptionInput" placeholder="Descrição do Feriado">
-            <button id="addHolidayButton" class="add-button">Adicionar</button>
-          </div>
-          <ul id="holidaysList"></ul>
-        </div>
-        <div id="holidaysStatus" class="status-message"></div>
-         <div class="action-buttons">
-            <button id="saveHolidaysButton" class="save-button">Salvar Feriados</button>
-            <button id="resetHolidaysButton" class="reset-button">Restaurar Padrão</button>
-        </div>
-      </section>
+                <!-- Stats Cards -->
+                <div class="dashboard-stats row g-3 mb-4">
+                    <div class="col-6 col-lg-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-primary-subtle">
+                                <i class="bi bi-inbox-fill text-primary"></i>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-value" id="stat-total">--</span>
+                                <span class="stat-label">Total Demandas</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-warning-subtle">
+                                <i class="bi bi-hourglass-split text-warning"></i>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-value" id="stat-pendentes">--</span>
+                                <span class="stat-label">Pendentes</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-danger-subtle">
+                                <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-value" id="stat-urgentes">--</span>
+                                <span class="stat-label">Prazos Curtos</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-success-subtle">
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-value" id="stat-taxa">--%</span>
+                                <span class="stat-label">Taxa Conclusao</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-      <section id="tab-respostas" class="tab-content">
-        <h2>Editar Respostas Automáticas</h2>
-        <select id="selectTipoRespostaConfig"></select>
-        <div id="optionsContainer" style="display: none;">
-          <h3>Opções para: <span id="currentTipoResposta"></span></h3>
-          <div id="dropdownOptionsList"></div>
-          <div class="action-buttons">
-            <button id="addOptionBtn" class="add-button">Adicionar Nova Opção</button>
-            <button id="saveResponsesBtn" class="save-button">Salvar Respostas</button>
-            <button id="resetResponsesBtn" class="reset-button">Restaurar Padrão</button>
-          </div>
-          <div id="respostasStatus" class="status-message"></div>
-        </div>
-      </section>
-      <section id="tab-textos" class="tab-content">
-        <h2>Editar Modelos de Texto</h2>
-        <select id="selectTextModelCategory"></select>
-        <div id="textModelsContainer" style="display: none;">
-          <h3>Modelos para: <span id="currentTextModelCategory"></span></h3>
-          <div id="textModelsList"></div>
-          <div class="action-buttons">
-            <button id="addTextModelBtn" class="add-button">Adicionar Novo Modelo</button>
-            <button id="saveTextModelsBtn" class="save-button">Salvar Modelos</button>
-            <button id="resetTextModelsBtn" class="reset-button">Restaurar Padrão</button>
-          </div>
-          <div id="textModelsStatus" class="status-message"></div>
-        </div>
-      </section>
-      <section id="tab-pontosfocais" class="tab-content">
-        <h2>Editar Pontos Focais</h2>
-        <div id="focalPointsList"></div>
-        <div class="action-buttons">
-          <button id="addFocalPointBtn" class="add-button">Adicionar Ponto Focal</button>
-          <button id="saveFocalPointsBtn" class="save-button">Salvar Pontos Focais</button>
-          <button id="resetFocalPointsBtn" class="reset-button">Restaurar Padrão</button>
-        </div>
-        <div id="focalPointsStatus" class="status-message"></div>
-      </section>
-      <section id="tab-config-raw" class="tab-content">
-        <h2>Configuração JSON Completa (Avançado)</h2>
-        <textarea id="rawConfigJsonEditor" rows="30" spellcheck="false"></textarea>
-        <div class="action-buttons">
-            <button id="saveRawConfigJsonButton" class="save-button">Salvar Configuração</button>
-            <button id="resetRawConfigJsonButton" class="reset-button">Restaurar Padrão Global</button>
-        </div>
-        <div id="rawConfigJsonStatus" class="status-message"></div>
-        <hr>
-        <h3>Importar/Exportar Configurações</h3>
-        <div class="config-management-section">
-            <h4>Exportar Backup</h4>
-            <button id="exportConfigButton" class="action-button export-button">Exportar</button>
-        </div>
-        <div class="config-management-section">
-            <h4>Importar Backup</h4>
-            <input type="file" id="importConfigFileInput" accept=".json">
-            <button id="importConfigButton" class="action-button import-button">Importar</button>
-            <div id="importConfigStatus" class="status-message"></div>
-        </div>
-      </section>
-    </main>
+                <!-- Charts Row -->
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-6">
+                        <div class="chart-card">
+                            <h6 class="chart-title">
+                                <i class="bi bi-pie-chart me-2"></i>Demandas por Status
+                            </h6>
+                            <div class="chart-container">
+                                <canvas id="chart-status"></canvas>
+                            </div>
+                            <div class="chart-empty" id="chart-status-empty" style="display: none;">
+                                <i class="bi bi-inbox"></i>
+                                <p>Nenhum dado disponivel</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="chart-card">
+                            <h6 class="chart-title">
+                                <i class="bi bi-bar-chart me-2"></i>Top Responsaveis
+                            </h6>
+                            <div class="chart-container">
+                                <canvas id="chart-responsaveis"></canvas>
+                            </div>
+                            <div class="chart-empty" id="chart-responsaveis-empty" style="display: none;">
+                                <i class="bi bi-people"></i>
+                                <p>Nenhum dado disponivel</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    <footer class="save-all-footer">
-        <button id="saveAllOptionsButton" class="save-button global-save">Salvar Todas as Alterações</button>
-        <div id="globalStatus" class="status-message"></div>
+                <!-- Deadline Distribution -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="chart-card">
+                            <h6 class="chart-title">
+                                <i class="bi bi-calendar-range me-2"></i>Distribuicao de Prazos
+                            </h6>
+                            <div class="chart-container chart-container-sm">
+                                <canvas id="chart-prazos"></canvas>
+                            </div>
+                            <div class="chart-empty" id="chart-prazos-empty" style="display: none;">
+                                <i class="bi bi-calendar-x"></i>
+                                <p>Nenhum dado disponivel</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- General Section -->
+            <section id="section-general" class="options-section" role="tabpanel">
+                <div class="section-header">
+                    <h2 class="h5 text-neuron-primary mb-0">
+                        <i class="bi bi-gear me-2"></i>Configuracoes Gerais
+                    </h2>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <label for="masterEnableOptions" class="form-label fw-semibold text-neuron-primary mb-0">
+                                    Habilitar Neuron Globalmente
+                                </label>
+                                <small class="d-block text-body-secondary">Ativa ou desativa todas as funcionalidades</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                       id="masterEnableOptions" style="width: 3em; height: 1.5em;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="h6 text-body-secondary mb-3">
+                    <i class="bi bi-sliders me-1"></i>Configuracoes de Funcionalidades
+                </h3>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="qtdItensTratarTriar" class="form-label">
+                            Itens por Pagina (Triar/Tratar)
+                        </label>
+                        <input type="number" class="form-control" id="qtdItensTratarTriar"
+                               min="5" max="100" step="5">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Prazos Section -->
+            <section id="section-prazos" class="options-section" role="tabpanel">
+                <div class="section-header">
+                    <h2 class="h5 text-neuron-primary mb-0">
+                        <i class="bi bi-calendar-event me-2"></i>Prazos e Feriados
+                    </h2>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="h6 mb-0">Prazos para Tela Tratar/Triar</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="tratarNovoPrazoInternoDias" class="form-label">
+                                    Offset para Prazo Interno (dias)
+                                </label>
+                                <input type="number" class="form-control" id="tratarNovoPrazoInternoDias">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="tratarNovoCobrancaInternaDias" class="form-label">
+                                    Offset para Cobranca Interna (dias)
+                                </label>
+                                <input type="number" class="form-control" id="tratarNovoCobrancaInternaDias">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="tratarNovoModoCalculo" class="form-label">
+                                    Modo de Calculo de Offset
+                                </label>
+                                <select class="form-select" id="tratarNovoModoCalculo">
+                                    <option value="diasCorridos">Dias Corridos</option>
+                                    <option value="diasUteis">Dias Uteis</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="tratarNovoAjusteFds" class="form-label">
+                                    Ajuste de Data (Fim de Semana)
+                                </label>
+                                <select class="form-select" id="tratarNovoAjusteFds">
+                                    <option value="modo1">Anterior (Sab/Dom -> Sex)</option>
+                                    <option value="modo2">Proximo (Sab/Dom -> Seg)</option>
+                                    <option value="modo3">Dividido (Sab -> Sex, Dom -> Seg)</option>
+                                    <option value="none">Nao ajustar</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="tratarNovoAjusteFeriado" class="form-label">
+                                    Ajuste de Data (Feriados)
+                                </label>
+                                <select class="form-select" id="tratarNovoAjusteFeriado">
+                                    <option value="proximo_dia">Mover para Proximo Dia Util</option>
+                                    <option value="dia_anterior">Mover para Dia Util Anterior</option>
+                                    <option value="none">Nao ajustar</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="h6 mb-0">Configuracao de Feriados</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2 mb-3">
+                            <div class="col-auto">
+                                <input type="text" class="form-control" id="holidayInput"
+                                       placeholder="DD/MM/AAAA" style="width: 130px;">
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control" id="holidayDescriptionInput"
+                                       placeholder="Descricao do Feriado">
+                            </div>
+                            <div class="col-auto">
+                                <button type="button" class="btn btn-neuron-accent" id="addHolidayButton">
+                                    <i class="bi bi-plus-lg me-1"></i>Adicionar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="list-group list-group-flush holiday-list" id="holidaysList">
+                            <!-- Dynamic content -->
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div id="holidaysStatus"></div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="button" class="btn btn-neuron-primary" id="saveHolidaysButton">
+                                <i class="bi bi-save me-1"></i>Salvar Feriados
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="resetHolidaysButton">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar Padrao
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Respostas Section -->
+            <section id="section-respostas" class="options-section" role="tabpanel">
+                <div class="section-header">
+                    <h2 class="h5 text-neuron-primary mb-0">
+                        <i class="bi bi-chat-dots me-2"></i>Respostas Automaticas
+                    </h2>
+                </div>
+
+                <select class="form-select mb-3" id="selectTipoRespostaConfig">
+                    <option value="">Selecione um tipo de resposta...</option>
+                </select>
+
+                <div id="optionsContainer" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="h6 mb-0">Opcoes para: <span id="currentTipoResposta" class="text-neuron-primary"></span></h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="dropdownOptionsList">
+                                <!-- Dynamic content -->
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div id="respostasStatus"></div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-neuron-accent" id="addOptionBtn">
+                                    <i class="bi bi-plus-lg me-1"></i>Adicionar Nova Opcao
+                                </button>
+                                <button type="button" class="btn btn-neuron-primary" id="saveResponsesBtn">
+                                    <i class="bi bi-save me-1"></i>Salvar Respostas
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="resetResponsesBtn">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar Padrao
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Textos Section -->
+            <section id="section-textos" class="options-section" role="tabpanel">
+                <div class="section-header">
+                    <h2 class="h5 text-neuron-primary mb-0">
+                        <i class="bi bi-file-text me-2"></i>Modelos de Texto
+                    </h2>
+                </div>
+
+                <select class="form-select mb-3" id="selectTextModelCategory">
+                    <option value="">Selecione uma categoria...</option>
+                </select>
+
+                <div id="textModelsContainer" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="h6 mb-0">Modelos para: <span id="currentTextModelCategory" class="text-neuron-primary"></span></h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="textModelsList">
+                                <!-- Dynamic content -->
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div id="textModelsStatus"></div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-neuron-accent" id="addTextModelBtn">
+                                    <i class="bi bi-plus-lg me-1"></i>Adicionar Novo Modelo
+                                </button>
+                                <button type="button" class="btn btn-neuron-primary" id="saveTextModelsBtn">
+                                    <i class="bi bi-save me-1"></i>Salvar Modelos
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="resetTextModelsBtn">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar Padrao
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pontos Focais Section -->
+            <section id="section-pontosfocais" class="options-section" role="tabpanel">
+                <div class="section-header">
+                    <h2 class="h5 text-neuron-primary mb-0">
+                        <i class="bi bi-people me-2"></i>Pontos Focais
+                    </h2>
+                </div>
+
+                <div class="accordion" id="focalPointsAccordion">
+                    <div id="focalPointsList">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <div id="focalPointsStatus"></div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="button" class="btn btn-neuron-accent" id="addFocalPointBtn">
+                            <i class="bi bi-plus-lg me-1"></i>Adicionar Grupo
+                        </button>
+                        <button type="button" class="btn btn-neuron-primary" id="saveFocalPointsBtn">
+                            <i class="bi bi-save me-1"></i>Salvar Pontos Focais
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="resetFocalPointsBtn">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar Padrao
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- JSON Section -->
+            <section id="section-json" class="options-section" role="tabpanel">
+                <div class="section-header">
+                    <h2 class="h5 text-neuron-primary mb-0">
+                        <i class="bi bi-code-slash me-2"></i>Configuracao JSON
+                    </h2>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <textarea class="form-control font-monospace" id="rawConfigJsonEditor"
+                                  rows="20" spellcheck="false"></textarea>
+                    </div>
+                    <div class="card-footer">
+                        <div id="rawConfigJsonStatus"></div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="button" class="btn btn-neuron-primary" id="saveRawConfigJsonButton">
+                                <i class="bi bi-save me-1"></i>Salvar Configuracao
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="resetRawConfigJsonButton">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar Padrao Global
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="h6 mb-0"><i class="bi bi-arrow-left-right me-2"></i>Importar/Exportar Configuracoes</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <h4 class="h6 text-body-secondary mb-3">Exportar Backup</h4>
+                                <button type="button" class="btn btn-success" id="exportConfigButton">
+                                    <i class="bi bi-download me-1"></i>Exportar
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="h6 text-body-secondary mb-3">Importar Backup</h4>
+                                <input type="file" class="form-control mb-2" id="importConfigFileInput" accept=".json">
+                                <button type="button" class="btn btn-info" id="importConfigButton">
+                                    <i class="bi bi-upload me-1"></i>Importar
+                                </button>
+                                <div id="importConfigStatus" class="mt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Global Save Footer -->
+    <footer class="options-footer border-top">
+        <button type="button" class="btn btn-neuron-primary btn-lg" id="saveAllOptionsButton">
+            <i class="bi bi-save-fill me-2"></i>Salvar Todas as Alteracoes
+        </button>
+        <div id="globalStatus" class="mt-2"></div>
     </footer>
-  </div>
-  <script src="/modules/options/options.js"></script>
+
+    <script src="../../lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../../lib/idb.min.js"></script>
+    <script src="../../lib/chart.min.js"></script>
+    <script src="../../shared/js/neuron-db.js"></script>
+    <script src="../../shared/js/theme-manager.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="options.js"></script>
 </body>
 </html>

@@ -1,13 +1,41 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize theme first
+    await ThemeManager.init();
+
     const CONFIG_STORAGE_KEY = 'neuronUserConfig';
     const DEFAULT_CONFIG_PATH = '/config/config.json';
+
+    // Theme toggle setup
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+
+    async function updateThemeIcon() {
+        const preference = await ThemeManager.getPreference();
+        if (themeIcon) {
+            themeIcon.className = `bi ${ThemeManager.getIconClass(preference)}`;
+        }
+        if (themeToggle) {
+            themeToggle.title = ThemeManager.getLabel(preference);
+        }
+    }
+
+    if (themeToggle) {
+        themeToggle.addEventListener('click', async () => {
+            await ThemeManager.cycle();
+            await updateThemeIcon();
+        });
+    }
+
+    document.addEventListener('neuron-theme-change', updateThemeIcon);
+    await updateThemeIcon();
 
     const ui = {
         masterEnable: document.getElementById('masterEnableOptions'),
         saveAllButton: document.getElementById('saveAllOptionsButton'),
         globalStatus: document.getElementById('globalStatus'),
-        tabs: document.querySelectorAll('.tab-link'),
-        tabContents: document.querySelectorAll('.tab-content'),
+        sidebar: document.getElementById('optionsSidebar'),
+        sidebarLinks: document.querySelectorAll('.sidebar-nav-link'),
+        sections: document.querySelectorAll('.options-section'),
         rawConfigEditor: document.getElementById('rawConfigJsonEditor'),
         saveRawConfig: document.getElementById('saveRawConfigJsonButton'),
         resetRawConfig: document.getElementById('resetRawConfigJsonButton'),
@@ -23,9 +51,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const displayStatus = (el, msg, isError = false, duration = 4000) => {
         if (!el) return;
-        el.textContent = msg;
-        el.className = `status-message ${isError ? 'error' : 'success'}`;
-        setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, duration);
+        el.innerHTML = `
+            <div class="alert alert-${isError ? 'danger' : 'success'} alert-dismissible fade show py-2 mb-0" role="alert">
+                <i class="bi bi-${isError ? 'exclamation-triangle' : 'check-circle'} me-2"></i>${msg}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+            </div>
+        `;
+        setTimeout(() => {
+            const alert = el.querySelector('.alert');
+            if (alert) {
+                alert.classList.remove('show');
+                setTimeout(() => el.innerHTML = '', 150);
+            }
+        }, duration);
     };
 
     const isObject = item => item && typeof item === 'object' && !Array.isArray(item);
@@ -121,8 +159,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateGlobalUIEnableState() {
         const enabled = ui.masterEnable.checked;
-        document.querySelectorAll('.tab-content input, .tab-content select, .tab-content textarea, .tab-content button').forEach(field => {
-            if (field.id !== 'masterEnableOptions') {
+        document.querySelectorAll('.options-section input, .options-section select, .options-section textarea, .options-section button').forEach(field => {
+            if (field.id !== 'masterEnableOptions' && field.id !== 'refreshDashboard') {
                 field.disabled = !enabled;
             }
         });
@@ -155,6 +193,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!/^\d{2}\/\d{2}\/\d{4}$/.test(date)) {
                 displayStatus(statusEl, 'Formato de data inválido. Use DD/MM/AAAA.', true);
+                return;
+            }
+            const [dia, mes, ano] = date.split('/').map(Number);
+            const dateObj = new Date(ano, mes - 1, dia);
+            if (isNaN(dateObj.getTime()) || dateObj.getDate() !== dia || dateObj.getMonth() !== mes - 1 || dateObj.getFullYear() !== ano) {
+                displayStatus(statusEl, 'Data inválida. Verifique o dia, mês e ano.', true);
                 return;
             }
             if (!description) {
@@ -200,22 +244,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const listEl = document.getElementById('holidaysList');
         if (!listEl) return;
 
-        listEl.innerHTML = ''; // Limpa a lista antes de re-renderizar
+        listEl.innerHTML = '';
         const holidays = fullConfig.holidays || [];
 
         if (holidays.length === 0) {
-            listEl.innerHTML = '<li>Nenhum feriado configurado.</li>';
-            return;
+            return; // CSS :empty will show placeholder
         }
 
         holidays.forEach((holiday, index) => {
-            const itemLi = document.createElement('li');
-            // A lógica do botão está agora no listener delegado em setupHolidaysTab
-            itemLi.innerHTML = `
-            <span class="holiday-text">${holiday.date} - ${holiday.description}</span>
-            <button class="remove-btn" data-index="${index}">Remover</button>
-        `;
-            listEl.appendChild(itemLi);
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'list-group-item d-flex justify-content-between align-items-center';
+            itemDiv.innerHTML = `
+                <span><strong>${holiday.date}</strong> - ${holiday.description}</span>
+                <button class="btn btn-sm btn-outline-danger remove-btn" data-index="${index}">
+                    <i class="bi bi-trash"></i>
+                </button>
+            `;
+            listEl.appendChild(itemDiv);
         });
     }
     function setupResponsesTab() {
@@ -275,23 +320,28 @@ document.addEventListener('DOMContentLoaded', () => {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'option-item';
             itemDiv.innerHTML = `
-                <label>Texto da Opção:</label>
-                <input type="text" class="response-text" data-index="${index}" value="${option.text}">
-
-                <label>Conteúdo da Resposta:</label>
-                <textarea class="response-textarea" data-index="${index}" rows="4">${option.conteudoTextarea}</textarea>
-
-                <label>Responsável:</label>
-                <input type="text" class="response-responsavel" data-index="${index}" value="${option.responsavel}">
-
-                <button class="remove-btn" data-index="${index}">Remover Opção</button>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Texto da Opcao</label>
+                    <input type="text" class="form-control response-text" data-index="${index}" value="${escapeHtml(option.text)}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Conteudo da Resposta</label>
+                    <textarea class="form-control response-textarea" data-index="${index}" rows="4">${escapeHtml(option.conteudoTextarea)}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Responsavel</label>
+                    <input type="text" class="form-control response-responsavel" data-index="${index}" value="${escapeHtml(option.responsavel)}">
+                </div>
+                <button class="btn btn-outline-danger btn-sm remove-btn" data-index="${index}">
+                    <i class="bi bi-trash me-1"></i>Remover Opcao
+                </button>
             `;
             listEl.appendChild(itemDiv);
         });
 
         listEl.querySelectorAll('.remove-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const indexToRemove = parseInt(e.target.dataset.index, 10);
+                const indexToRemove = parseInt(e.target.closest('.remove-btn').dataset.index, 10);
                 fullConfig.defaultResponses[tipoResposta].novoDropdownOptions.splice(indexToRemove, 1);
                 renderResponseOptions(tipoResposta);
             });
@@ -306,6 +356,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 fullConfig.defaultResponses[tipoResposta].novoDropdownOptions[index][property] = e.target.value;
             });
         });
+    }
+
+    function escapeHtml(str) {
+        if (str == null) return '';
+        return String(str).replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[char]);
     }
 
     // File: modules/options/options.js (substituir funções)
@@ -424,83 +481,54 @@ document.addEventListener('DOMContentLoaded', () => {
         for (const key in models) {
             const value = models[key];
             const itemDiv = document.createElement('div');
-            itemDiv.className = 'option-item';
+            itemDiv.className = 'text-model-item';
 
-            // Botão de remover é sempre o mesmo
-            const removeBtnHTML = `<button class="remove-btn" data-key="${key}">Remover Modelo</button>`;
+            const removeBtnHTML = `
+                <button class="btn btn-outline-danger btn-sm remove-btn mt-2" data-key="${escapeHtml(key)}">
+                    <i class="bi bi-trash me-1"></i>Remover Modelo
+                </button>`;
 
             if (typeof value === 'string') {
                 itemDiv.innerHTML = `
-                <label>Chave do Modelo:</label>
-                <input type="text" class="model-key" value="${key}" data-original-key="${key}">
-                <label>Conteúdo:</label>
-                <textarea class="model-value" rows="5">${value}</textarea>
-                ${removeBtnHTML}
-            `;
-            } else if (isObject(value)) { // isObject é uma função auxiliar que já tens
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Chave do Modelo</label>
+                        <input type="text" class="form-control model-key" value="${escapeHtml(key)}" data-original-key="${escapeHtml(key)}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Conteudo</label>
+                        <textarea class="form-control model-value" rows="5">${escapeHtml(value)}</textarea>
+                    </div>
+                    ${removeBtnHTML}
+                `;
+            } else if (isObject(value)) {
                 let nestedHTML = '';
                 for (const subKey in value) {
                     nestedHTML += `
-                    <div class="nested-item">
-                        <label><strong>Sub-item:</strong> ${subKey}</label>
-                        <textarea class="model-sub-value" data-parent-key="${key}" data-sub-key="${subKey}" rows="5">${value[subKey]}</textarea>
-                    </div>
-                `;
+                        <div class="nested-item mb-3">
+                            <label class="form-label text-body-secondary">
+                                <i class="bi bi-arrow-return-right me-1"></i><strong>${escapeHtml(subKey)}</strong>
+                            </label>
+                            <textarea class="form-control model-sub-value" data-parent-key="${escapeHtml(key)}" data-sub-key="${escapeHtml(subKey)}" rows="4">${escapeHtml(value[subKey])}</textarea>
+                        </div>
+                    `;
                 }
                 itemDiv.innerHTML = `
-                <fieldset>
-                    <legend>${key}</legend>
-                    ${nestedHTML}
-                </fieldset>
-                ${removeBtnHTML}
-            `;
+                    <div class="card border-primary">
+                        <div class="card-header bg-primary bg-opacity-10">
+                            <h6 class="mb-0 text-neuron-primary">${escapeHtml(key)}</h6>
+                        </div>
+                        <div class="card-body nested-items">
+                            ${nestedHTML}
+                        </div>
+                    </div>
+                    ${removeBtnHTML}
+                `;
             }
             listEl.appendChild(itemDiv);
         }
     }
 
-    function addTextModelListeners(category) {
-        document.querySelectorAll('.remove-btn').forEach(btn => {
-            const newBtn = btn.cloneNode(true);
-            btn.parentNode.replaceChild(newBtn, btn);
-            newBtn.addEventListener('click', (e) => {
-                const keyToRemove = e.target.dataset.key;
-                if (confirm(`Tem certeza que deseja remover o modelo "${keyToRemove}"?`)) {
-                    delete fullConfig.textModels[category][keyToRemove];
-                    renderTextModels(category);
-                }
-            });
-        });
-        document.querySelectorAll('.model-value').forEach(textarea => {
-            textarea.addEventListener('input', (e) => {
-                const key = e.target.closest('.option-item').querySelector('.model-key').value;
-                fullConfig.textModels[category][key] = e.target.value;
-            });
-        });
-        document.querySelectorAll('.model-key').forEach(input => {
-            input.addEventListener('change', (e) => {
-                const originalKey = e.target.dataset.originalKey;
-                const newKey = e.target.value;
-                if (originalKey !== newKey && newKey) {
-                    const value = fullConfig.textModels[category][originalKey];
-                    delete fullConfig.textModels[category][originalKey];
-                    fullConfig.textModels[category][newKey] = value;
-                    e.target.dataset.originalKey = newKey;
-                } else if (!newKey) {
-                    e.target.value = originalKey;
-                }
-            });
-        });
-        document.querySelectorAll('.model-sub-value').forEach(textarea => {
-            textarea.addEventListener('input', (e) => {
-                const parentKey = e.target.dataset.parentKey;
-                const subKey = e.target.dataset.subKey;
-                fullConfig.textModels[category][parentKey][subKey] = e.target.value;
-            });
-        });
-    }
-
-    // File: modules/options/options.js (substituir/adicionar funções)
+    // File: modules/options/options.js
 
     function setupFocalPointsTab() {
         const listEl = document.getElementById('focalPointsList');
@@ -534,25 +562,28 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- DELEGAÇÃO DE EVENTOS PARA TODA A LISTA ---
         listEl.addEventListener('click', e => {
             const target = e.target;
-            const groupName = target.dataset.group;
+            const btn = target.closest('.remove-btn') || target.closest('.add-point-btn');
+            if (!btn) return;
 
-            // Botão de remover grupo
-            if (target.matches('.focal-group-header .remove-btn')) {
+            const groupName = btn.dataset.group;
+
+            // Botão de adicionar ponto dentro de um grupo
+            if (btn.classList.contains('add-point-btn')) {
+                fullConfig.focalPoints[groupName].push("Novo Ponto Focal");
+                renderFocalPoints();
+            }
+            // Botão de remover um ponto específico (has index)
+            else if (btn.classList.contains('remove-btn') && btn.dataset.index !== undefined) {
+                const index = parseInt(btn.dataset.index, 10);
+                fullConfig.focalPoints[groupName].splice(index, 1);
+                renderFocalPoints();
+            }
+            // Botão de remover grupo (no index = group removal)
+            else if (btn.classList.contains('remove-btn') && btn.dataset.index === undefined) {
                 if (confirm(`Tem certeza que deseja remover o grupo "${groupName}"?`)) {
                     delete fullConfig.focalPoints[groupName];
                     renderFocalPoints();
                 }
-            }
-            // Botão de adicionar ponto dentro de um grupo
-            else if (target.matches('.add-point-btn')) {
-                fullConfig.focalPoints[groupName].push("Novo Ponto Focal");
-                renderFocalPoints();
-            }
-            // Botão de remover um ponto específico
-            else if (target.matches('.focal-point-item .remove-btn')) {
-                const index = parseInt(target.dataset.index, 10);
-                fullConfig.focalPoints[groupName].splice(index, 1);
-                renderFocalPoints();
             }
         });
 
@@ -602,120 +633,128 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderFocalPoints() {
         const listEl = document.getElementById('focalPointsList');
         listEl.innerHTML = '';
+        let accordionIndex = 0;
+
         for (const groupName in fullConfig.focalPoints) {
             const points = fullConfig.focalPoints[groupName];
             const groupDiv = document.createElement('div');
-            groupDiv.className = 'focal-point-group';
+            groupDiv.className = 'accordion-item focal-point-group';
+            const collapseId = `focalCollapse${accordionIndex}`;
+            const headerId = `focalHeader${accordionIndex}`;
 
             let pointsHTML = '';
             points.forEach((point, index) => {
                 pointsHTML += `
-                <div class="focal-point-item">
-                    <input type="text" class="focal-point-value" value="${point}" data-index="${index}">
-                    <button class="remove-btn small" data-group="${groupName}" data-index="${index}">-</button>
-                </div>
-            `;
+                    <div class="focal-point-row d-flex align-items-center">
+                        <input type="text" class="form-control focal-point-value" value="${escapeHtml(point)}" data-group="${escapeHtml(groupName)}" data-index="${index}">
+                        <button class="btn btn-outline-danger btn-sm remove-btn ms-2" data-group="${escapeHtml(groupName)}" data-index="${index}" title="Remover ponto">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                `;
             });
 
             groupDiv.innerHTML = `
-            <div class="focal-group-header">
-                <input type="text" class="focal-point-group-name" value="${groupName}" data-original-name="${groupName}">
-                <button class="remove-btn" data-group="${groupName}">Remover Grupo</button>
-            </div>
-            <div class="focal-points-container">${pointsHTML}</div>
-            <button class="add-point-btn" data-group="${groupName}">+ Adicionar Ponto</button>
-        `;
+                <h2 class="accordion-header" id="${headerId}">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}">
+                        <div class="d-flex align-items-center justify-content-between w-100 me-3">
+                            <input type="text" class="form-control form-control-sm focal-point-group-name me-3" value="${escapeHtml(groupName)}" data-original-name="${escapeHtml(groupName)}" style="max-width: 250px;" onclick="event.stopPropagation();">
+                            <span class="badge bg-secondary">${points.length} pontos</span>
+                        </div>
+                    </button>
+                </h2>
+                <div id="${collapseId}" class="accordion-collapse collapse" data-bs-parent="#focalPointsAccordion">
+                    <div class="accordion-body">
+                        <div class="focal-points-container mb-3">
+                            ${pointsHTML}
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm add-point-btn-dashed add-point-btn" data-group="${escapeHtml(groupName)}">
+                                <i class="bi bi-plus-lg me-1"></i>Adicionar Ponto
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm remove-btn" data-group="${escapeHtml(groupName)}">
+                                <i class="bi bi-trash me-1"></i>Remover Grupo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
             listEl.appendChild(groupDiv);
+            accordionIndex++;
         }
     }
 
-    function addFocalPointListeners() {
-        const listEl = document.getElementById('focalPointsList');
+    // Sidebar Navigation
+    function setupSidebarNavigation() {
+        const sectionsInitialized = new Set();
 
-        listEl.addEventListener('click', e => {
-            const target = e.target;
+        function showSection(sectionName) {
+            // Update sidebar links
+            ui.sidebarLinks.forEach(link => {
+                link.classList.toggle('active', link.dataset.section === sectionName);
+                link.setAttribute('aria-selected', link.dataset.section === sectionName);
+            });
 
-            if (target.matches('.focal-group-header .remove-btn')) {
-                const groupName = target.dataset.group;
-                if (confirm(`Tem certeza que deseja remover o grupo "${groupName}"?`)) {
-                    delete fullConfig.focalPoints[groupName];
-                    renderFocalPoints();
+            // Update sections
+            ui.sections.forEach(section => {
+                const isTarget = section.id === `section-${sectionName}`;
+                section.classList.toggle('active', isTarget);
+            });
+
+            // Initialize section on first show
+            if (!sectionsInitialized.has(sectionName)) {
+                switch (sectionName) {
+                    case 'dashboard':
+                        if (typeof NeuronDashboard !== 'undefined') {
+                            NeuronDashboard.init();
+                        }
+                        break;
+                    case 'prazos':
+                        setupHolidaysTab();
+                        break;
+                    case 'respostas':
+                        setupResponsesTab();
+                        break;
+                    case 'textos':
+                        setupTextModelsTab();
+                        break;
+                    case 'pontosfocais':
+                        setupFocalPointsTab();
+                        break;
                 }
+                sectionsInitialized.add(sectionName);
             }
 
-            if (target.matches('.add-point-btn')) {
-                const groupName = target.dataset.group;
-                fullConfig.focalPoints[groupName].push("Novo Ponto Focal");
-                renderFocalPoints();
+            // Always update raw config editor when JSON section is shown
+            if (sectionName === 'json') {
+                ui.rawConfigEditor.value = JSON.stringify(fullConfig, null, 2);
             }
+        }
 
-            if (target.matches('.focal-point-item .remove-btn')) {
-                const groupName = target.dataset.group;
-                const index = parseInt(target.dataset.index, 10);
-                fullConfig.focalPoints[groupName].splice(index, 1);
-                renderFocalPoints();
-            }
+        // Click handler for sidebar links
+        ui.sidebarLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionName = link.dataset.section;
+                if (sectionName) {
+                    showSection(sectionName);
+                    // Update URL hash
+                    history.replaceState(null, '', `#${sectionName}`);
+                }
+            });
         });
 
-        listEl.addEventListener('change', e => {
-            const target = e.target;
-
-            if (target.matches('.focal-point-group-name')) {
-                const originalName = target.dataset.originalName;
-                const newName = target.value.trim();
-
-                if (originalName !== newName && newName) {
-                    if (fullConfig.focalPoints[newName]) {
-                        alert(`O nome de grupo "${newName}" já existe. Por favor, escolha outro nome.`);
-                        target.value = originalName;
-                        return;
-                    }
-
-                    const value = fullConfig.focalPoints[originalName];
-                    delete fullConfig.focalPoints[originalName];
-                    fullConfig.focalPoints[newName] = value;
-
-                    renderFocalPoints();
-                } else if (!newName) {
-                    target.value = originalName;
-                }
-            }
-        });
-
-        listEl.addEventListener('input', e => {
-            const target = e.target;
-
-            if (target.matches('.focal-point-value')) {
-                const groupName = target.dataset.group;
-                const index = parseInt(target.dataset.index, 10);
-                if (fullConfig.focalPoints[groupName]) {
-                    fullConfig.focalPoints[groupName][index] = target.value;
-                }
-            }
-        });
+        // Handle initial hash or default to dashboard
+        const initialSection = window.location.hash.substring(1) || 'dashboard';
+        showSection(initialSection);
     }
 
     async function initializePage() {
         await loadConfig();
         populateAllTabs();
 
-        ui.tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabId = tab.dataset.tab;
-                ui.tabs.forEach(t => t.classList.remove('active'));
-                ui.tabContents.forEach(c => c.classList.remove('active'));
-                tab.classList.add('active');
-                document.getElementById(tabId).classList.add('active');
-
-                if (tabId === 'tab-prazos') setupHolidaysTab();
-                if (tabId === 'tab-respostas') setupResponsesTab();
-                if (tabId === 'tab-textos') setupTextModelsTab();
-                if (tabId === 'tab-pontosfocais') setupFocalPointsTab();
-                if (tabId === 'tab-config-raw') {
-                    ui.rawConfigEditor.value = JSON.stringify(fullConfig, null, 2);
-                }
-            });
-        });
+        // Setup sidebar navigation
+        setupSidebarNavigation();
 
         ui.masterEnable.addEventListener('change', updateGlobalUIEnableState);
         ui.saveAllButton.addEventListener('click', () => {
@@ -728,13 +767,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 fullConfig = newConfig;
                 saveConfig();
                 populateAllTabs();
-                displayStatus(ui.rawConfigStatus, 'Configuração RAW salva com sucesso!', false);
+                displayStatus(ui.rawConfigStatus, 'Configuracao RAW salva com sucesso!', false);
             } catch (e) {
                 displayStatus(ui.rawConfigStatus, `Erro no JSON: ${e.message}`, true);
             }
         });
         ui.resetRawConfig.addEventListener('click', () => {
-            if (confirm("Isso irá restaurar TODAS as configurações para o padrão. Deseja continuar?")) {
+            if (confirm("Isso ira restaurar TODAS as configuracoes para o padrao. Deseja continuar?")) {
                 fullConfig = JSON.parse(JSON.stringify(defaultConfig));
                 saveConfig();
                 populateAllTabs();
@@ -759,19 +798,20 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onload = (event) => {
                 try {
                     const importedConfig = JSON.parse(event.target.result);
-                    if (!importedConfig.featureSettings) throw new Error("Arquivo não parece ser uma configuração válida do Neuron.");
+                    if (!importedConfig.featureSettings) throw new Error("Arquivo nao parece ser uma configuracao valida do Neuron.");
                     fullConfig = importedConfig;
                     saveConfig();
                     populateAllTabs();
-                    displayStatus(ui.importStatus, "Configuração importada com sucesso!", false);
+                    displayStatus(ui.importStatus, "Configuracao importada com sucesso!", false);
                 } catch (e) {
                     displayStatus(ui.importStatus, `Erro ao importar: ${e.message}`, true);
                 }
             };
+            reader.onerror = () => {
+                displayStatus(ui.importStatus, "Erro ao ler o arquivo. Tente novamente.", true);
+            };
             reader.readAsText(file);
         });
-
-        document.querySelector('.tab-link[data-tab="tab-general"]').click();
     }
 
     initializePage();
