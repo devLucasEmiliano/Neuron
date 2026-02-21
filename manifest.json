@@ -46,6 +46,7 @@
       "js": [
         "lib/idb.min.js",
         "shared/js/neuron-db.js",
+        "shared/js/neuron-utils.js",
         "modules/ouvidoria/tratar-novo/tratar_novo_extract.js",
         "modules/notificacoes/notificacoes.js"
       ],
@@ -59,9 +60,9 @@
         "https://falabr-h.cgu.gov.br/Manifestacao/TratarManifestacoes"
       ],
       "js": [
+        "shared/js/neuron-utils.js",
         "lib/date_utils.js",
         "modules/ouvidoria/tratar-novo/tratar_novo_pagesize.js",
-        "modules/ouvidoria/tratar-novo/tratar_novo_copy.js",
         "modules/ouvidoria/tratar-novo/tratar_novo_insert.js"
       ],
       "css": ["modules/ouvidoria/tratar-novo/tratar_novo.css"]

@@ -2,32 +2,19 @@
     'use strict';
 
     const SCRIPT_ID = 'tratarTriar';
-    const CONFIG_KEY = 'neuronUserConfig';
     const ID_CAMPO_TAMANHO = 'ConteudoForm_ConteudoGeral_ConteudoFormComAjax_pagTriagem_ctl03_txtTamanhoPagina';
     const ID_BOTAO_CONFIRMAR = 'ConteudoForm_ConteudoGeral_ConteudoFormComAjax_pagTriagem_ctl03_btnAlterarTamanhoPagina';
 
     let observer = null;
     let debounceTimer;
 
-    async function isScriptAtivo() {
-        if (!chrome.runtime?.id) return false;
-        try {
-            const result = await chrome.storage.local.get(CONFIG_KEY);
-            const config = result[CONFIG_KEY] || {};
-            return config.masterEnableNeuron !== false && config.featureSettings?.[SCRIPT_ID]?.enabled !== false;
-        } catch (error) {
-            console.warn(`%cNeuron (${SCRIPT_ID}): Não foi possível ler as configurações.`, "color: goldenrod;", error.message);
-            return false;
-        }
-    }
-
     async function verificarEAtualizarTamanho() {
-        if (!await isScriptAtivo()) return;
+        if (!await window.NeuronUtils.isScriptAtivo(SCRIPT_ID)) return;
 
-        const result = await chrome.storage.local.get(CONFIG_KEY);
-        const config = result[CONFIG_KEY] || {};
+        const result = await chrome.storage.local.get(window.NeuronUtils.CONFIG_KEY);
+        const config = result[window.NeuronUtils.CONFIG_KEY] || {};
         const itensPorPaginaDesejado = String(config.generalSettings?.qtdItensTratarTriar || '50');
-        
+
         const campoTamanho = document.getElementById(ID_CAMPO_TAMANHO);
         const botaoConfirmar = document.getElementById(ID_BOTAO_CONFIRMAR);
 
@@ -41,9 +28,9 @@
     }
 
     async function gerenciarEstado() {
-        if (await isScriptAtivo()) {
+        if (await window.NeuronUtils.isScriptAtivo(SCRIPT_ID)) {
             if (observer) return;
-            
+
             const onPageChange = () => {
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(verificarEAtualizarTamanho, 300);
@@ -62,12 +49,6 @@
         }
     }
 
-    chrome.storage.onChanged.addListener((changes, namespace) => {
-        if (!chrome.runtime?.id) return;
-        if (namespace === 'local' && changes[CONFIG_KEY]) {
-            gerenciarEstado();
-        }
-    });
-
+    window.NeuronUtils.createStorageListener(SCRIPT_ID, gerenciarEstado);
     gerenciarEstado();
 })();

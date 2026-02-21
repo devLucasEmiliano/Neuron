@@ -1,23 +1,12 @@
 (function() {
     'use strict';
+
     const SCRIPT_ID = 'tratarTriar';
-    const CONFIG_KEY = 'neuronUserConfig';
     let observer = null;
     let debounceTimer;
 
-    async function isScriptAtivo() {
-        if (!chrome.runtime?.id) return false;
-        try {
-            const result = await chrome.storage.local.get(CONFIG_KEY);
-            const config = result[CONFIG_KEY] || {};
-            return config.masterEnableNeuron !== false && config.featureSettings?.[SCRIPT_ID]?.enabled !== false;
-        } catch (e) {
-            return false;
-        }
-    }
-
     const executarExtracao = async () => {
-        if (!await isScriptAtivo()) return;
+        if (!await window.NeuronUtils.isScriptAtivo(SCRIPT_ID)) return;
 
         const todosOsLinksDeNumero = document.querySelectorAll('a[id*="lvwTriagem_lnkNumero_"]');
         if (todosOsLinksDeNumero.length === 0) return;
@@ -36,10 +25,10 @@
 
                 let iconeRespondida = null;
                 let iconeObservacao = null;
-                let todosOsResponsaveis = []; 
+                let todosOsResponsaveis = [];
 
                 const primeiroRow = linkNumero.closest('.row');
-                
+
                 if (primeiroRow) {
                     const segundoRow = primeiroRow.nextElementSibling;
                     if (segundoRow && segundoRow.classList.contains('row')) {
@@ -49,14 +38,14 @@
                             iconeObservacao = colunaDetalhes.querySelector('em.fas.fa-eye');
 
                             const itensDaLista = colunaDetalhes.querySelectorAll('li');
-                            
+
                             for (const item of itensDaLista) {
                                 const cloneDoItem = item.cloneNode(true);
                                 const iconeParaRemover = cloneDoItem.querySelector('span > span');
                                 if (iconeParaRemover) {
                                     iconeParaRemover.remove();
                                 }
-                                
+
                                 todosOsResponsaveis.push(cloneDoItem.textContent.trim());
                             }
                         }
@@ -69,7 +58,7 @@
                     situacao: situacaoElement?.innerText.trim() || '',
                     prazo: prazoElement?.innerText.trim() || '',
                     dataCadastro: cadastroElement?.innerText.trim() || '',
-                    responsaveis: todosOsResponsaveis, 
+                    responsaveis: todosOsResponsaveis,
                     possivelRespondida: !!iconeRespondida,
                     possivelobservacao: !!iconeObservacao,
                     idPrazoOriginal: prazoElement?.id || null,
@@ -81,15 +70,13 @@
         });
 
         if (manifestacoesParaProcessar.length > 0) {
-            // As linhas de console.log e console.table foram removidas daqui.
-            
             const evento = new CustomEvent('dadosExtraidosNeuron', { detail: manifestacoesParaProcessar });
             document.dispatchEvent(evento);
         }
     };
 
     async function gerenciarEstado() {
-        if (await isScriptAtivo()) {
+        if (await window.NeuronUtils.isScriptAtivo(SCRIPT_ID)) {
             if (observer) return;
             const onMutation = () => {
                 clearTimeout(debounceTimer);
@@ -111,11 +98,7 @@
             document.removeEventListener('NEURON_SOLICITAR_ATUALIZACAO', executarExtracao);
         }
     }
-    chrome.storage.onChanged.addListener((changes, namespace) => {
-        if (!chrome.runtime?.id) return;
-        if (namespace === 'local' && changes[CONFIG_KEY]) {
-            gerenciarEstado();
-        }
-    });
+
+    window.NeuronUtils.createStorageListener(SCRIPT_ID, gerenciarEstado);
     gerenciarEstado();
 })();

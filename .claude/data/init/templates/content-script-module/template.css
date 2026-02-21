@@ -1,0 +1,16 @@
+/* File: modules/{{CATEGORY}}/{{MODULE_NAME}}/{{MODULE_NAME}}.css */
+
+.neuron-{{MODULE_NAME}}-container {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: var(--bs-light);
+    border-radius: 0.375rem;
+    border: 1px solid var(--bs-border-color);
+}
+
+.neuronLabel{{MODULE_NAME_CAPITALIZED}} {
+    font-weight: 600;
+    color: var(--bs-primary);
+    margin-bottom: 0.5rem;
+    display: block;
+}
