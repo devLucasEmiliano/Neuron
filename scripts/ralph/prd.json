@@ -1,0 +1,69 @@
+{
+  "title": "Project File Structure Reorganization",
+  "branchName": "ralph/project-file-restructure",
+  "description": "Reorganize the Neuron Chrome extension's file and folder structure to improve navigation, maintainability, and consistency — without introducing build tools, new dependencies, or splitting existing files.",
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Separate vendored libraries from project utilities",
+      "priority": 1,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Rename lib/ to vendor/ containing only third-party code: bootstrap/, chart.min.js, idb.min.js",
+        "Move lib/date_utils.js to shared/js/date-utils.js (rename underscore to hyphen)",
+        "Move lib/module_factory.js to shared/js/module-factory.js (rename underscore to hyphen)",
+        "Update all references in manifest.json content_scripts and web_accessible_resources",
+        "Verify no broken references remain by searching all .js and .html files for old paths"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "Rename files with underscores inside modules to use hyphens",
+      "priority": 2,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Rename all files in modules/ouvidoria/tratar-novo/ from underscores to hyphens",
+        "Rename files in modules/ouvidoria/tramitar/ from underscores to hyphens",
+        "Rename files in modules/sic/tratar/ from underscores to hyphens",
+        "Rename files in modules/sic/analisar/ from underscores to hyphens",
+        "Update all references in manifest.json to use the new filenames",
+        "Search all .js and .html files for old filenames and update any internal references"
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "Organize images folder by purpose",
+      "priority": 3,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create images/icons/ subfolder",
+        "Move extension icon files into images/icons/: neuron128.png, neuron64.png, neuronoff128.png, neuronon128.png",
+        "Keep non-icon assets (e.g., Intro-Neuron.gif) at the images/ root",
+        "Update manifest.json icon references (icons, action.default_icon) to use images/icons/ path",
+        "Update any HTML or JS files that reference icon paths"
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "Update manifest.json web_accessible_resources",
+      "priority": 4,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Replace lib/* and lib/bootstrap/* entries with vendor/* and vendor/bootstrap/*",
+        "Ensure shared/* still covers the moved utility files",
+        "Verify the extension loads without errors after all path changes"
+      ]
+    },
+    {
+      "id": "US-005",
+      "title": "Verify extension functionality after restructure",
+      "priority": 5,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Run a full-text search for every old path and confirm zero references remain",
+        "Confirm no manifest errors would occur",
+        "Confirm all file references are valid"
+      ]
+    }
+  ]
+}

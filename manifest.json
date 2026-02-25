@@ -44,7 +44,7 @@
         "https://falabr-h.cgu.gov.br/*"
       ],
       "js": [
-        "lib/idb.min.js",
+        "vendor/idb.min.js",
         "shared/js/neuron-db.js",
         "shared/js/neuron-utils.js",
         "modules/ouvidoria/tratar-novo/tratar_novo_extract.js",
@@ -61,7 +61,7 @@
       ],
       "js": [
         "shared/js/neuron-utils.js",
-        "lib/date_utils.js",
+        "shared/js/date-utils.js",
         "modules/ouvidoria/tratar-novo/tratar_novo_pagesize.js",
         "modules/ouvidoria/tratar-novo/tratar_novo_insert.js"
       ],
@@ -73,7 +73,7 @@
         "https://treinafalabr.cgu.gov.br/Manifestacao/ArquivarManifestacao.aspx?*",
         "https://falabr-h.cgu.gov.br/Manifestacao/ArquivarManifestacao.aspx?*"
       ],
-      "js": ["lib/module_factory.js", "modules/ouvidoria/arquivar/arquivar.js"],
+      "js": ["shared/js/module-factory.js", "modules/ouvidoria/arquivar/arquivar.js"],
       "css": ["modules/ouvidoria/arquivar/arquivar.css"]
     },
     {
@@ -82,7 +82,7 @@
         "https://treinafalabr.cgu.gov.br/Manifestacao/EncaminharManifestacao.aspx?*",
         "https://falabr-h.cgu.gov.br/Manifestacao/EncaminharManifestacao.aspx?*"
       ],
-      "js": ["lib/module_factory.js", "modules/ouvidoria/encaminhar/encaminhar.js"],
+      "js": ["shared/js/module-factory.js", "modules/ouvidoria/encaminhar/encaminhar.js"],
       "css": ["modules/ouvidoria/encaminhar/encaminhar.css"]
     },
     {
@@ -91,7 +91,7 @@
         "https://treinafalabr.cgu.gov.br/Manifestacao/ProrrogarManifestacao.aspx?*",
         "https://falabr-h.cgu.gov.br/Manifestacao/ProrrogarManifestacao.aspx?*"
       ],
-      "js": ["lib/module_factory.js", "modules/ouvidoria/prorrogar/prorrogar.js"],
+      "js": ["shared/js/module-factory.js", "modules/ouvidoria/prorrogar/prorrogar.js"],
       "css": ["modules/ouvidoria/prorrogar/prorrogar.css"]
     },
     {
@@ -101,8 +101,8 @@
         "https://falabr-h.cgu.gov.br/Manifestacao/TramitarManifestacao.aspx?*"
       ],
       "js": [
-        "lib/date_utils.js",
-        "lib/module_factory.js", 
+        "shared/js/date-utils.js",
+        "shared/js/module-factory.js", 
         "modules/ouvidoria/tramitar/tramitar.js", 
         "modules/ouvidoria/tramitar/tramitar_pontos_focais.js"
       ],
@@ -114,7 +114,7 @@
         "https://treinafalabr.cgu.gov.br/Manifestacao/TratarManifestacao.aspx?*",
         "https://falabr-h.cgu.gov.br/Manifestacao/TratarManifestacao.aspx?*"
       ],
-      "js": ["lib/module_factory.js", "modules/ouvidoria/tratar/tratar.js"],
+      "js": ["shared/js/module-factory.js", "modules/ouvidoria/tratar/tratar.js"],
       "css": ["modules/ouvidoria/tratar/tratar.css"]
     },
     {
@@ -131,7 +131,7 @@
         "https://treinafalabr.cgu.gov.br/web/manifestacao/tratar?*",
         "https://falabr-h.cgu.gov.br/web/manifestacao/tratar?*"
       ],
-      "js": ["lib/date_utils.js","modules/sic/tratar/sic_tratar_extract.js"],
+      "js": ["shared/js/date-utils.js","modules/sic/tratar/sic_tratar_extract.js"],
       "css": ["modules/sic/tratar/sic_tratar_style.css"]
     },
     {
@@ -148,8 +148,8 @@
       "resources": [
         "config/*",
         "images/*",
-        "lib/*",
-        "lib/bootstrap/*",
+        "vendor/*",
+        "vendor/bootstrap/*",
         "shared/*",
         "modules/loading/loading.html",
         "modules/options/options.html"

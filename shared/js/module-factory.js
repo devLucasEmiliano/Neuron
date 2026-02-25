@@ -1,4 +1,4 @@
-// File: lib/module_factory.js
+// File: shared/js/module-factory.js
 
 /**
  * Cria e gere o ciclo de vida de um módulo de conteúdo do Neuron.

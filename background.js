@@ -4,7 +4,7 @@
  */
 
 // Import idb library and NeuronDB
-importScripts('lib/idb.min.js', 'shared/js/neuron-db.js');
+importScripts('vendor/idb.min.js', 'shared/js/neuron-db.js');
 
 // Ensure proper extension initialization and run migration
 chrome.runtime.onInstalled.addListener(async (details) => {
