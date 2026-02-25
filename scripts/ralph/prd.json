@@ -168,7 +168,7 @@
       "id": "US-012",
       "title": "Update manifest.json and HTML files",
       "priority": 12,
-      "passes": false,
+      "passes": true,
       "description": "Ensure all extension pages load IndexedDB dependencies and remove storage permission.",
       "acceptanceCriteria": [
         "Verify idb.min.js and neuron-db.js are in all HTML pages that need them",

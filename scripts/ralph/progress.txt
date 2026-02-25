@@ -189,3 +189,23 @@ Started: Wed Feb 25 13:00:27 PST 2026
   - The migrateFromChromeStorage() method still exists in neuron-db.js but is no longer called from anywhere — US-013 will remove it
   - Manual browser verification needed (no browser testing tools available)
 ---
+
+## 2026-02-25 - US-012
+- Verified all HTML pages load IndexedDB dependencies with correct script order
+- options.html: idb.min.js → neuron-db.js → neuron-sync.js → neuron-utils.js → theme-manager.js → dashboard.js → options.js
+- popup.html: idb.min.js → neuron-db.js → neuron-sync.js → theme-manager.js → popup.js
+- loading.html: Template fragment, scripts loaded via manifest.json content_scripts
+- background.js: importScripts('vendor/idb.min.js', 'shared/js/neuron-db.js', 'shared/js/neuron-sync.js')
+- Removed `storage` permission from manifest.json (set to empty array)
+- Verified all 11 content_scripts entries have correct idb.min.js → neuron-db.js → neuron-sync.js load order
+- Verified web_accessible_resources include vendor/* and shared/js/* for dynamic resource access
+- Verified all 21 JS files referenced in manifest.json exist on disk
+- All syntax checks pass
+- Files changed: manifest.json
+- **Learnings for future iterations:**
+  - Only manifest.json needed changing (storage permission removal) — all HTML and content_scripts entries were already correct from prior stories
+  - The `permissions` field is kept as empty array `[]` rather than removed entirely for clarity
+  - loading.html is just a template fragment (no `<script>` tags), scripts are loaded via content_scripts entry at document_start
+  - sic-analisar-move-buttons.js doesn't use NeuronDB or chrome.storage, so it correctly has no dependencies
+  - Manual browser verification needed (no browser testing tools available)
+---
