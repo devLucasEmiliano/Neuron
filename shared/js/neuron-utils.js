@@ -30,10 +30,8 @@
      * @returns {Promise<boolean>} Whether the script is active
      */
     async function isScriptAtivo(scriptId) {
-        if (!chrome.runtime?.id) return false;
         try {
-            const result = await chrome.storage.local.get(CONFIG_KEY);
-            const config = result[CONFIG_KEY] || {};
+            const config = await NeuronDB.getConfig(CONFIG_KEY) || {};
             return config.masterEnableNeuron !== false &&
                    config.modules?.[scriptId] !== false;
         } catch (error) {
@@ -49,14 +47,11 @@
      * @returns {Function} The listener function (for cleanup)
      */
     function createStorageListener(scriptId, callback) {
-        const listener = (changes, namespace) => {
-            if (!chrome.runtime?.id) return;
-            if (namespace === 'local' && changes[CONFIG_KEY]) {
+        return NeuronSync.onConfigChange(function(key) {
+            if (key === CONFIG_KEY) {
                 callback();
             }
-        };
-        chrome.storage.onChanged.addListener(listener);
-        return listener;
+        });
     }
 
     /**

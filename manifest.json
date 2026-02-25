@@ -46,6 +46,7 @@
       "js": [
         "vendor/idb.min.js",
         "shared/js/neuron-db.js",
+        "shared/js/neuron-sync.js",
         "shared/js/neuron-utils.js",
         "modules/ouvidoria/tratar-novo/tratar-novo-extract.js",
         "modules/notificacoes/notificacoes.js"
@@ -60,6 +61,9 @@
         "https://falabr-h.cgu.gov.br/Manifestacao/TratarManifestacoes"
       ],
       "js": [
+        "vendor/idb.min.js",
+        "shared/js/neuron-db.js",
+        "shared/js/neuron-sync.js",
         "shared/js/neuron-utils.js",
         "shared/js/date-utils.js",
         "modules/ouvidoria/tratar-novo/tratar-novo-pagesize.js",
