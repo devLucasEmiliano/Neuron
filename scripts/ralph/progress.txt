@@ -1,3 +1,28 @@
 # Ralph Progress Log
 Started: Wed Feb 25 13:00:27 PST 2026
+
+## Codebase Patterns
+- NeuronDB is an IIFE that returns a public API object, all methods are async using `init()` pattern
+- DB stores use `{ keyPath: 'key' }` for key-value stores (metadata, config, preferences)
+- Store records include `{ key, value, timestamp }` for key-value stores
+- No build tooling (no package.json, eslint, tsconfig) - use `node -c` for syntax validation
+- Script load order matters: `idb.min.js` → `neuron-db.js` → consuming modules
+- Content scripts are injected via manifest.json `content_scripts` entries
+- Extension pages (options, popup) load scripts via `<script>` tags in HTML
+- Service worker (background.js) uses `importScripts()` for dependencies
+
+---
+
+## 2026-02-25 - US-001
+- Implemented config and preferences object stores in NeuronDB
+- Bumped DB_VERSION from 1 to 2
+- Added STORE_CONFIG and STORE_PREFERENCES constants
+- Added upgrade path that preserves existing stores (demandas, concluidas, metadata) using `contains()` checks
+- Added CRUD methods: getConfig(key), setConfig(key, value), getPreference(key), setPreference(key, value)
+- All new methods follow existing init() pattern and store records as { key, value, timestamp }
+- Files changed: shared/js/neuron-db.js
+- **Learnings for future iterations:**
+  - The upgrade callback uses `!db.objectStoreNames.contains()` guards, so it's safe to add new stores without affecting existing ones
+  - All key-value stores (metadata, config, preferences) use the same record shape: `{ key, value, timestamp }`
+  - No linting/typecheck tools configured — use `node -c <file>` for basic syntax validation
 ---

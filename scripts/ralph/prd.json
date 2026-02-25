@@ -7,7 +7,7 @@
       "id": "US-001",
       "title": "Add config and preferences stores to NeuronDB",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "description": "Extend NeuronDB with new object stores for configuration and preferences so they can be persisted without chrome.storage.local.",
       "acceptanceCriteria": [
         "Bump DB_VERSION to 2 in neuron-db.js",
