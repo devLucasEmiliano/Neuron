@@ -246,6 +246,52 @@
         renderizarPainel();
     };
 
+    function toggleGrupoLista(el) {
+        // Cancel any in-flight transition listener
+        if (el._neuronTransitionEnd) {
+            el.removeEventListener('transitionend', el._neuronTransitionEnd);
+            el._neuronTransitionEnd = null;
+        }
+
+        if (el.classList.contains('collapsed')) {
+            // EXPAND: collapsed -> visible
+            el.classList.remove('collapsed');
+            el.style.overflow = 'hidden';
+            el.style.maxHeight = '0px';
+            const targetHeight = el.scrollHeight;
+            el.style.maxHeight = targetHeight + 'px';
+
+            const onEnd = (e) => {
+                if (e.propertyName !== 'max-height') return;
+                el.removeEventListener('transitionend', onEnd);
+                el._neuronTransitionEnd = null;
+                el.style.maxHeight = '';
+                el.style.overflow = '';
+            };
+            el._neuronTransitionEnd = onEnd;
+            el.addEventListener('transitionend', onEnd);
+        } else {
+            // COLLAPSE: visible -> collapsed
+            el.style.overflow = 'hidden';
+            el.style.maxHeight = el.scrollHeight + 'px';
+            el.offsetHeight; // force reflow
+            el.style.maxHeight = '0px';
+            el.style.marginTop = '0px';
+
+            const onEnd = (e) => {
+                if (e.propertyName !== 'max-height') return;
+                el.removeEventListener('transitionend', onEnd);
+                el._neuronTransitionEnd = null;
+                el.classList.add('collapsed');
+                el.style.maxHeight = '';
+                el.style.overflow = '';
+                el.style.marginTop = '';
+            };
+            el._neuronTransitionEnd = onEnd;
+            el.addEventListener('transitionend', onEnd);
+        }
+    }
+
     const handleUiInteraction = (event) => {
         const target = event.target;
         const targetId = target.id;
@@ -279,8 +325,11 @@
 
         const grupoHeader = target.closest('.neuron-grupo-header');
         if (grupoHeader) {
-            grupoHeader.classList.toggle('open');
-            grupoHeader.nextElementSibling?.classList.toggle('collapsed');
+            const lista = grupoHeader.nextElementSibling;
+            if (lista) {
+                grupoHeader.classList.toggle('open');
+                toggleGrupoLista(lista);
+            }
         }
     };
 

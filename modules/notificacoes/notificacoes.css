@@ -345,8 +345,6 @@ input:checked + .neuron-slider:before {
     padding-left: 12px;
     border-left: 3px solid var(--neuron-primary);
     margin-top: 10px;
-    max-height: 500px;
-    overflow: hidden;
     transition: max-height 0.4s ease-in-out, margin-top 0.3s ease;
 }
 
@@ -354,6 +352,7 @@ input:checked + .neuron-slider:before {
     max-height: 0;
     margin-top: 0;
     padding-left: 12px;
+    overflow: hidden;
 }
 
 /* ========== Notification Item ========== */
