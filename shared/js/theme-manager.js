@@ -1,7 +1,7 @@
 /**
  * Neuron Theme Manager
  * Handles dark/light theme switching with system preference detection
- * and persistent storage in Chrome extension storage.
+ * and persistent storage in NeuronDB (IndexedDB).
  */
 const ThemeManager = {
     STORAGE_KEY: 'neuronThemePreference',
@@ -21,14 +21,13 @@ const ThemeManager = {
     },
 
     /**
-     * Get the saved theme preference from Chrome storage
+     * Get the saved theme preference from NeuronDB
      * @returns {Promise<string>} 'light', 'dark', or 'system'
      */
     async getPreference() {
         try {
-            if (typeof chrome !== 'undefined' && chrome.storage?.local) {
-                const result = await chrome.storage.local.get(this.STORAGE_KEY);
-                const pref = result[this.STORAGE_KEY];
+            if (typeof NeuronDB !== 'undefined') {
+                const pref = await NeuronDB.getPreference('theme');
                 return this.VALID_THEMES.includes(pref) ? pref : 'system';
             }
         } catch (e) {
@@ -38,7 +37,7 @@ const ThemeManager = {
     },
 
     /**
-     * Save theme preference to Chrome storage
+     * Save theme preference to NeuronDB
      * @param {string} preference - 'light', 'dark', or 'system'
      */
     async setPreference(preference) {
@@ -48,8 +47,8 @@ const ThemeManager = {
         }
 
         try {
-            if (typeof chrome !== 'undefined' && chrome.storage?.local) {
-                await chrome.storage.local.set({ [this.STORAGE_KEY]: preference });
+            if (typeof NeuronDB !== 'undefined') {
+                await NeuronDB.setPreference('theme', preference);
             }
         } catch (e) {
             console.warn('ThemeManager: Could not save preference to storage', e);
@@ -73,13 +72,6 @@ const ThemeManager = {
         }
 
         document.documentElement.setAttribute('data-bs-theme', theme);
-
-        // Cache for quick sync access on next page load (anti-FOLT)
-        try {
-            localStorage.setItem('neuron-theme-cache', preference);
-        } catch (e) {
-            // localStorage may be unavailable in some contexts
-        }
 
         // Dispatch custom event for components that need to react
         const event = new CustomEvent('neuron-theme-change', {
@@ -204,31 +196,18 @@ const ThemeManager = {
     }
 };
 
-// Listen for storage changes from other extension pages
-if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
-    chrome.storage.onChanged.addListener((changes, namespace) => {
-        if (namespace === 'local' && changes[ThemeManager.STORAGE_KEY]) {
-            const newValue = changes[ThemeManager.STORAGE_KEY].newValue;
-            if (ThemeManager.VALID_THEMES.includes(newValue)) {
-                ThemeManager.applyTheme(newValue);
-            }
+// Listen for theme preference changes from other extension contexts
+if (typeof NeuronSync !== 'undefined') {
+    NeuronSync.onPreferenceChange(function (key, newValue) {
+        if (key === 'theme' && ThemeManager.VALID_THEMES.includes(newValue)) {
+            ThemeManager.applyTheme(newValue);
         }
     });
 }
 
 // Auto-initialize when script loads (prevents flash of wrong theme)
+// Falls back to system preference detection since IndexedDB is async
 (function () {
-    var quickTheme = null;
-    try {
-        quickTheme = localStorage.getItem('neuron-theme-cache');
-    } catch (e) { /* localStorage unavailable */ }
-
-    var resolved;
-    if (quickTheme && ThemeManager.VALID_THEMES.indexOf(quickTheme) !== -1) {
-        resolved = quickTheme === 'system' ? ThemeManager.getSystemTheme() : quickTheme;
-    } else {
-        // No cache (first load): detect system preference as fallback
-        resolved = ThemeManager.getSystemTheme();
-    }
+    var resolved = ThemeManager.getSystemTheme();
     document.documentElement.setAttribute('data-bs-theme', resolved);
 })();
