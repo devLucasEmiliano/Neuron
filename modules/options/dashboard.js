@@ -370,8 +370,8 @@ const NeuronDashboard = (function () {
         });
 
         // Refresh when data is cleared from another context
-        chrome.storage.onChanged.addListener((changes, namespace) => {
-            if (namespace === 'local' && changes.neuronDashboardRefreshSignal) {
+        NeuronSync.onPreferenceChange((key) => {
+            if (key === 'dashboardRefreshSignal') {
                 refresh();
             }
         });
