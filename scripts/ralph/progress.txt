@@ -57,3 +57,17 @@ Started: Wed Feb 25 13:00:27 PST 2026
   - `NeuronDB.getConfig()` returns the value directly (or null), unlike `chrome.storage.local.get()` which returns `{ key: value }` — adjust destructuring accordingly
   - No chrome.storage.onChanged listener existed in options.js, but adding NeuronSync.onConfigChange() ensures cross-context sync for when other contexts modify config
 ---
+
+## 2026-02-25 - US-004
+- Migrated popup from chrome.storage.local to NeuronDB
+- carregarConfiguracoes(): Replaced `chrome.storage.local.get(CONFIG_KEY)` with `NeuronDB.getConfig(CONFIG_KEY)`
+- salvarConfiguracoes(): Replaced `chrome.storage.local.set(...)` with `NeuronDB.setConfig(CONFIG_KEY, userConfig)`
+- Added NeuronSync.onConfigChange() listener to reload all UI controls when config changes from another context
+- Added idb.min.js, neuron-db.js, neuron-sync.js script tags to popup.html (before theme-manager.js and popup.js)
+- Files changed: modules/popup/popup.js, modules/popup/popup.html
+- **Learnings for future iterations:**
+  - Popup had no chrome.storage.onChanged listener, but adding NeuronSync.onConfigChange() is still needed for cross-context sync (e.g., when options page saves config)
+  - The NeuronSync.onConfigChange() callback receives (key, newValue) — check `key === CONFIG_KEY` to filter relevant changes
+  - The popup UI has many form controls that all need to be refreshed when config changes externally — the onConfigChange handler must update all of them
+  - Manual browser verification needed (no browser testing tools available)
+---

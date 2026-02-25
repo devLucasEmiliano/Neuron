@@ -55,7 +55,7 @@
       "id": "US-004",
       "title": "Migrate popup to use NeuronDB",
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "description": "Replace chrome.storage.local usage in popup with NeuronDB.",
       "acceptanceCriteria": [
         "popup.js: Replace chrome.storage.local.get with NeuronDB.getConfig",
