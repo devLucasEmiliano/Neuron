@@ -111,7 +111,7 @@
       "id": "US-008",
       "title": "Migrate notificacoes module to use NeuronDB",
       "priority": 8,
-      "passes": false,
+      "passes": true,
       "description": "Replace chrome.storage.local usage in notifications panel with NeuronDB.",
       "acceptanceCriteria": [
         "notificacoes.js: Replace chrome.storage.local.get theme with NeuronDB.getPreference('theme')",

@@ -17,6 +17,8 @@ Started: Wed Feb 25 13:00:27 PST 2026
 - The full user config is stored under key `neuronUserConfig` — `NeuronDB.getConfig('neuronUserConfig')` returns the full object directly (not wrapped in `{ key: value }`)
 - Theme preference is stored under key `theme` in preferences store — `NeuronDB.getPreference('theme')` / `NeuronDB.setPreference('theme', value)`
 - Anti-FOUC IIFE can't use IndexedDB (async), so it falls back to `ThemeManager.getSystemTheme()` — corrected once `init()` runs
+- notificacoes.js stores filtro usuario preference under key `filtroUsuarioAtivado` in NeuronDB preferences store
+- notificacoes.js stores dashboard refresh signal under key `dashboardRefreshSignal` in NeuronDB preferences store
 
 ---
 
@@ -119,5 +121,22 @@ Started: Wed Feb 25 13:00:27 PST 2026
   - module-factory.js now depends on NeuronDB and NeuronSync globals — all 5 content_scripts entries needed dependency injection
   - The factory uses `NeuronSync.onConfigChange()` directly (no typeof guard) since neuron-sync.js is always loaded before module-factory.js in manifest.json
   - Modules using createNeuronModule() (arquivar, encaminhar, prorrogar, tramitar, tratar) automatically get NeuronDB support without needing changes to those module files
+  - Manual browser verification needed (no browser testing tools available)
+---
+
+## 2026-02-25 - US-008
+- Migrated notificacoes.js from chrome.storage.local to NeuronDB
+- loadThemePreference(): Replaced `chrome.storage.local.get(STORAGE_KEY_THEME)` with `NeuronDB.getPreference('theme')` — returns value directly
+- carregarConfiguracoes(): Replaced `chrome.storage.local.get([CONFIG_KEY, STORAGE_KEY_FILTRO_USUARIO])` with separate `NeuronDB.getConfig(CONFIG_KEY)` and `NeuronDB.getPreference('filtroUsuarioAtivado')` calls
+- limparLista(): Replaced `chrome.storage.local.set({ neuronDashboardRefreshSignal: ... })` with `NeuronDB.setPreference('dashboardRefreshSignal', Date.now())`
+- handleUiInteraction: Replaced `chrome.storage.local.set({ [STORAGE_KEY_FILTRO_USUARIO]: ... })` with `NeuronDB.setPreference('filtroUsuarioAtivado', ...)`
+- Replaced `chrome.storage.onChanged.addListener` with `NeuronSync.onConfigChange()` and `NeuronSync.onPreferenceChange()` subscriptions
+- Removed old `STORAGE_KEY_FILTRO_USUARIO` and `STORAGE_KEY_THEME` constants, added `PREF_KEY_FILTRO_USUARIO` and `PREF_KEY_DASHBOARD_REFRESH`
+- Files changed: modules/notificacoes/notificacoes.js
+- **Learnings for future iterations:**
+  - notificacoes.js already had idb.min.js, neuron-db.js, neuron-sync.js loaded before it in manifest.json (from US-006/US-007), so no manifest changes were needed
+  - The filtro usuario preference was stored under `neuronFiltroUsuarioAtivado` in chrome.storage.local — now stored as `filtroUsuarioAtivado` in NeuronDB preferences
+  - The dashboard refresh signal was stored as `neuronDashboardRefreshSignal` in chrome.storage.local — now stored as `dashboardRefreshSignal` in NeuronDB preferences; dashboard.js (US-009) will need to subscribe to this preference change via NeuronSync
+  - When replacing `chrome.storage.onChanged` that listens for multiple keys across different stores (config + preferences + theme), split into separate `NeuronSync.onConfigChange()` and `NeuronSync.onPreferenceChange()` subscriptions
   - Manual browser verification needed (no browser testing tools available)
 ---
