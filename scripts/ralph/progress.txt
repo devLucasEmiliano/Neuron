@@ -1,0 +1,113 @@
+# Ralph Progress Log
+Started: Wed Feb 25 08:12:27 PST 2026
+---
+
+## Codebase Patterns
+- This is a Chrome Extension (Manifest V3) with no build tools, no package.json, no linter — quality checks are manual file reference verification
+- `manifest.json` is the single source of truth for all file paths; every moved/renamed file must have its manifest reference updated
+- HTML files in `modules/` use relative paths like `../../vendor/` to reach root-level directories
+- `background.js` uses `importScripts()` with root-relative paths
+- `chrome.runtime.getURL()` calls in JS files use root-relative paths (e.g., `modules/loading/loading.html`)
+- Pre-existing line-ending changes exist in many files — only stage files you actually modified
+- Use `git mv` for renames to preserve file history
+- Chrome Manifest V3 `web_accessible_resources` glob `*` does NOT cross directory boundaries — `images/*` won't match `images/icons/foo.png`
+- Icon files (manifest `icons`, `action.default_icon`, extension page `<img>` tags) don't need to be in `web_accessible_resources`
+---
+
+## 2026-02-25 - US-001
+- **What was implemented:** Separated vendored libraries from project utilities
+  - Renamed `lib/` to `vendor/` (containing bootstrap/, chart.min.js, idb.min.js)
+  - Moved `date_utils.js` to `shared/js/date-utils.js` (underscore → hyphen)
+  - Moved `module_factory.js` to `shared/js/module-factory.js` (underscore → hyphen)
+  - Updated all path references in manifest.json, background.js, options.html, popup.html
+  - Updated web_accessible_resources from lib/* to vendor/*
+- **Files changed:**
+  - `manifest.json` — updated 11 content_scripts paths + 2 web_accessible_resources paths
+  - `background.js` — updated importScripts from lib/ to vendor/
+  - `modules/options/options.html` — updated 5 lib/ references to vendor/
+  - `modules/popup/popup.html` — updated 3 lib/ references to vendor/
+  - `shared/js/module-factory.js` — updated file comment
+  - `lib/` → `vendor/` (directory rename via git mv)
+  - `lib/date_utils.js` → `shared/js/date-utils.js` (moved + renamed)
+  - `lib/module_factory.js` → `shared/js/module-factory.js` (moved + renamed)
+- **Learnings for future iterations:**
+  - The `web_accessible_resources` section in manifest.json also needs updating when moving directories
+  - The `shared/*` wildcard in web_accessible_resources already covers newly moved utility files
+  - No JS files use `chrome.runtime.getURL()` to reference lib/ paths, so only manifest.json, background.js, and HTML files needed updating
+  - Several files have pre-existing line-ending changes — be careful to only stage files you actually modified
+---
+
+## 2026-02-25 - US-002
+- **What was implemented:** Renamed all files with underscores inside modules to use hyphens
+  - `modules/ouvidoria/tratar-novo/`: tratar_novo.css, tratar_novo_extract.js, tratar_novo_insert.js, tratar_novo_pagesize.js → hyphenated versions
+  - `modules/ouvidoria/tramitar/`: tramitar_pontos_focais.js → tramitar-pontos-focais.js
+  - `modules/sic/tratar/`: sic_tratar_extract.js, sic_tratar_style.css → hyphenated versions
+  - `modules/sic/analisar/`: sic_analisar_move_buttons.js → sic-analisar-move-buttons.js
+  - Updated all 8 manifest.json content_scripts references to use new filenames
+- **Files changed:**
+  - 8 files renamed via `git mv` (4 in tratar-novo, 1 in tramitar, 2 in sic/tratar, 1 in sic/analisar)
+  - `manifest.json` — updated 8 file path references in content_scripts
+- **Learnings for future iterations:**
+  - Some JS files have internal SCRIPT_ID constants with underscores (e.g., `tramitar_pontos_focais`) — these are display-only identifiers for console.log, not file references, and don't need updating for a file rename story
+  - No HTML files reference module files by filename directly — all module file loading goes through manifest.json content_scripts
+  - `glob modules/**/*_*.*` is a quick way to verify no underscore-named files remain
+---
+
+## 2026-02-25 - US-003
+- **What was implemented:** Organized images folder by purpose
+  - Created `images/icons/` subfolder
+  - Moved 4 icon files (neuron128.png, neuron64.png, neuronoff128.png, neuronon128.png) to `images/icons/`
+  - Kept non-icon asset (Intro-Neuron.gif) at `images/` root
+  - Updated manifest.json `icons` and `action.default_icon` to use `images/icons/` path
+  - Updated `options.html` and `popup.html` icon `<img>` src attributes
+- **Files changed:**
+  - `images/neuron128.png` → `images/icons/neuron128.png` (git mv)
+  - `images/neuron64.png` → `images/icons/neuron64.png` (git mv)
+  - `images/neuronoff128.png` → `images/icons/neuronoff128.png` (git mv)
+  - `images/neuronon128.png` → `images/icons/neuronon128.png` (git mv)
+  - `manifest.json` — updated 2 icon path references
+  - `modules/options/options.html` — updated 1 icon img src
+  - `modules/popup/popup.html` — updated 1 icon img src
+- **Learnings for future iterations:**
+  - No JS files reference icon paths — icons are only referenced in manifest.json and extension HTML pages
+  - Chrome Manifest V3 `web_accessible_resources` glob `images/*` does NOT cover `images/icons/*` (glob `*` doesn't cross `/`). However, icons don't need to be web-accessible since they're used by Chrome UI and extension pages only.
+  - If icons ever need to be web-accessible (e.g., content scripts displaying them on web pages), add `images/icons/*` to `web_accessible_resources`
+---
+
+## 2026-02-25 - US-004
+- **What was implemented:** Updated manifest.json web_accessible_resources to properly cover all file paths after restructure
+  - Replaced `shared/*` with `shared/js/*` and `shared/css/*` since Manifest V3 globs don't cross directory boundaries
+  - Verified `vendor/*` and `vendor/bootstrap/*` entries are in place (already done in US-001)
+  - Verified all 30 file paths in manifest.json resolve to existing files
+  - Confirmed zero old `lib/` path references remain in any extension code files
+- **Files changed:**
+  - `manifest.json` — updated web_accessible_resources `shared/*` → `shared/js/*` + `shared/css/*`
+- **Learnings for future iterations:**
+  - Content scripts declared in manifest.json `content_scripts` are injected by Chrome directly — they do NOT need to be in `web_accessible_resources`
+  - Only resources accessed via `chrome.runtime.getURL()` from content scripts need to be web-accessible
+  - Currently only `modules/loading/loading.html` and `images/Intro-Neuron.gif` are fetched via getURL from content scripts
+  - Extension pages (popup, options) can access all extension resources directly without WAR
+  - `shared/js/date-utils.js` still has an old `@file date_utils.js` comment and `sic-tratar-extract.js` has an error message referencing the old name — these are cosmetic, not broken references (fixed in US-005)
+---
+
+## 2026-02-25 - US-005
+- **What was implemented:** Full verification of extension functionality after restructure
+  - Ran full-text searches for all old paths: `lib/`, `date_utils`, `module_factory`, `tratar_novo`, `sic_tratar`, `sic_analisar`, `tramitar_pontos`, `images/neuron` (without `icons/`)
+  - Confirmed zero broken references remain across all .js, .html, .json, .css files
+  - Verified all 33 manifest.json file paths (content_scripts, icons, action, background, options_ui, WAR) resolve to existing files
+  - Verified all HTML `src`/`href` references (18 paths from options.html and popup.html) resolve to existing files
+  - Verified all JS `importScripts()` and `chrome.runtime.getURL()` references resolve to existing files
+  - Confirmed `config/config.json` exists (referenced via getURL in options.js)
+  - Confirmed old `lib/` directory no longer exists
+  - Confirmed zero underscore-named files remain in `modules/` (`glob modules/**/*_*.*`)
+  - Fixed two cosmetic old-name references:
+    - `shared/js/date-utils.js`: `@file date_utils.js` → `@file date-utils.js`
+    - `modules/sic/tratar/sic-tratar-extract.js`: error message `date_utils.js` → `date-utils.js`
+- **Files changed:**
+  - `shared/js/date-utils.js` — updated `@file` comment to match new filename
+  - `modules/sic/tratar/sic-tratar-extract.js` — updated error message to reference new filename
+- **Learnings for future iterations:**
+  - The `SCRIPT_ID` constants in JS files (e.g., `tramitar_pontos_focais`) are display-only identifiers for console logging — not file references, confirmed safe to leave as-is
+  - Only 3 JS runtime path mechanisms exist in this codebase: `importScripts()` in background.js, `chrome.runtime.getURL()` in content/options scripts, and relative `src`/`href` in HTML files
+  - `config/config.json` is loaded via `chrome.runtime.getURL('/config/config.json')` from options.js — keep this in mind when restructuring config paths
+---
