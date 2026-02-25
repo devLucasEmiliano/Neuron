@@ -285,6 +285,9 @@ const NeuronDB = (function () {
     async function setConfig(key, value) {
         const db = await init();
         await db.put(STORE_CONFIG, { key, value, timestamp: Date.now() });
+        if (typeof NeuronSync !== 'undefined') {
+            NeuronSync.broadcast('config', key, value);
+        }
     }
 
     /**
@@ -302,6 +305,9 @@ const NeuronDB = (function () {
     async function setPreference(key, value) {
         const db = await init();
         await db.put(STORE_PREFERENCES, { key, value, timestamp: Date.now() });
+        if (typeof NeuronSync !== 'undefined') {
+            NeuronSync.broadcast('preference', key, value);
+        }
     }
 
     /**
