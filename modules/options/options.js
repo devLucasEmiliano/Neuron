@@ -835,7 +835,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Listen for config changes from other contexts (replaces chrome.storage.onChanged)
+    // Listen for config changes from other contexts via BroadcastChannel
     NeuronSync.onConfigChange(async (key, newValue) => {
         if (key === CONFIG_STORAGE_KEY && newValue) {
             fullConfig = deepMerge(JSON.parse(JSON.stringify(defaultConfig)), newValue);

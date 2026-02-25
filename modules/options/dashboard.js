@@ -317,11 +317,6 @@ const NeuronDashboard = (function () {
         }
 
         try {
-            // Check if migration is needed first
-            if (await NeuronDB.needsMigration()) {
-                await NeuronDB.migrateFromChromeStorage();
-            }
-
             // Get statistics from NeuronDB
             const stats = await NeuronDB.getStats();
 

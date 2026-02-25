@@ -1,6 +1,6 @@
 /**
  * NeuronSync - Cross-context synchronization layer using BroadcastChannel
- * Replaces chrome.storage.onChanged for notifying other extension contexts
+ * Notifies other extension contexts
  * when config or preference values change in IndexedDB.
  */
 

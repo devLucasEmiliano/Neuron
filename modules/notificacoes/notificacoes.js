@@ -200,13 +200,8 @@
     async function inicializarDadosNotificacoes() {
         await carregarConfiguracoes();
         try {
-            // Initialize NeuronDB and run migration if needed
+            // Initialize NeuronDB
             await NeuronDB.init();
-
-            // Check if migration is needed (first time using IndexedDB)
-            if (await NeuronDB.needsMigration()) {
-                await NeuronDB.migrateFromChromeStorage();
-            }
 
             // Load data from IndexedDB
             const [demandas, concluidas] = await Promise.all([

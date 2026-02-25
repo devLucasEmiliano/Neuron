@@ -1,6 +1,6 @@
 /**
  * NeuronDB - IndexedDB Service Layer for Neuron Extension
- * Manages demand data storage with migration from chrome.storage.local
+ * Manages demand data storage using IndexedDB
  */
 
 const NeuronDB = (function () {
@@ -311,73 +311,6 @@ const NeuronDB = (function () {
     }
 
     /**
-     * Check if migration from chrome.storage is needed
-     */
-    async function needsMigration() {
-        const migrationRecord = await getMetadata('lastMigration');
-        return !migrationRecord;
-    }
-
-    /**
-     * Migrate data from chrome.storage.local to IndexedDB
-     */
-    async function migrateFromChromeStorage() {
-        try {
-            // Check if already migrated
-            const migrated = await getMetadata('lastMigration');
-            if (migrated) {
-                console.log('NeuronDB: Migration already completed');
-                return false;
-            }
-
-            console.log('NeuronDB: Starting migration from chrome.storage.local');
-
-            // Get old data from chrome.storage
-            const result = await chrome.storage.local.get([
-                'neuronDemandasMestra',
-                'neuronDemandasConcluidas'
-            ]);
-
-            // Migrate demandas
-            const oldDemandas = result.neuronDemandasMestra || {};
-            const demandasCount = Object.keys(oldDemandas).length;
-
-            if (demandasCount > 0) {
-                await saveDemandasFromObject(oldDemandas);
-                console.log(`NeuronDB: Migrated ${demandasCount} demandas`);
-            }
-
-            // Migrate concluidas
-            const oldConcluidas = result.neuronDemandasConcluidas || [];
-            if (oldConcluidas.length > 0) {
-                const db = await init();
-                const tx = db.transaction(STORE_CONCLUIDAS, 'readwrite');
-                const promises = oldConcluidas.map(num =>
-                    tx.store.put({ numero: num, timestamp: Date.now() })
-                );
-                promises.push(tx.done);
-                await Promise.all(promises);
-                console.log(`NeuronDB: Migrated ${oldConcluidas.length} concluidas`);
-            }
-
-            // Mark migration complete
-            await setMetadata('lastMigration', {
-                timestamp: Date.now(),
-                version: '1.0',
-                demandasMigrated: demandasCount,
-                concluidasMigrated: oldConcluidas.length
-            });
-
-            console.log('NeuronDB: Migration completed successfully');
-            return true;
-
-        } catch (error) {
-            console.error('NeuronDB: Migration failed', error);
-            throw error;
-        }
-    }
-
-    /**
      * Get dashboard statistics
      */
     async function getStats() {
@@ -556,10 +489,6 @@ const NeuronDB = (function () {
         // Preferences
         getPreference,
         setPreference,
-
-        // Migration
-        needsMigration,
-        migrateFromChromeStorage,
 
         // Statistics
         getStats,
