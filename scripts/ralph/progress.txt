@@ -19,6 +19,9 @@ Started: Wed Feb 25 13:00:27 PST 2026
 - Anti-FOUC IIFE can't use IndexedDB (async), so it falls back to `ThemeManager.getSystemTheme()` — corrected once `init()` runs
 - notificacoes.js stores filtro usuario preference under key `filtroUsuarioAtivado` in NeuronDB preferences store
 - notificacoes.js stores dashboard refresh signal under key `dashboardRefreshSignal` in NeuronDB preferences store
+- tramitar-pontos-focais.js stores selected secretaria under key `secretariaSelecionadaTramitar` in NeuronDB preferences store
+- Scripts that already use NeuronUtils.isScriptAtivo() + NeuronUtils.createStorageListener() only need direct chrome.storage.local.get calls migrated
+- date-utils.js uses `typeof NeuronDB === 'undefined'` guard for graceful fallback when NeuronDB isn't loaded
 
 ---
 
@@ -150,5 +153,25 @@ Started: Wed Feb 25 13:00:27 PST 2026
   - dashboard.js only had one chrome.storage reference — the onChanged listener for the refresh signal
   - NeuronSync.js was already loaded in options.html (from US-003), so no HTML changes needed
   - The dashboard refresh signal key changed from `neuronDashboardRefreshSignal` (chrome.storage) to `dashboardRefreshSignal` (NeuronDB preference) — this was already done in US-008
+  - Manual browser verification needed (no browser testing tools available)
+---
+
+## 2026-02-25 - US-010
+- Migrated all remaining content script modules from chrome.storage.local to NeuronDB
+- resposta.js: Replaced `chrome.storage.local.get(CONFIG_KEY)` with `NeuronDB.getConfig(CONFIG_KEY)`, replaced `chrome.storage.onChanged` with `NeuronSync.onConfigChange()`
+- tramitar.js: Replaced `chrome.storage.local.get(CONFIG_KEY)` with `NeuronDB.getConfig(CONFIG_KEY)`, replaced `chrome.storage.onChanged` with `NeuronSync.onConfigChange()`
+- tramitar-pontos-focais.js: Replaced `chrome.storage.local.get/set` with `NeuronDB.getConfig/setPreference`, replaced `chrome.storage.onChanged` with `NeuronSync.onConfigChange()`, converted saved secretaria preference to `NeuronDB.getPreference('secretariaSelecionadaTramitar')`
+- tratar-novo-pagesize.js: Replaced `chrome.storage.local.get` with `NeuronDB.getConfig` (already uses NeuronUtils for listener)
+- tratar-novo-insert.js: Replaced `chrome.storage.local.get` with `NeuronDB.getConfig` (already uses NeuronUtils for listener)
+- loading.js: Replaced `chrome.storage.local.get(CONFIG_KEY)` with `NeuronDB.getConfig(CONFIG_KEY)`, replaced `chrome.storage.onChanged` with `NeuronSync.onConfigChange()`
+- date-utils.js: Replaced `chrome?.storage?.local` availability check with `typeof NeuronDB === 'undefined'`, replaced `chrome.storage.local.get('neuronUserConfig')` with `NeuronDB.getConfig('neuronUserConfig')`
+- manifest.json: Added idb.min.js, neuron-db.js, neuron-sync.js to loading entry; Added same to resposta entry; Added idb.min.js, neuron-db.js to SIC tratar entry
+- Files changed: modules/ouvidoria/resposta/resposta.js, modules/ouvidoria/tramitar/tramitar.js, modules/ouvidoria/tramitar/tramitar-pontos-focais.js, modules/ouvidoria/tratar-novo/tratar-novo-pagesize.js, modules/ouvidoria/tratar-novo/tratar-novo-insert.js, modules/loading/loading.js, shared/js/date-utils.js, manifest.json
+- **Learnings for future iterations:**
+  - Scripts using NeuronUtils.isScriptAtivo() and NeuronUtils.createStorageListener() only need their direct chrome.storage.local.get calls migrated — the listener/active-check is already handled
+  - tramitar-pontos-focais.js stored a UI preference (selected secretaria) — migrated to NeuronDB preferences store under key 'secretariaSelecionadaTramitar'
+  - date-utils.js uses `typeof NeuronDB === 'undefined'` guard since it only needs DB access, not sync
+  - The loading content_scripts entry runs at `document_start` — IndexedDB is available at document_start so adding idb.min.js and neuron-db.js works correctly
+  - The SIC tratar entry only needs idb.min.js + neuron-db.js (no neuron-sync.js) because date-utils.js only reads config at startup
   - Manual browser verification needed (no browser testing tools available)
 ---

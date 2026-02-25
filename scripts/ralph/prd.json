@@ -138,7 +138,7 @@
       "id": "US-010",
       "title": "Migrate remaining content script modules to use NeuronDB",
       "priority": 10,
-      "passes": false,
+      "passes": true,
       "description": "Migrate all remaining content scripts to read config from IndexedDB.",
       "acceptanceCriteria": [
         "resposta.js: Replace chrome.storage.local with NeuronDB",
