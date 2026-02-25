@@ -126,7 +126,7 @@
       "id": "US-009",
       "title": "Migrate dashboard to use NeuronDB",
       "priority": 9,
-      "passes": false,
+      "passes": true,
       "description": "Replace chrome.storage.onChanged in dashboard with BroadcastChannel.",
       "acceptanceCriteria": [
         "dashboard.js: Replace chrome.storage.onChanged listener with BroadcastChannel",

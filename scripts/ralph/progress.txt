@@ -140,3 +140,15 @@ Started: Wed Feb 25 13:00:27 PST 2026
   - When replacing `chrome.storage.onChanged` that listens for multiple keys across different stores (config + preferences + theme), split into separate `NeuronSync.onConfigChange()` and `NeuronSync.onPreferenceChange()` subscriptions
   - Manual browser verification needed (no browser testing tools available)
 ---
+
+## 2026-02-25 - US-009
+- Migrated dashboard.js from chrome.storage.onChanged to NeuronSync BroadcastChannel
+- Replaced `chrome.storage.onChanged.addListener` with `NeuronSync.onPreferenceChange()` filtering on `key === 'dashboardRefreshSignal'`
+- Dashboard still auto-refreshes when demands are concluded (notificacoes.js sets `dashboardRefreshSignal` preference via NeuronDB)
+- Files changed: modules/options/dashboard.js
+- **Learnings for future iterations:**
+  - dashboard.js only had one chrome.storage reference — the onChanged listener for the refresh signal
+  - NeuronSync.js was already loaded in options.html (from US-003), so no HTML changes needed
+  - The dashboard refresh signal key changed from `neuronDashboardRefreshSignal` (chrome.storage) to `dashboardRefreshSignal` (NeuronDB preference) — this was already done in US-008
+  - Manual browser verification needed (no browser testing tools available)
+---
