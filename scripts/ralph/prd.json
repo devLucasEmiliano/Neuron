@@ -69,7 +69,7 @@
       "id": "US-005",
       "title": "Migrate ThemeManager to use NeuronDB",
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "description": "Replace chrome.storage.local and localStorage usage in ThemeManager with NeuronDB.",
       "acceptanceCriteria": [
         "theme-manager.js: Replace chrome.storage.local.get with NeuronDB.getPreference('theme')",
