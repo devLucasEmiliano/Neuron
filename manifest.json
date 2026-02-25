@@ -47,7 +47,7 @@
         "vendor/idb.min.js",
         "shared/js/neuron-db.js",
         "shared/js/neuron-utils.js",
-        "modules/ouvidoria/tratar-novo/tratar_novo_extract.js",
+        "modules/ouvidoria/tratar-novo/tratar-novo-extract.js",
         "modules/notificacoes/notificacoes.js"
       ],
       "css": ["modules/notificacoes/notificacoes.css"],
@@ -62,10 +62,10 @@
       "js": [
         "shared/js/neuron-utils.js",
         "shared/js/date-utils.js",
-        "modules/ouvidoria/tratar-novo/tratar_novo_pagesize.js",
-        "modules/ouvidoria/tratar-novo/tratar_novo_insert.js"
+        "modules/ouvidoria/tratar-novo/tratar-novo-pagesize.js",
+        "modules/ouvidoria/tratar-novo/tratar-novo-insert.js"
       ],
-      "css": ["modules/ouvidoria/tratar-novo/tratar_novo.css"]
+      "css": ["modules/ouvidoria/tratar-novo/tratar-novo.css"]
     },
     {
       "matches": [
@@ -104,7 +104,7 @@
         "shared/js/date-utils.js",
         "shared/js/module-factory.js", 
         "modules/ouvidoria/tramitar/tramitar.js", 
-        "modules/ouvidoria/tramitar/tramitar_pontos_focais.js"
+        "modules/ouvidoria/tramitar/tramitar-pontos-focais.js"
       ],
       "css": ["modules/ouvidoria/tramitar/tramitar.css"]
     },
@@ -131,8 +131,8 @@
         "https://treinafalabr.cgu.gov.br/web/manifestacao/tratar?*",
         "https://falabr-h.cgu.gov.br/web/manifestacao/tratar?*"
       ],
-      "js": ["shared/js/date-utils.js","modules/sic/tratar/sic_tratar_extract.js"],
-      "css": ["modules/sic/tratar/sic_tratar_style.css"]
+      "js": ["shared/js/date-utils.js","modules/sic/tratar/sic-tratar-extract.js"],
+      "css": ["modules/sic/tratar/sic-tratar-style.css"]
     },
     {
       "matches": [
@@ -140,7 +140,7 @@
         "https://treinafalabr.cgu.gov.br/web/manifestacao/detalhar/*",
         "https://falabr-h.cgu.gov.br/web/manifestacao/detalhar/*"
       ],
-      "js": ["modules/sic/analisar/sic_analisar_move_buttons.js"]
+      "js": ["modules/sic/analisar/sic-analisar-move-buttons.js"]
     }
   ],
   "web_accessible_resources": [
