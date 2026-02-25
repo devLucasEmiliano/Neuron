@@ -84,7 +84,7 @@
       "id": "US-006",
       "title": "Migrate NeuronUtils to use NeuronDB",
       "priority": 6,
-      "passes": false,
+      "passes": true,
       "description": "Replace chrome.storage.local usage in NeuronUtils with NeuronDB.",
       "acceptanceCriteria": [
         "neuron-utils.js: isScriptAtivo() reads config from NeuronDB.getConfig",

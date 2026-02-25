@@ -9,6 +9,7 @@ Started: Wed Feb 25 13:00:27 PST 2026
 - Script load order matters: `idb.min.js` → `neuron-db.js` → `neuron-sync.js` → consuming modules
 - NeuronSync is an IIFE wrapping BroadcastChannel('neuron-sync'), exposes broadcast(), onConfigChange(), onPreferenceChange()
 - NeuronDB.setConfig() and setPreference() auto-broadcast via NeuronSync when it's loaded (graceful fallback if not)
+- neuron-utils.js depends on NeuronDB + NeuronSync globals — load order: idb.min.js → neuron-db.js → neuron-sync.js → neuron-utils.js
 - Content scripts are injected via manifest.json `content_scripts` entries
 - Extension pages (options, popup) load scripts via `<script>` tags in HTML
 - Service worker (background.js) uses `importScripts()` for dependencies
@@ -87,5 +88,22 @@ Started: Wed Feb 25 13:00:27 PST 2026
   - The anti-FOUC IIFE can't use IndexedDB (async) so it falls back to system theme detection — this means a brief flash may occur if user preference differs from system, but it's corrected once `init()` runs
   - NeuronSync.onPreferenceChange() receives (key, newValue) — filter by `key === 'theme'` for theme changes
   - Both options.html and popup.html already load idb.min.js → neuron-db.js → neuron-sync.js → theme-manager.js in correct order (from US-003/US-004)
+  - Manual browser verification needed (no browser testing tools available)
+---
+
+## 2026-02-25 - US-006
+- Migrated NeuronUtils from chrome.storage.local to NeuronDB
+- isScriptAtivo(): Replaced `chrome.storage.local.get(CONFIG_KEY)` with `NeuronDB.getConfig(CONFIG_KEY)` — returns value directly, no destructuring needed
+- createStorageListener(): Replaced `chrome.storage.onChanged.addListener` with `NeuronSync.onConfigChange()` filtering on `key === CONFIG_KEY`
+- Removed `chrome.runtime?.id` guard from isScriptAtivo() (IndexedDB doesn't need extension context validation)
+- Added `neuron-sync.js` to first content_scripts entry in manifest.json (already had idb.min.js and neuron-db.js)
+- Added `idb.min.js`, `neuron-db.js`, `neuron-sync.js` to second content_scripts entry (TratarManifestacoes) in manifest.json — it previously only loaded neuron-utils.js without its dependencies
+- Fixed options.html script load order: moved neuron-utils.js AFTER neuron-db.js and neuron-sync.js (was loading before them)
+- Files changed: shared/js/neuron-utils.js, manifest.json, modules/options/options.html
+- **Learnings for future iterations:**
+  - neuron-utils.js now depends on NeuronDB and NeuronSync globals — must always load idb.min.js → neuron-db.js → neuron-sync.js → neuron-utils.js
+  - The second content_scripts entry (TratarManifestacoes) was missing idb/neuron-db dependencies — always check manifest.json entries when migrating shared modules
+  - options.html had neuron-utils.js loading before neuron-db.js — verify load order in HTML pages too, not just manifest.json
+  - createStorageListener() now returns a proper unsubscribe function (from NeuronSync.onConfigChange), which is a better API than the old raw listener
   - Manual browser verification needed (no browser testing tools available)
 ---
