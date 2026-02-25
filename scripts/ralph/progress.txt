@@ -209,3 +209,21 @@ Started: Wed Feb 25 13:00:27 PST 2026
   - sic-analisar-move-buttons.js doesn't use NeuronDB or chrome.storage, so it correctly has no dependencies
   - Manual browser verification needed (no browser testing tools available)
 ---
+
+## 2026-02-25 - US-013
+- Removed all dead chrome.storage.local and localStorage code from the codebase
+- Removed `needsMigration()` and `migrateFromChromeStorage()` methods from neuron-db.js
+- Removed their exports from the NeuronDB public API
+- Removed migration calls from dashboard.js (`NeuronDB.needsMigration()` + `NeuronDB.migrateFromChromeStorage()`)
+- Removed migration calls from notificacoes.js (same pattern)
+- Updated JSDoc comment in neuron-db.js (removed "migration from chrome.storage.local")
+- Updated comment in options.js (removed "replaces chrome.storage.onChanged" → "via BroadcastChannel")
+- Updated JSDoc in neuron-sync.js (removed "Replaces chrome.storage.onChanged" → "Notifies other extension contexts")
+- Verified zero occurrences of `chrome.storage.local`, `chrome.storage.onChanged`, `localStorage.setItem`, `localStorage.getItem` in all JS files
+- All syntax checks pass
+- Files changed: shared/js/neuron-db.js, shared/js/neuron-sync.js, modules/options/dashboard.js, modules/options/options.js, modules/notificacoes/notificacoes.js
+- **Learnings for future iterations:**
+  - The migration methods were only called from dashboard.js and notificacoes.js — background.js had already removed its call in US-011
+  - Documentation files (prd.json, progress.txt, tasks/*.md) naturally mention old APIs when describing the migration — these are not code references and don't need cleanup
+  - Comments referencing old APIs should be updated to describe the new approach, not left as "replaces X" references
+---

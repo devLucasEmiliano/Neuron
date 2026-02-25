@@ -182,7 +182,7 @@
       "id": "US-013",
       "title": "Remove all dead chrome.storage.local and localStorage code",
       "priority": 13,
-      "passes": false,
+      "passes": true,
       "description": "Clean up any remaining references to chrome.storage.local and localStorage.",
       "acceptanceCriteria": [
         "Zero occurrences of chrome.storage.local in codebase",
