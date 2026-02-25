@@ -74,10 +74,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ========== Configuration Management ==========
 
     async function carregarConfiguracoes() {
-        if (!chrome?.storage?.local) return {};
         try {
-            const result = await chrome.storage.local.get(CONFIG_KEY);
-            return result?.[CONFIG_KEY] || {};
+            return (await NeuronDB.getConfig(CONFIG_KEY)) || {};
         } catch (error) {
             console.error("Neuron (Popup): Erro ao carregar configuracoes.", error);
             return {};
@@ -85,9 +83,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function salvarConfiguracoes() {
-        if (!chrome?.storage?.local) return;
         try {
-            await chrome.storage.local.set({ [CONFIG_KEY]: userConfig });
+            await NeuronDB.setConfig(CONFIG_KEY, userConfig);
         } catch (error) {
             console.error("Neuron (Popup): Erro ao salvar configuracoes.", error);
         }
@@ -194,6 +191,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         catComObservacaoInput?.addEventListener('change', handleNotificacoesSettingChange);
         catProrrogadasInput?.addEventListener('change', handleNotificacoesSettingChange);
         catComplementadasInput?.addEventListener('change', handleNotificacoesSettingChange);
+
+        // Listen for config changes from other contexts via BroadcastChannel
+        if (typeof NeuronSync !== 'undefined') {
+            NeuronSync.onConfigChange(async (key, newValue) => {
+                if (key === CONFIG_KEY) {
+                    userConfig = newValue || {};
+                    masterSwitch.checked = userConfig.masterEnableNeuron !== false;
+                    itemsInput.value = userConfig.generalSettings?.qtdItensTratarTriar || 50;
+
+                    const notifSettings = userConfig.notificacoesSettings || DEFAULT_NOTIFICACOES_SETTINGS;
+                    if (deadlineThresholdInput) deadlineThresholdInput.value = notifSettings.deadlineThreshold ?? DEFAULT_NOTIFICACOES_SETTINGS.deadlineThreshold;
+                    if (dangerCountThresholdInput) dangerCountThresholdInput.value = notifSettings.dangerCountThreshold ?? DEFAULT_NOTIFICACOES_SETTINGS.dangerCountThreshold;
+                    if (filterDefaultInput) filterDefaultInput.checked = notifSettings.filterDefault ?? DEFAULT_NOTIFICACOES_SETTINGS.filterDefault;
+
+                    const catVis = notifSettings.categoryVisibility || DEFAULT_NOTIFICACOES_SETTINGS.categoryVisibility;
+                    if (catPrazosCurtosInput) catPrazosCurtosInput.checked = catVis.prazosCurtos ?? true;
+                    if (catPossiveisRespondidasInput) catPossiveisRespondidasInput.checked = catVis.possiveisRespondidas ?? true;
+                    if (catComObservacaoInput) catComObservacaoInput.checked = catVis.comObservacao ?? true;
+                    if (catProrrogadasInput) catProrrogadasInput.checked = catVis.prorrogadas ?? true;
+                    if (catComplementadasInput) catComplementadasInput.checked = catVis.complementadas ?? true;
+
+                    atualizarUI();
+                }
+            });
+        }
     }
 
     // ========== Canvas Animation ==========
