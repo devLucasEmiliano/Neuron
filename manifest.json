@@ -17,7 +17,7 @@
       "128": "images/icons/neuronon128.png"
     }
   },
-  "permissions": ["storage"],
+  "permissions": [],
   "host_permissions": [
     "https://falabr.cgu.gov.br/*",
     "https://treinafalabr.cgu.gov.br/*",
