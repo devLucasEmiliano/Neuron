@@ -94,8 +94,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const response = await fetch(chrome.runtime.getURL(DEFAULT_CONFIG_PATH));
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             defaultConfig = await response.json();
-            const result = await chrome.storage.local.get(CONFIG_STORAGE_KEY);
-            fullConfig = deepMerge(JSON.parse(JSON.stringify(defaultConfig)), result[CONFIG_STORAGE_KEY] || {});
+            const savedConfig = await NeuronDB.getConfig(CONFIG_STORAGE_KEY);
+            fullConfig = deepMerge(JSON.parse(JSON.stringify(defaultConfig)), savedConfig || {});
         } catch (error) {
             displayStatus(ui.globalStatus, `ERRO CRÍTICO: Falha ao carregar configuração. ${error.message}`, true, 15000);
         }
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function saveConfig() {
         try {
-            await chrome.storage.local.set({ [CONFIG_STORAGE_KEY]: fullConfig });
+            await NeuronDB.setConfig(CONFIG_STORAGE_KEY, fullConfig);
             displayStatus(ui.globalStatus, "Configurações salvas com sucesso!", false);
         } catch (error) {
             displayStatus(ui.globalStatus, `Erro ao salvar: ${error.message}`, true);
@@ -834,6 +834,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             reader.readAsText(file);
         });
     }
+
+    // Listen for config changes from other contexts (replaces chrome.storage.onChanged)
+    NeuronSync.onConfigChange(async (key, newValue) => {
+        if (key === CONFIG_STORAGE_KEY && newValue) {
+            fullConfig = deepMerge(JSON.parse(JSON.stringify(defaultConfig)), newValue);
+            populateAllTabs();
+        }
+    });
 
     initializePage();
 });
