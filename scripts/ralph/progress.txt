@@ -10,6 +10,7 @@ Started: Wed Feb 25 13:00:27 PST 2026
 - NeuronSync is an IIFE wrapping BroadcastChannel('neuron-sync'), exposes broadcast(), onConfigChange(), onPreferenceChange()
 - NeuronDB.setConfig() and setPreference() auto-broadcast via NeuronSync when it's loaded (graceful fallback if not)
 - neuron-utils.js depends on NeuronDB + NeuronSync globals — load order: idb.min.js → neuron-db.js → neuron-sync.js → neuron-utils.js
+- module-factory.js depends on NeuronDB + NeuronSync globals — load order: idb.min.js → neuron-db.js → neuron-sync.js → module-factory.js → consuming module
 - Content scripts are injected via manifest.json `content_scripts` entries
 - Extension pages (options, popup) load scripts via `<script>` tags in HTML
 - Service worker (background.js) uses `importScripts()` for dependencies
@@ -105,5 +106,18 @@ Started: Wed Feb 25 13:00:27 PST 2026
   - The second content_scripts entry (TratarManifestacoes) was missing idb/neuron-db dependencies — always check manifest.json entries when migrating shared modules
   - options.html had neuron-utils.js loading before neuron-db.js — verify load order in HTML pages too, not just manifest.json
   - createStorageListener() now returns a proper unsubscribe function (from NeuronSync.onConfigChange), which is a better API than the old raw listener
+  - Manual browser verification needed (no browser testing tools available)
+---
+
+## 2026-02-25 - US-007
+- Migrated module-factory.js from chrome.storage.local to NeuronDB
+- carregarConfiguracoes(): Replaced `chrome.storage.local.get(configKey)` with `NeuronDB.getConfig(configKey)` — returns value directly, no destructuring needed
+- Replaced `chrome.storage.onChanged.addListener` with `NeuronSync.onConfigChange()` filtering on `key === configKey`
+- Added `vendor/idb.min.js`, `shared/js/neuron-db.js`, `shared/js/neuron-sync.js` to all 5 manifest.json content_scripts entries that use module-factory.js (Arquivar, Encaminhar, Prorrogar, Tramitar, Tratar)
+- Files changed: shared/js/module-factory.js, manifest.json
+- **Learnings for future iterations:**
+  - module-factory.js now depends on NeuronDB and NeuronSync globals — all 5 content_scripts entries needed dependency injection
+  - The factory uses `NeuronSync.onConfigChange()` directly (no typeof guard) since neuron-sync.js is always loaded before module-factory.js in manifest.json
+  - Modules using createNeuronModule() (arquivar, encaminhar, prorrogar, tramitar, tratar) automatically get NeuronDB support without needing changes to those module files
   - Manual browser verification needed (no browser testing tools available)
 ---

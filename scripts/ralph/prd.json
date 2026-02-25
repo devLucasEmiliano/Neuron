@@ -98,7 +98,7 @@
       "id": "US-007",
       "title": "Migrate module-factory.js to use NeuronDB",
       "priority": 7,
-      "passes": false,
+      "passes": true,
       "description": "Replace chrome.storage.local usage in module-factory with NeuronDB.",
       "acceptanceCriteria": [
         "module-factory.js: Replace chrome.storage.local.get with NeuronDB.getConfig",
