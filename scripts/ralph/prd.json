@@ -7,7 +7,7 @@
       "id": "US-001",
       "title": "Separate vendored libraries from project utilities",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Rename lib/ to vendor/ containing only third-party code: bootstrap/, chart.min.js, idb.min.js",
         "Move lib/date_utils.js to shared/js/date-utils.js (rename underscore to hyphen)",
@@ -20,7 +20,7 @@
       "id": "US-002",
       "title": "Rename files with underscores inside modules to use hyphens",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Rename all files in modules/ouvidoria/tratar-novo/ from underscores to hyphens",
         "Rename files in modules/ouvidoria/tramitar/ from underscores to hyphens",
@@ -34,7 +34,7 @@
       "id": "US-003",
       "title": "Organize images folder by purpose",
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Create images/icons/ subfolder",
         "Move extension icon files into images/icons/: neuron128.png, neuron64.png, neuronoff128.png, neuronon128.png",
@@ -47,7 +47,7 @@
       "id": "US-004",
       "title": "Update manifest.json web_accessible_resources",
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Replace lib/* and lib/bootstrap/* entries with vendor/* and vendor/bootstrap/*",
         "Ensure shared/* still covers the moved utility files",
@@ -58,7 +58,7 @@
       "id": "US-005",
       "title": "Verify extension functionality after restructure",
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Run a full-text search for every old path and confirm zero references remain",
         "Confirm no manifest errors would occur",
