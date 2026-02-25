@@ -22,18 +22,17 @@ window.DateUtils = (function() {
      */
     (async function carregarConfiguracoes() {
         try {
-            // Check if chrome.storage is available
-            if (!chrome?.storage?.local) {
-                console.warn("DATE_UTILS v4.0: chrome.storage não disponível. Usando configurações padrão.");
+            // Check if NeuronDB is available
+            if (typeof NeuronDB === 'undefined') {
+                console.warn("DATE_UTILS v4.0: NeuronDB não disponível. Usando configurações padrão.");
                 globalRules.weekend = 'next';
                 globalRules.holiday = 'proximo_dia';
                 holidays = [];
                 return;
             }
 
-            const result = await chrome.storage.local.get('neuronUserConfig');
-            if (result.neuronUserConfig) {
-                const config = result.neuronUserConfig;
+            const config = await NeuronDB.getConfig('neuronUserConfig');
+            if (config) {
 
                 globalRules.weekend = config.prazosSettings?.tratarNovoAjusteFds || 'next';
                 globalRules.holiday = config.prazosSettings?.tratarNovoAjusteFeriado || 'proximo_dia';

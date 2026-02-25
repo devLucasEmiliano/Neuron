@@ -11,8 +11,7 @@
     async function verificarEAtualizarTamanho() {
         if (!await window.NeuronUtils.isScriptAtivo(SCRIPT_ID)) return;
 
-        const result = await chrome.storage.local.get(window.NeuronUtils.CONFIG_KEY);
-        const config = result[window.NeuronUtils.CONFIG_KEY] || {};
+        const config = await NeuronDB.getConfig(window.NeuronUtils.CONFIG_KEY) || {};
         const itensPorPaginaDesejado = String(config.generalSettings?.qtdItensTratarTriar || '50');
 
         const campoTamanho = document.getElementById(ID_CAMPO_TAMANHO);

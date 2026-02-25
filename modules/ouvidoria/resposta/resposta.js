@@ -17,8 +17,7 @@
     let isFeatureActive = false;
 
     async function carregarConfiguracoes() {
-        const result = await chrome.storage.local.get(CONFIG_KEY);
-        config = result[CONFIG_KEY] || {};
+        config = await NeuronDB.getConfig(CONFIG_KEY) || {};
         console.log(`%cNeuron (${SCRIPT_ID}): Configurações carregadas.`, "color: blue; font-weight: bold;");
     }
 
@@ -170,8 +169,8 @@
         }
     }
     
-    chrome.storage.onChanged.addListener((changes, namespace) => {
-        if (namespace === 'local' && changes[CONFIG_KEY]) {
+    NeuronSync.onConfigChange((key) => {
+        if (key === CONFIG_KEY) {
             console.log(`%cNeuron (${SCRIPT_ID}): Configuração alterada. Reavaliando...`, "color: orange; font-weight: bold;");
             verificarEstadoAtualEAgir();
         }

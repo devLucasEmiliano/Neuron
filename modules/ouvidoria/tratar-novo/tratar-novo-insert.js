@@ -11,8 +11,7 @@
         }
 
         await window.DateUtils.ready;
-        const result = await chrome.storage.local.get(window.NeuronUtils.CONFIG_KEY);
-        const config = result[window.NeuronUtils.CONFIG_KEY] || {};
+        const config = await NeuronDB.getConfig(window.NeuronUtils.CONFIG_KEY) || {};
         const demandas = event.detail;
         const DU = window.DateUtils;
         const prazosSettings = config.prazosSettings || {};

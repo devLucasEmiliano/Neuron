@@ -8,8 +8,7 @@
     let config = {};
 
     async function carregarConfiguracoes() {
-        const result = await chrome.storage.local.get(CONFIG_KEY);
-        config = result[CONFIG_KEY] || {};
+        config = await NeuronDB.getConfig(CONFIG_KEY) || {};
         console.log(`%cNeuron (${SCRIPT_ID}): Configurações de pontos focais carregadas.`, "color: blue; font-weight: bold;");
     }
 
@@ -160,12 +159,11 @@
         
         selectElement.addEventListener('change', () => {
             exibirNomesParaSecretaria(selectElement, ulElement);
-            chrome.storage.local.set({ neuronSecretariaSelecionadaTramitar: selectElement.value });
+            NeuronDB.setPreference('secretariaSelecionadaTramitar', selectElement.value);
             btnAutotramitar.disabled = !selectElement.value;
         });
 
-        chrome.storage.local.get('neuronSecretariaSelecionadaTramitar', (result) => {
-            const salvo = result.neuronSecretariaSelecionadaTramitar;
+        NeuronDB.getPreference('secretariaSelecionadaTramitar').then(salvo => {
             if (salvo && selectElement.querySelector(`option[value="${salvo}"]`)) {
                selectElement.value = salvo;
                exibirNomesParaSecretaria(selectElement, ulElement);
@@ -192,8 +190,8 @@
         }
     }
     
-    chrome.storage.onChanged.addListener((changes, namespace) => {
-        if (namespace === 'local' && changes[CONFIG_KEY]) {
+    NeuronSync.onConfigChange((key) => {
+        if (key === CONFIG_KEY) {
             console.log(`%cNeuron (${SCRIPT_ID}): Configuração alterada. Reavaliando...`, "color: orange; font-weight: bold;");
             verificarEstadoAtualEAgir();
         }

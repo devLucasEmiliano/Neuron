@@ -33,7 +33,7 @@
         "https://treinafalabr.cgu.gov.br/*",
         "https://falabr-h.cgu.gov.br/*"
       ],
-      "js": ["modules/loading/loading.js"],
+      "js": ["vendor/idb.min.js", "shared/js/neuron-db.js", "shared/js/neuron-sync.js", "modules/loading/loading.js"],
       "css": ["modules/loading/loading.css"],
       "run_at": "document_start"
     },
@@ -130,7 +130,7 @@
         "https://treinafalabr.cgu.gov.br/web/manifestacao/analisar?ids=*",
         "https://falabr-h.cgu.gov.br/web/manifestacao/analisar?ids=*"
       ],
-      "js": ["modules/ouvidoria/resposta/resposta.js"]
+      "js": ["vendor/idb.min.js", "shared/js/neuron-db.js", "shared/js/neuron-sync.js", "modules/ouvidoria/resposta/resposta.js"]
     },
     {
       "matches": [
@@ -138,7 +138,7 @@
         "https://treinafalabr.cgu.gov.br/web/manifestacao/tratar?*",
         "https://falabr-h.cgu.gov.br/web/manifestacao/tratar?*"
       ],
-      "js": ["shared/js/date-utils.js","modules/sic/tratar/sic-tratar-extract.js"],
+      "js": ["vendor/idb.min.js", "shared/js/neuron-db.js", "shared/js/date-utils.js", "modules/sic/tratar/sic-tratar-extract.js"],
       "css": ["modules/sic/tratar/sic-tratar-style.css"]
     },
     {
