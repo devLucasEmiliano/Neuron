@@ -19,8 +19,7 @@ function createNeuronModule(options) {
 
     async function carregarConfiguracoes() {
         try {
-            const result = await chrome.storage.local.get(configKey);
-            config = result[configKey] || {};
+            config = await NeuronDB.getConfig(configKey) || {};
         } catch (error) {
             console.error(`[Neuron|${scriptId}] Erro ao carregar configurações:`, error);
         }
@@ -56,8 +55,8 @@ function createNeuronModule(options) {
         }
     }
 
-    chrome.storage.onChanged.addListener((changes, namespace) => {
-        if (namespace === 'local' && changes[configKey]) {
+    NeuronSync.onConfigChange((key, newValue) => {
+        if (key === configKey) {
             log("Configuração alterada. Reavaliando...", "orange");
             if (onConfigChange) {
                 onConfigChange();
