@@ -716,6 +716,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 section.classList.toggle('active', isTarget);
             });
 
+            // Hide save footer on dashboard (read-only view)
+            const footer = document.querySelector('.options-footer');
+            if (footer) {
+                footer.style.display = sectionName === 'dashboard' ? 'none' : '';
+            }
+
             // Initialize section on first show
             if (!sectionsInitialized.has(sectionName)) {
                 switch (sectionName) {

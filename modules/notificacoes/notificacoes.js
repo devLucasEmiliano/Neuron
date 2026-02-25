@@ -186,6 +186,7 @@
         demandasConcluidas = new Set();
         try {
             await NeuronDB.clearAll();
+            chrome.storage.local.set({ neuronDashboardRefreshSignal: Date.now() });
         } catch (error) {
             console.error(`Neuron (${SCRIPT_ID}): Error clearing data:`, error);
         }

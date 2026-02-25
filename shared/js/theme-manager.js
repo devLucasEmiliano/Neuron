@@ -74,6 +74,13 @@ const ThemeManager = {
 
         document.documentElement.setAttribute('data-bs-theme', theme);
 
+        // Cache for quick sync access on next page load (anti-FOLT)
+        try {
+            localStorage.setItem('neuron-theme-cache', preference);
+        } catch (e) {
+            // localStorage may be unavailable in some contexts
+        }
+
         // Dispatch custom event for components that need to react
         const event = new CustomEvent('neuron-theme-change', {
             detail: { theme, preference }
@@ -210,12 +217,18 @@ if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
 }
 
 // Auto-initialize when script loads (prevents flash of wrong theme)
-(async () => {
-    // Quick sync initialization to prevent flash
-    const quickTheme = localStorage.getItem('neuron-theme-cache');
-    if (quickTheme && ThemeManager.VALID_THEMES.includes(quickTheme)) {
-        document.documentElement.setAttribute('data-bs-theme',
-            quickTheme === 'system' ? ThemeManager.getSystemTheme() : quickTheme
-        );
+(function () {
+    var quickTheme = null;
+    try {
+        quickTheme = localStorage.getItem('neuron-theme-cache');
+    } catch (e) { /* localStorage unavailable */ }
+
+    var resolved;
+    if (quickTheme && ThemeManager.VALID_THEMES.indexOf(quickTheme) !== -1) {
+        resolved = quickTheme === 'system' ? ThemeManager.getSystemTheme() : quickTheme;
+    } else {
+        // No cache (first load): detect system preference as fallback
+        resolved = ThemeManager.getSystemTheme();
     }
+    document.documentElement.setAttribute('data-bs-theme', resolved);
 })();

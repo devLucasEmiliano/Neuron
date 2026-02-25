@@ -369,6 +369,13 @@ const NeuronDashboard = (function () {
             refresh();
         });
 
+        // Refresh when data is cleared from another context
+        chrome.storage.onChanged.addListener((changes, namespace) => {
+            if (namespace === 'local' && changes.neuronDashboardRefreshSignal) {
+                refresh();
+            }
+        });
+
         isInitialized = true;
 
         // Initial load
