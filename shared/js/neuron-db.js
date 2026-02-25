@@ -7,10 +7,12 @@ const NeuronDB = (function () {
     'use strict';
 
     const DB_NAME = 'NeuronDB';
-    const DB_VERSION = 1;
+    const DB_VERSION = 2;
     const STORE_DEMANDAS = 'demandas';
     const STORE_CONCLUIDAS = 'concluidas';
     const STORE_METADATA = 'metadata';
+    const STORE_CONFIG = 'config';
+    const STORE_PREFERENCES = 'preferences';
 
     let dbInstance = null;
     let idbLib = null;
@@ -90,6 +92,14 @@ const NeuronDB = (function () {
                 // Create metadata store
                 if (!db.objectStoreNames.contains(STORE_METADATA)) {
                     db.createObjectStore(STORE_METADATA, { keyPath: 'key' });
+                }
+
+                // v2: Add config and preferences stores
+                if (!db.objectStoreNames.contains(STORE_CONFIG)) {
+                    db.createObjectStore(STORE_CONFIG, { keyPath: 'key' });
+                }
+                if (!db.objectStoreNames.contains(STORE_PREFERENCES)) {
+                    db.createObjectStore(STORE_PREFERENCES, { keyPath: 'key' });
                 }
             }
         });
@@ -258,6 +268,40 @@ const NeuronDB = (function () {
     async function setMetadata(key, value) {
         const db = await init();
         await db.put(STORE_METADATA, { key, value, timestamp: Date.now() });
+    }
+
+    /**
+     * Get a config value by key
+     */
+    async function getConfig(key) {
+        const db = await init();
+        const record = await db.get(STORE_CONFIG, key);
+        return record ? record.value : null;
+    }
+
+    /**
+     * Set a config value
+     */
+    async function setConfig(key, value) {
+        const db = await init();
+        await db.put(STORE_CONFIG, { key, value, timestamp: Date.now() });
+    }
+
+    /**
+     * Get a preference value by key
+     */
+    async function getPreference(key) {
+        const db = await init();
+        const record = await db.get(STORE_PREFERENCES, key);
+        return record ? record.value : null;
+    }
+
+    /**
+     * Set a preference value
+     */
+    async function setPreference(key, value) {
+        const db = await init();
+        await db.put(STORE_PREFERENCES, { key, value, timestamp: Date.now() });
     }
 
     /**
@@ -498,6 +542,14 @@ const NeuronDB = (function () {
         // Metadata
         getMetadata,
         setMetadata,
+
+        // Config
+        getConfig,
+        setConfig,
+
+        // Preferences
+        getPreference,
+        setPreference,
 
         // Migration
         needsMigration,

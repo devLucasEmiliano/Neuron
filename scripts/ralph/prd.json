@@ -1,68 +1,196 @@
 {
-  "title": "Project File Structure Reorganization",
-  "branchName": "ralph/project-file-restructure",
-  "description": "Reorganize the Neuron Chrome extension's file and folder structure to improve navigation, maintainability, and consistency — without introducing build tools, new dependencies, or splitting existing files.",
-  "stories": [
+  "projectName": "Migrate All Storage to IndexedDB",
+  "branchName": "feat/indexeddb-migration",
+  "description": "Consolidate all storage into IndexedDB by extending NeuronDB, replacing chrome.storage.local and localStorage entirely. Cross-context sync via BroadcastChannel API.",
+  "userStories": [
     {
       "id": "US-001",
-      "title": "Separate vendored libraries from project utilities",
+      "title": "Add config and preferences stores to NeuronDB",
       "priority": 1,
-      "passes": true,
+      "passes": false,
+      "description": "Extend NeuronDB with new object stores for configuration and preferences so they can be persisted without chrome.storage.local.",
       "acceptanceCriteria": [
-        "Rename lib/ to vendor/ containing only third-party code: bootstrap/, chart.min.js, idb.min.js",
-        "Move lib/date_utils.js to shared/js/date-utils.js (rename underscore to hyphen)",
-        "Move lib/module_factory.js to shared/js/module-factory.js (rename underscore to hyphen)",
-        "Update all references in manifest.json content_scripts and web_accessible_resources",
-        "Verify no broken references remain by searching all .js and .html files for old paths"
+        "Bump DB_VERSION to 2 in neuron-db.js",
+        "Add config object store (keyPath: key) for storing configuration entries",
+        "Add preferences object store (keyPath: key) for lightweight preferences",
+        "Handle upgrade callback properly so existing stores (demandas, concluidas, metadata) are preserved",
+        "Add CRUD methods: getConfig(key), setConfig(key, value), getPreference(key), setPreference(key, value)",
+        "All new methods are async and use the existing init() pattern",
+        "Typecheck/lint passes"
       ]
     },
     {
       "id": "US-002",
-      "title": "Rename files with underscores inside modules to use hyphens",
+      "title": "Implement BroadcastChannel synchronization layer",
       "priority": 2,
-      "passes": true,
+      "passes": false,
+      "description": "Create a cross-context notification system using BroadcastChannel to replace chrome.storage.onChanged.",
       "acceptanceCriteria": [
-        "Rename all files in modules/ouvidoria/tratar-novo/ from underscores to hyphens",
-        "Rename files in modules/ouvidoria/tramitar/ from underscores to hyphens",
-        "Rename files in modules/sic/tratar/ from underscores to hyphens",
-        "Rename files in modules/sic/analisar/ from underscores to hyphens",
-        "Update all references in manifest.json to use the new filenames",
-        "Search all .js and .html files for old filenames and update any internal references"
+        "Create NeuronSync module that wraps BroadcastChannel with channel name 'neuron-sync'",
+        "Expose broadcast(changeType, key, newValue) to send change notifications",
+        "Expose onConfigChange(callback) to subscribe to config changes",
+        "Expose onPreferenceChange(callback) to subscribe to preference changes",
+        "setConfig() and setPreference() automatically broadcast after writing to IndexedDB",
+        "Listeners are properly cleaned up when calling returned unsubscribe() function",
+        "Works across extension contexts",
+        "Typecheck/lint passes"
       ]
     },
     {
       "id": "US-003",
-      "title": "Organize images folder by purpose",
+      "title": "Migrate options page to use NeuronDB",
       "priority": 3,
-      "passes": true,
+      "passes": false,
+      "description": "Replace chrome.storage.local usage in options page with NeuronDB.",
       "acceptanceCriteria": [
-        "Create images/icons/ subfolder",
-        "Move extension icon files into images/icons/: neuron128.png, neuron64.png, neuronoff128.png, neuronon128.png",
-        "Keep non-icon assets (e.g., Intro-Neuron.gif) at the images/ root",
-        "Update manifest.json icon references (icons, action.default_icon) to use images/icons/ path",
-        "Update any HTML or JS files that reference icon paths"
+        "options.js: Replace chrome.storage.local.get with NeuronDB.getConfig",
+        "options.js: Replace chrome.storage.local.set with NeuronDB.setConfig",
+        "Remove chrome.storage.onChanged listener; replace with NeuronSync equivalent",
+        "Ensure idb.min.js and neuron-db.js are loaded in options.html",
+        "Saving config still updates all other open extension contexts in real time",
+        "Typecheck/lint passes"
       ]
     },
     {
       "id": "US-004",
-      "title": "Update manifest.json web_accessible_resources",
+      "title": "Migrate popup to use NeuronDB",
       "priority": 4,
-      "passes": true,
+      "passes": false,
+      "description": "Replace chrome.storage.local usage in popup with NeuronDB.",
       "acceptanceCriteria": [
-        "Replace lib/* and lib/bootstrap/* entries with vendor/* and vendor/bootstrap/*",
-        "Ensure shared/* still covers the moved utility files",
-        "Verify the extension loads without errors after all path changes"
+        "popup.js: Replace chrome.storage.local.get with NeuronDB.getConfig",
+        "popup.js: Replace chrome.storage.local.set with NeuronDB.setConfig",
+        "Remove chrome.storage.onChanged listener; replace with BroadcastChannel",
+        "Ensure idb.min.js and neuron-db.js are loaded in popup.html",
+        "Typecheck/lint passes"
       ]
     },
     {
       "id": "US-005",
-      "title": "Verify extension functionality after restructure",
+      "title": "Migrate ThemeManager to use NeuronDB",
       "priority": 5,
-      "passes": true,
+      "passes": false,
+      "description": "Replace chrome.storage.local and localStorage usage in ThemeManager with NeuronDB.",
       "acceptanceCriteria": [
-        "Run a full-text search for every old path and confirm zero references remain",
-        "Confirm no manifest errors would occur",
-        "Confirm all file references are valid"
+        "theme-manager.js: Replace chrome.storage.local.get with NeuronDB.getPreference('theme')",
+        "theme-manager.js: Replace chrome.storage.local.set with NeuronDB.setPreference('theme', value)",
+        "Remove localStorage.setItem and localStorage.getItem calls",
+        "Replace chrome.storage.onChanged listener with BroadcastChannel subscription",
+        "Anti-FOUC: auto-init IIFE falls back to ThemeManager.getSystemTheme()",
+        "Typecheck/lint passes"
+      ]
+    },
+    {
+      "id": "US-006",
+      "title": "Migrate NeuronUtils to use NeuronDB",
+      "priority": 6,
+      "passes": false,
+      "description": "Replace chrome.storage.local usage in NeuronUtils with NeuronDB.",
+      "acceptanceCriteria": [
+        "neuron-utils.js: isScriptAtivo() reads config from NeuronDB.getConfig",
+        "neuron-utils.js: createStorageListener() uses BroadcastChannel instead of chrome.storage.onChanged",
+        "Ensure idb.min.js and neuron-db.js are loaded before neuron-utils.js in all contexts",
+        "All content scripts that depend on NeuronUtils continue to work",
+        "Typecheck/lint passes"
+      ]
+    },
+    {
+      "id": "US-007",
+      "title": "Migrate module-factory.js to use NeuronDB",
+      "priority": 7,
+      "passes": false,
+      "description": "Replace chrome.storage.local usage in module-factory with NeuronDB.",
+      "acceptanceCriteria": [
+        "module-factory.js: Replace chrome.storage.local.get with NeuronDB.getConfig",
+        "module-factory.js: Replace chrome.storage.onChanged with BroadcastChannel",
+        "Modules created via factory still activate/deactivate correctly",
+        "Typecheck/lint passes"
+      ]
+    },
+    {
+      "id": "US-008",
+      "title": "Migrate notificacoes module to use NeuronDB",
+      "priority": 8,
+      "passes": false,
+      "description": "Replace chrome.storage.local usage in notifications panel with NeuronDB.",
+      "acceptanceCriteria": [
+        "notificacoes.js: Replace chrome.storage.local.get theme with NeuronDB.getPreference('theme')",
+        "notificacoes.js: Replace config/filtro reads with NeuronDB equivalents",
+        "notificacoes.js: Replace dashboard refresh signal with NeuronDB.setPreference",
+        "notificacoes.js: Replace filtro usuario storage with NeuronDB.setPreference",
+        "Replace chrome.storage.onChanged listener with BroadcastChannel",
+        "Typecheck/lint passes"
+      ]
+    },
+    {
+      "id": "US-009",
+      "title": "Migrate dashboard to use NeuronDB",
+      "priority": 9,
+      "passes": false,
+      "description": "Replace chrome.storage.onChanged in dashboard with BroadcastChannel.",
+      "acceptanceCriteria": [
+        "dashboard.js: Replace chrome.storage.onChanged listener with BroadcastChannel",
+        "Dashboard still auto-refreshes when demands are concluded",
+        "Typecheck/lint passes"
+      ]
+    },
+    {
+      "id": "US-010",
+      "title": "Migrate remaining content script modules to use NeuronDB",
+      "priority": 10,
+      "passes": false,
+      "description": "Migrate all remaining content scripts to read config from IndexedDB.",
+      "acceptanceCriteria": [
+        "resposta.js: Replace chrome.storage.local with NeuronDB",
+        "tramitar.js: Replace chrome.storage.local with NeuronDB",
+        "tramitar-pontos-focais.js: Replace chrome.storage.local with NeuronDB",
+        "tratar-novo-pagesize.js: Replace chrome.storage.local with NeuronDB",
+        "tratar-novo-insert.js: Replace chrome.storage.local with NeuronDB",
+        "loading.js: Replace chrome.storage.local with NeuronDB",
+        "date-utils.js: Replace chrome.storage.local with NeuronDB",
+        "Typecheck/lint passes"
+      ]
+    },
+    {
+      "id": "US-011",
+      "title": "Update background service worker",
+      "priority": 11,
+      "passes": false,
+      "description": "Replace chrome.storage.local and onChanged usage in background.js with IndexedDB and BroadcastChannel.",
+      "acceptanceCriteria": [
+        "background.js: Replace chrome.storage.onChanged with BroadcastChannel",
+        "Remove old chrome.storage.local demand migration logic",
+        "Ensure idb.min.js and neuron-db.js are imported in service worker",
+        "Typecheck/lint passes"
+      ]
+    },
+    {
+      "id": "US-012",
+      "title": "Update manifest.json and HTML files",
+      "priority": 12,
+      "passes": false,
+      "description": "Ensure all extension pages load IndexedDB dependencies and remove storage permission.",
+      "acceptanceCriteria": [
+        "Verify idb.min.js and neuron-db.js are in all HTML pages that need them",
+        "Verify script load order: idb.min.js before neuron-db.js before consuming modules",
+        "Remove storage permission from manifest.json",
+        "Verify all web_accessible_resources and content_scripts entries are correct",
+        "Extension loads without errors"
+      ]
+    },
+    {
+      "id": "US-013",
+      "title": "Remove all dead chrome.storage.local and localStorage code",
+      "priority": 13,
+      "passes": false,
+      "description": "Clean up any remaining references to chrome.storage.local and localStorage.",
+      "acceptanceCriteria": [
+        "Zero occurrences of chrome.storage.local in codebase",
+        "Zero occurrences of chrome.storage.onChanged in codebase",
+        "Zero occurrences of localStorage.setItem or localStorage.getItem in codebase",
+        "Remove migrateFromChromeStorage() method in neuron-db.js",
+        "Remove needsMigration() method in neuron-db.js",
+        "Typecheck/lint passes"
       ]
     }
   ]
