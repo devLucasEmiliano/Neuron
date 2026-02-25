@@ -1,5 +1,5 @@
 /**
- * @file date_utils.js
+ * @file date-utils.js
  * @version 4.0 (Sincronização com Promise)
  * @description Módulo central para operações de data que expõe uma Promise 'ready' 
  * para sinalizar quando as configurações foram carregadas.

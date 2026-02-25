@@ -37,7 +37,7 @@
      */
     async function processarTabelaSic() {
         if (typeof window.DateUtils === 'undefined') {
-            console.error('[Neuron|SIC] Erro: A biblioteca date_utils.js não foi encontrada. Verifique o manifest.json.');
+            console.error('[Neuron|SIC] Erro: A biblioteca date-utils.js não foi encontrada. Verifique o manifest.json.');
             return;
         }
         await window.DateUtils.ready;
