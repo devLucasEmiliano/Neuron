@@ -42,12 +42,7 @@
         };
     }
 
-    function escapeHtml(str) {
-        if (str == null) return '';
-        return String(str).replace(/[&<>"']/g, char => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        })[char]);
-    }
+    const escapeHtml = window.NeuronUtils.escapeHtml;
 
     let filtroUsuarioAtivado = true;
 
@@ -115,13 +110,7 @@
 
     function isScriptAtivo() {
         if (!config || typeof config !== 'object') return false;
-        if (config.masterEnableNeuron === false) return false;
-        // Check modules.notificacoes (new format) or legacy formats
-        const moduleEnabled = config.modules?.notificacoes;
-        const legacyEnabled = config.featureSettings?.[SCRIPT_ID]?.enabled;
-        // If explicitly false in any format, disable
-        if (moduleEnabled === false || legacyEnabled === false) return false;
-        return true;
+        return config.masterEnableNeuron !== false && config.modules?.[SCRIPT_ID] !== false;
     }
     
     function getUsuarioLogado() {

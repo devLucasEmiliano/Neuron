@@ -15,7 +15,7 @@
 
     function isScriptAtivo() {
         if (!config || typeof config !== 'object') return false;
-        return config.masterEnableNeuron !== false && config.featureSettings?.['tramitar']?.enabled !== false;
+        return config.masterEnableNeuron !== false && config.modules?.['tramitar'] !== false;
     }
 
     function exibirNomesParaSecretaria(selectElement, ulElement) {

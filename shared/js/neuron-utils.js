@@ -35,7 +35,7 @@
             const result = await chrome.storage.local.get(CONFIG_KEY);
             const config = result[CONFIG_KEY] || {};
             return config.masterEnableNeuron !== false &&
-                   config.featureSettings?.[scriptId]?.enabled !== false;
+                   config.modules?.[scriptId] !== false;
         } catch (error) {
             console.warn(`%cNeuron (${scriptId}): Não foi possível ler as configurações.`, "color: goldenrod;", error.message);
             return false;

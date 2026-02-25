@@ -23,7 +23,7 @@
     }
 
     function isScriptAtivo() {
-        return config.masterEnableNeuron !== false && config.featureSettings?.[SCRIPT_ID]?.enabled !== false;
+        return config.masterEnableNeuron !== false && config.modules?.[SCRIPT_ID] !== false;
     }
 
     function carregarVersaoManifest() {

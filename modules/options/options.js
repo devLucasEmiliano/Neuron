@@ -380,14 +380,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    function escapeHtml(str) {
-        if (str == null) return '';
-        return String(str).replace(/[&<>"']/g, char => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        })[char]);
-    }
-
-    // File: modules/options/options.js (substituir funções)
+    const escapeHtml = window.NeuronUtils.escapeHtml;
 
     function setupTextModelsTab() {
         const categorySelect = document.getElementById('selectTextModelCategory');
@@ -820,7 +813,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             reader.onload = (event) => {
                 try {
                     const importedConfig = JSON.parse(event.target.result);
-                    if (!importedConfig.featureSettings) throw new Error("Arquivo nao parece ser uma configuracao valida do Neuron.");
+                    if (!importedConfig.modules && importedConfig.masterEnableNeuron === undefined) throw new Error("Arquivo nao parece ser uma configuracao valida do Neuron.");
                     fullConfig = importedConfig;
                     saveConfig();
                     populateAllTabs();
