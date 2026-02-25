@@ -2,8 +2,8 @@
     'use strict';
     const SCRIPT_ID = 'notificacoes';
     const CONFIG_KEY = 'neuronUserConfig';
-    const STORAGE_KEY_FILTRO_USUARIO = 'neuronFiltroUsuarioAtivado';
-    const STORAGE_KEY_THEME = 'neuronThemePreference';
+    const PREF_KEY_FILTRO_USUARIO = 'filtroUsuarioAtivado';
+    const PREF_KEY_DASHBOARD_REFRESH = 'dashboardRefreshSignal';
 
     let config = {};
     let demandasConcluidas = new Set();
@@ -83,8 +83,7 @@
 
     async function loadThemePreference() {
         try {
-            const result = await chrome.storage.local.get(STORAGE_KEY_THEME);
-            const preference = result[STORAGE_KEY_THEME] || 'system';
+            const preference = await NeuronDB.getPreference('theme') || 'system';
             applyTheme(preference);
         } catch (error) {
             console.error(`Neuron (${SCRIPT_ID}): Error loading theme preference:`, error);
@@ -100,11 +99,10 @@
     });
 
     async function carregarConfiguracoes() {
-        const result = await chrome.storage.local.get([CONFIG_KEY, STORAGE_KEY_FILTRO_USUARIO]);
-        config = result[CONFIG_KEY] || {};
-        // Carrega a preferência do usuário. Se não existir, mantém o padrão (true).
-        if (result[STORAGE_KEY_FILTRO_USUARIO] !== undefined) {
-            filtroUsuarioAtivado = result[STORAGE_KEY_FILTRO_USUARIO];
+        config = await NeuronDB.getConfig(CONFIG_KEY) || {};
+        const filtroValue = await NeuronDB.getPreference(PREF_KEY_FILTRO_USUARIO);
+        if (filtroValue !== null && filtroValue !== undefined) {
+            filtroUsuarioAtivado = filtroValue;
         }
     }
 
@@ -186,7 +184,7 @@
         demandasConcluidas = new Set();
         try {
             await NeuronDB.clearAll();
-            chrome.storage.local.set({ neuronDashboardRefreshSignal: Date.now() });
+            await NeuronDB.setPreference(PREF_KEY_DASHBOARD_REFRESH, Date.now());
         } catch (error) {
             console.error(`Neuron (${SCRIPT_ID}): Error clearing data:`, error);
         }
@@ -260,7 +258,7 @@
         // Handle filter toggle
         if (targetId === 'neuron-filtro-usuario-toggle') {
             filtroUsuarioAtivado = target.checked;
-            chrome.storage.local.set({ [STORAGE_KEY_FILTRO_USUARIO]: filtroUsuarioAtivado });
+            NeuronDB.setPreference(PREF_KEY_FILTRO_USUARIO, filtroUsuarioAtivado);
             renderizarPainel();
             return;
         }
@@ -525,15 +523,18 @@
         }
     }
 
-    chrome.storage.onChanged.addListener((changes, namespace) => {
-        if (namespace === 'local') {
-            if (changes[CONFIG_KEY] || changes[STORAGE_KEY_FILTRO_USUARIO]) {
-                verificarEstadoAtualEAgir();
-            }
-            // React to theme changes from popup/options
-            if (changes[STORAGE_KEY_THEME] && isFeatureActive) {
-                applyTheme(changes[STORAGE_KEY_THEME].newValue || 'system');
-            }
+    NeuronSync.onConfigChange((key) => {
+        if (key === CONFIG_KEY) {
+            verificarEstadoAtualEAgir();
+        }
+    });
+
+    NeuronSync.onPreferenceChange((key, newValue) => {
+        if (key === PREF_KEY_FILTRO_USUARIO) {
+            verificarEstadoAtualEAgir();
+        }
+        if (key === 'theme' && isFeatureActive) {
+            applyTheme(newValue || 'system');
         }
     });
 
