@@ -23,7 +23,7 @@
       "id": "US-002",
       "title": "Implement BroadcastChannel synchronization layer",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "description": "Create a cross-context notification system using BroadcastChannel to replace chrome.storage.onChanged.",
       "acceptanceCriteria": [
         "Create NeuronSync module that wraps BroadcastChannel with channel name 'neuron-sync'",
