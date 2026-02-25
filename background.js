@@ -3,24 +3,12 @@
  * @description Background service worker for Neuron extension
  */
 
-// Import idb library and NeuronDB
-importScripts('vendor/idb.min.js', 'shared/js/neuron-db.js');
+// Import idb library, NeuronDB, and NeuronSync
+importScripts('vendor/idb.min.js', 'shared/js/neuron-db.js', 'shared/js/neuron-sync.js');
 
-// Ensure proper extension initialization and run migration
-chrome.runtime.onInstalled.addListener(async (details) => {
+// Ensure proper extension initialization
+chrome.runtime.onInstalled.addListener((details) => {
     console.log('Neuron extension installed/updated successfully');
-
-    // Run migration on install or update
-    if (details.reason === 'install' || details.reason === 'update') {
-        try {
-            const migrated = await NeuronDB.migrateFromChromeStorage();
-            if (migrated) {
-                console.log('Neuron: Data migration completed on', details.reason);
-            }
-        } catch (error) {
-            console.error('Neuron: Migration error during', details.reason, error);
-        }
-    }
 });
 
 // Handle extension startup
@@ -33,9 +21,9 @@ self.addEventListener('error', (error) => {
     console.error('Neuron background script error:', error);
 });
 
-// Handle storage changes for debugging if needed
-chrome.storage.onChanged.addListener((changes, namespace) => {
-    if (namespace === 'local' && changes.neuronUserConfig) {
+// Handle config changes via BroadcastChannel for debugging if needed
+NeuronSync.onConfigChange((key) => {
+    if (key === 'neuronUserConfig') {
         console.log('Neuron configuration updated');
     }
 });
