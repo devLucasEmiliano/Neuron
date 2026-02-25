@@ -12,6 +12,7 @@ Started: Wed Feb 25 13:00:27 PST 2026
 - Content scripts are injected via manifest.json `content_scripts` entries
 - Extension pages (options, popup) load scripts via `<script>` tags in HTML
 - Service worker (background.js) uses `importScripts()` for dependencies
+- The full user config is stored under key `neuronUserConfig` — `NeuronDB.getConfig('neuronUserConfig')` returns the full object directly (not wrapped in `{ key: value }`)
 
 ---
 
@@ -42,4 +43,17 @@ Started: Wed Feb 25 13:00:27 PST 2026
   - BroadcastChannel messages are received by all other contexts but NOT the sender — each context only hears changes from other contexts
   - The `typeof NeuronSync !== 'undefined'` guard in NeuronDB means neuron-sync.js is optional — it can be loaded after neuron-db.js without breaking anything
   - When replacing chrome.storage.onChanged listeners in future stories, use NeuronSync.onConfigChange() or NeuronSync.onPreferenceChange() and ensure neuron-sync.js is loaded in that context
+---
+
+## 2026-02-25 - US-003
+- Migrated options page from chrome.storage.local to NeuronDB
+- loadConfig(): Replaced `chrome.storage.local.get(CONFIG_STORAGE_KEY)` with `NeuronDB.getConfig(CONFIG_STORAGE_KEY)`
+- saveConfig(): Replaced `chrome.storage.local.set(...)` with `NeuronDB.setConfig(CONFIG_STORAGE_KEY, fullConfig)`
+- Added NeuronSync.onConfigChange() listener to reload config when changed from another context
+- Added neuron-sync.js script tag to options.html (after neuron-db.js, before theme-manager.js)
+- Files changed: modules/options/options.js, modules/options/options.html
+- **Learnings for future iterations:**
+  - The options page stores the entire config object under a single key (`neuronUserConfig`) — use `NeuronDB.getConfig('neuronUserConfig')` / `NeuronDB.setConfig('neuronUserConfig', fullConfig)` rather than individual keys
+  - `NeuronDB.getConfig()` returns the value directly (or null), unlike `chrome.storage.local.get()` which returns `{ key: value }` — adjust destructuring accordingly
+  - No chrome.storage.onChanged listener existed in options.js, but adding NeuronSync.onConfigChange() ensures cross-context sync for when other contexts modify config
 ---

@@ -40,7 +40,7 @@
       "id": "US-003",
       "title": "Migrate options page to use NeuronDB",
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "description": "Replace chrome.storage.local usage in options page with NeuronDB.",
       "acceptanceCriteria": [
         "options.js: Replace chrome.storage.local.get with NeuronDB.getConfig",
