@@ -150,7 +150,8 @@
         "images/*",
         "vendor/*",
         "vendor/bootstrap/*",
-        "shared/*",
+        "shared/js/*",
+        "shared/css/*",
         "modules/loading/loading.html",
         "modules/options/options.html"
       ],
