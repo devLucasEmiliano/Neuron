@@ -155,7 +155,7 @@
       "id": "US-011",
       "title": "Update background service worker",
       "priority": 11,
-      "passes": false,
+      "passes": true,
       "description": "Replace chrome.storage.local and onChanged usage in background.js with IndexedDB and BroadcastChannel.",
       "acceptanceCriteria": [
         "background.js: Replace chrome.storage.onChanged with BroadcastChannel",

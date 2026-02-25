@@ -175,3 +175,17 @@ Started: Wed Feb 25 13:00:27 PST 2026
   - The SIC tratar entry only needs idb.min.js + neuron-db.js (no neuron-sync.js) because date-utils.js only reads config at startup
   - Manual browser verification needed (no browser testing tools available)
 ---
+
+## 2026-02-25 - US-011
+- Migrated background.js (service worker) from chrome.storage to NeuronDB/BroadcastChannel
+- Added neuron-sync.js to importScripts (already had idb.min.js and neuron-db.js)
+- Removed chrome.storage.onChanged listener, replaced with NeuronSync.onConfigChange() filtering on 'neuronUserConfig'
+- Removed old migrateFromChromeStorage() call from onInstalled handler (migration logic will be fully removed in US-013)
+- Simplified onInstalled listener (no longer async, no migration logic)
+- Files changed: background.js
+- **Learnings for future iterations:**
+  - Service workers use `importScripts()` for loading dependencies — load order: idb.min.js → neuron-db.js → neuron-sync.js
+  - BroadcastChannel works in service workers — NeuronSync can be used directly
+  - The migrateFromChromeStorage() method still exists in neuron-db.js but is no longer called from anywhere — US-013 will remove it
+  - Manual browser verification needed (no browser testing tools available)
+---
