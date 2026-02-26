@@ -3,7 +3,7 @@
  * Manages demand data storage using IndexedDB
  */
 
-const NeuronDB = (function () {
+var NeuronDB = NeuronDB || (function () {
     'use strict';
 
     const DB_NAME = 'NeuronDB';

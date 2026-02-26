@@ -4,7 +4,7 @@
  * when config or preference values change in IndexedDB.
  */
 
-const NeuronSync = (function () {
+var NeuronSync = NeuronSync || (function () {
     'use strict';
 
     const CHANNEL_NAME = 'neuron-sync';

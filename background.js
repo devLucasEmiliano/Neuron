@@ -7,8 +7,21 @@
 importScripts('vendor/idb.min.js', 'shared/js/neuron-db.js', 'shared/js/neuron-sync.js');
 
 // Ensure proper extension initialization
-chrome.runtime.onInstalled.addListener((details) => {
+chrome.runtime.onInstalled.addListener(async () => {
     console.log('Neuron extension installed/updated successfully');
+
+    try {
+        await NeuronDB.init();
+        const existingConfig = await NeuronDB.getConfig('neuronUserConfig');
+        if (!existingConfig) {
+            const response = await fetch(chrome.runtime.getURL('config/config.json'));
+            const defaultConfig = await response.json();
+            await NeuronDB.setConfig('neuronUserConfig', defaultConfig);
+            console.log('Neuron: Default config initialized in IndexedDB');
+        }
+    } catch (error) {
+        console.error('Neuron: Failed to initialize default config:', error);
+    }
 });
 
 // Handle extension startup
