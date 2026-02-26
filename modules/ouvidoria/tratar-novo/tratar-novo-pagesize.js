@@ -11,6 +11,11 @@
     async function verificarEAtualizarTamanho() {
         if (!await window.NeuronUtils.isScriptAtivo(SCRIPT_ID)) return;
 
+        const painelTriagem = document.getElementById('ConteudoForm_ConteudoGeral_ConteudoFormComAjax_upTriagem');
+        if (painelTriagem && painelTriagem.querySelector('.alert.alert-info')) {
+            return;
+        }
+
         const config = await NeuronDB.getConfig(window.NeuronUtils.CONFIG_KEY) || {};
         const itensPorPaginaDesejado = String(config.generalSettings?.qtdItensTratarTriar || '50');
 
