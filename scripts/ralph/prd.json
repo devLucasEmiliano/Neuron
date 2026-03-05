@@ -1,0 +1,140 @@
+{
+  "projectName": "Git Branching Strategy, Versioning Scheme & CI/CD Pipeline",
+  "branchName": "feat/branching-versioning-cicd",
+  "description": "Establish a structured Git branching workflow with three permanent branches (stable, testing, developing), a custom versioning scheme, and GitHub Actions CI/CD pipeline for the Neuron Chrome Extension.",
+  "userStories": [
+    {
+      "id": "US-010",
+      "title": "Version bump script",
+      "priority": 1,
+      "passes": false,
+      "description": "Create a script that handles version bumping so that the CI and local workflows can reliably update version strings.",
+      "acceptanceCriteria": [
+        "A script scripts/bump-version.sh accepts parameters: major/minor increment, branch suffix, commit hash",
+        "Script updates manifest.json version (X.Y.Z), manifest.json version_name (custom format X.XX.XXXXy), and VERSION file",
+        "Script can be run locally for manual version bumps",
+        "Script is idempotent (running twice with same params produces same result)",
+        "Script uses jq to safely modify manifest.json"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "Implement custom versioning scheme",
+      "priority": 2,
+      "passes": false,
+      "description": "Implement version format X.XX.XXXXy (X = major, XX = minor features, XXXX = first 4 chars of commit hash, y = s/b/d for branch) in manifest.json and VERSION file.",
+      "acceptanceCriteria": [
+        "manifest.json version field uses Chrome strict X.Y.Z format (e.g., 2.1.0)",
+        "manifest.json version_name field uses custom format (e.g., 2.01.a3f4s)",
+        "A root VERSION file contains the custom version string",
+        "The suffix is s for stable, b for testing, d for developing",
+        "The 4-char commit hash portion updates automatically via bump-version.sh"
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "Display version in popup UI",
+      "priority": 3,
+      "passes": false,
+      "description": "Display the current extension version in the popup so users know which build they are running.",
+      "acceptanceCriteria": [
+        "The popup page displays the custom version_name from manifest.json",
+        "Version label is visible without scrolling (e.g., footer or header of popup)",
+        "Version updates correctly after each new build"
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "CI pipeline - Validate on push/PR",
+      "priority": 4,
+      "passes": false,
+      "description": "Run validation (lint, manifest checks) on every push and PR so that broken code is caught early.",
+      "acceptanceCriteria": [
+        "GitHub Actions workflow triggers on push to developing, testing, stable",
+        "GitHub Actions workflow triggers on PRs targeting any of the three branches",
+        "Workflow validates manifest.json is well-formed",
+        "Workflow runs any configured linters",
+        "Failed checks block PR merges"
+      ]
+    },
+    {
+      "id": "US-005",
+      "title": "CI pipeline - Auto-update version on merge",
+      "priority": 5,
+      "passes": false,
+      "description": "Automatically update version string when code is merged into any of the three main branches.",
+      "acceptanceCriteria": [
+        "On merge to developing, version is stamped with suffix d and current commit hash",
+        "On merge to testing, version is stamped with suffix b and current commit hash",
+        "On merge to stable, version is stamped with suffix s and current commit hash",
+        "Both manifest.json (version_name) and VERSION file are updated",
+        "The Chrome version field (X.Y.Z) is incremented appropriately (patch bump on stable merges)"
+      ]
+    },
+    {
+      "id": "US-006",
+      "title": "CI pipeline - Auto-promote developing to testing",
+      "priority": 6,
+      "passes": false,
+      "description": "Automatically promote code from developing to testing when all CI checks pass.",
+      "acceptanceCriteria": [
+        "When all checks pass on a push/merge to developing, a PR is auto-created from developing to testing",
+        "The auto-PR includes a summary of commits being promoted",
+        "If an open promotion PR already exists, it is updated rather than duplicated"
+      ]
+    },
+    {
+      "id": "US-007",
+      "title": "CI pipeline - Build release artifact for stable",
+      "priority": 7,
+      "passes": false,
+      "description": "Build a .zip artifact automatically when code is merged to stable.",
+      "acceptanceCriteria": [
+        "On merge to stable, workflow packages the extension into a .zip file",
+        "The .zip excludes dev-only files (e.g., .github/, tasks/, tests/, .claude/)",
+        "The .zip filename includes the version string (e.g., neuron-2.01.a3f4s.zip)",
+        "The artifact is uploaded to the GitHub Actions run"
+      ]
+    },
+    {
+      "id": "US-008",
+      "title": "CI pipeline - Create GitHub Release with changelog",
+      "priority": 8,
+      "passes": false,
+      "description": "Create a GitHub Release automatically on stable merges with an auto-generated changelog.",
+      "acceptanceCriteria": [
+        "A GitHub Release is created with the version tag (e.g., v2.01.a3f4s)",
+        "The release includes the .zip artifact as a downloadable asset",
+        "The release body contains an auto-generated changelog (commits since last stable release)",
+        "The release is marked as latest"
+      ]
+    },
+    {
+      "id": "US-009",
+      "title": "Hotfix workflow",
+      "priority": 9,
+      "passes": false,
+      "description": "Support hotfix branches off stable that merge back to both stable and developing.",
+      "acceptanceCriteria": [
+        "Hotfix branches are named hotfix/<description> and branch from stable",
+        "On merge of a hotfix to stable, CI auto-creates a PR to merge the same fix into developing",
+        "Version is bumped as a patch release on stable",
+        "The hotfix triggers the same release artifact and GitHub Release creation as a normal stable merge"
+      ]
+    },
+    {
+      "id": "US-001",
+      "title": "Create permanent branch structure",
+      "priority": 10,
+      "passes": false,
+      "description": "Create three permanent branches (stable, testing, developing) so that code flows through a structured promotion pipeline. NOTE: This story requires GitHub admin access and should be done manually or after all CI workflows are in place.",
+      "acceptanceCriteria": [
+        "Branch developing exists and is the default working branch for new features",
+        "Branch testing exists as the integration/QA stage",
+        "Branch stable exists as the production-ready branch",
+        "Repository default branch is set to developing",
+        "Branch protection rules prevent direct pushes to stable and testing"
+      ]
+    }
+  ]
+}
