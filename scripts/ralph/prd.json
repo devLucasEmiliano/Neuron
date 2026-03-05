@@ -21,7 +21,7 @@
       "id": "US-002",
       "title": "Implement custom versioning scheme",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "description": "Implement version format X.XX.XXXXy (X = major, XX = minor features, XXXX = first 4 chars of commit hash, y = s/b/d for branch) in manifest.json and VERSION file.",
       "acceptanceCriteria": [
         "manifest.json version field uses Chrome strict X.Y.Z format (e.g., 2.1.0)",

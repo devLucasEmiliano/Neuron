@@ -8,6 +8,8 @@ Started: Thu Mar  5 13:44:16 -03 2026
 - manifest.json uses `version` for Chrome's strict X.Y.Z format and `version_name` for custom display format
 - The Write tool in Claude Code may produce CRLF; always verify/fix with `sed -i 's/\r$//'` or rely on .gitattributes
 - Project root: manifest.json, background.js, modules/, shared/, vendor/, config/, scripts/
+- bump-version.sh uses sed for in-place manifest edits (preserves formatting) and jq for validation only
+- VERSION file at project root contains the custom version string (X.XX.XXXXy format)
 
 ---
 
@@ -20,4 +22,14 @@ Started: Thu Mar  5 13:44:16 -03 2026
   - `jq` is installed at `/usr/bin/jq` (v1.6) in this environment
   - `shellcheck` is NOT available in this environment
   - .gitattributes already configures `*.sh text eol=lf` so git will handle line ending conversion
+---
+
+## 2026-03-05 - US-002
+- **Implemented:** Custom versioning scheme applied to manifest.json and VERSION file
+- **Files changed:** `manifest.json` (added version_name, updated version to X.Y.Z), `VERSION` (new), `scripts/bump-version.sh` (improved formatting preservation)
+- **Details:** manifest.json now has `version: "2.0.0"` (Chrome strict X.Y.Z) and `version_name: "2.00.d61bd"` (custom format). VERSION file created at project root. bump-version.sh updated to use sed for in-place edits (preserves formatting) while still using jq for JSON validation.
+- **Learnings for future iterations:**
+  - `jq` rewrites entire JSON files when used for modification, producing huge diffs. Use `sed` for surgical edits and `jq` only for validation/reading.
+  - When updating manifest.json version field with sed, exclude `manifest_version` and `version_name` lines to avoid false matches
+  - The version_name field is inserted right after the version field in manifest.json
 ---
