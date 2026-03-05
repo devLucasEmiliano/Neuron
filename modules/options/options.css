@@ -146,8 +146,16 @@ body {
     transition: transform 0.3s ease;
 }
 
-.btn-theme-toggle:hover {
+.btn-theme-toggle:hover:not(:disabled) {
     transform: scale(1.1);
+}
+
+/* Theme toggle disabled state */
+.btn-theme-toggle.theme-toggle-disabled {
+    opacity: 0.4;
+    filter: grayscale(80%);
+    pointer-events: none;
+    transform: none;
 }
 
 /* ========================================
