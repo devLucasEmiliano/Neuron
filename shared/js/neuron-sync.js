@@ -33,15 +33,15 @@ var NeuronSync = NeuronSync || (function () {
 
             // Fire config change callbacks
             if (changes[KEY_CONFIG]) {
-                var oldObj = changes[KEY_CONFIG].oldValue || {};
-                var newObj = changes[KEY_CONFIG].newValue || {};
+                let oldObj = changes[KEY_CONFIG].oldValue || {};
+                let newObj = changes[KEY_CONFIG].newValue || {};
                 _fireChanges(oldObj, newObj, configListeners);
             }
 
             // Fire preference change callbacks
             if (changes[KEY_PREFERENCES]) {
-                var oldObj = changes[KEY_PREFERENCES].oldValue || {};
-                var newObj = changes[KEY_PREFERENCES].newValue || {};
+                let oldObj = changes[KEY_PREFERENCES].oldValue || {};
+                let newObj = changes[KEY_PREFERENCES].newValue || {};
                 _fireChanges(oldObj, newObj, preferenceListeners);
             }
         });
