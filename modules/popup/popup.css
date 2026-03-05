@@ -102,6 +102,13 @@ main.overflow-auto::-webkit-scrollbar-thumb:hover {
     cursor: pointer;
 }
 
+/* Version label in footer */
+.version-label {
+    font-size: 0.7rem;
+    color: var(--bs-secondary-color);
+    opacity: 0.7;
+}
+
 /* Link styling in footer */
 footer .btn-link {
     color: var(--neuron-primary);

@@ -295,6 +295,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     window.addEventListener('unload', pararAnimacao);
 
+    // ========== Version Display ==========
+
+    const versionLabel = document.getElementById('versionLabel');
+    if (versionLabel) {
+        const manifest = chrome.runtime.getManifest();
+        versionLabel.textContent = 'v' + (manifest.version_name || manifest.version);
+    }
+
     // ========== Initialize ==========
 
     await inicializarControlos();
