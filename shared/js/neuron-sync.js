@@ -1,37 +1,69 @@
 /**
- * NeuronSync - Cross-context synchronization layer using BroadcastChannel
- * Notifies other extension contexts
- * when config or preference values change in IndexedDB.
+ * NeuronSync - Cross-context synchronization layer using chrome.storage.onChanged
+ * Automatically detects when config or preference values change in chrome.storage.local
+ * and notifies subscribers. Also keeps NeuronDB's in-memory cache coherent across contexts.
  */
 
 var NeuronSync = NeuronSync || (function () {
     'use strict';
 
-    const CHANNEL_NAME = 'neuron-sync';
-    let channel = null;
+    const KEY_CONFIG = 'neuron_config';
+    const KEY_PREFERENCES = 'neuron_preferences';
+
+    const configListeners = [];
+    const preferenceListeners = [];
+    let listenerInstalled = false;
 
     /**
-     * Get or create the BroadcastChannel instance
+     * Install the chrome.storage.onChanged listener (once)
      */
-    function getChannel() {
-        if (!channel) {
-            channel = new BroadcastChannel(CHANNEL_NAME);
-        }
-        return channel;
+    function ensureListener() {
+        if (listenerInstalled) return;
+        listenerInstalled = true;
+
+        chrome.storage.onChanged.addListener(function (changes, areaName) {
+            if (areaName !== 'local') return;
+
+            // Update NeuronDB cache for any changed keys
+            Object.keys(changes).forEach(function (storageKey) {
+                if (typeof NeuronDB !== 'undefined' && NeuronDB._updateCache) {
+                    NeuronDB._updateCache(storageKey, changes[storageKey].newValue);
+                }
+            });
+
+            // Fire config change callbacks
+            if (changes[KEY_CONFIG]) {
+                var oldObj = changes[KEY_CONFIG].oldValue || {};
+                var newObj = changes[KEY_CONFIG].newValue || {};
+                _fireChanges(oldObj, newObj, configListeners);
+            }
+
+            // Fire preference change callbacks
+            if (changes[KEY_PREFERENCES]) {
+                var oldObj = changes[KEY_PREFERENCES].oldValue || {};
+                var newObj = changes[KEY_PREFERENCES].newValue || {};
+                _fireChanges(oldObj, newObj, preferenceListeners);
+            }
+        });
     }
 
     /**
-     * Broadcast a change notification to all other contexts
-     * @param {string} changeType - Type of change ('config' or 'preference')
-     * @param {string} key - The key that changed
-     * @param {*} newValue - The new value
+     * Diff two objects and fire callbacks for each changed key
      */
-    function broadcast(changeType, key, newValue) {
-        getChannel().postMessage({
-            type: changeType,
-            key: key,
-            newValue: newValue,
-            timestamp: Date.now()
+    function _fireChanges(oldObj, newObj, listeners) {
+        if (listeners.length === 0) return;
+
+        // Find all keys that exist in either object
+        var allKeys = new Set(Object.keys(oldObj).concat(Object.keys(newObj)));
+
+        allKeys.forEach(function (key) {
+            var oldVal = oldObj[key];
+            var newVal = newObj[key];
+            if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+                listeners.forEach(function (cb) {
+                    cb(key, newVal);
+                });
+            }
         });
     }
 
@@ -41,7 +73,12 @@ var NeuronSync = NeuronSync || (function () {
      * @returns {Function} Unsubscribe function
      */
     function onConfigChange(callback) {
-        return _subscribe('config', callback);
+        ensureListener();
+        configListeners.push(callback);
+        return function unsubscribe() {
+            var idx = configListeners.indexOf(callback);
+            if (idx !== -1) configListeners.splice(idx, 1);
+        };
     }
 
     /**
@@ -50,29 +87,16 @@ var NeuronSync = NeuronSync || (function () {
      * @returns {Function} Unsubscribe function
      */
     function onPreferenceChange(callback) {
-        return _subscribe('preference', callback);
-    }
-
-    /**
-     * Internal: subscribe to a specific change type
-     */
-    function _subscribe(changeType, callback) {
-        const ch = getChannel();
-        function handler(event) {
-            const data = event.data;
-            if (data && data.type === changeType) {
-                callback(data.key, data.newValue);
-            }
-        }
-        ch.addEventListener('message', handler);
+        ensureListener();
+        preferenceListeners.push(callback);
         return function unsubscribe() {
-            ch.removeEventListener('message', handler);
+            var idx = preferenceListeners.indexOf(callback);
+            if (idx !== -1) preferenceListeners.splice(idx, 1);
         };
     }
 
     // Public API
     return {
-        broadcast,
         onConfigChange,
         onPreferenceChange
     };
