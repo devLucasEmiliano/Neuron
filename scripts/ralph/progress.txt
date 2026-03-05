@@ -1,3 +1,23 @@
 # Ralph Progress Log
 Started: Thu Mar  5 13:44:16 -03 2026
 ---
+
+## Codebase Patterns
+- Shell scripts must use LF line endings (enforced by .gitattributes `*.sh text eol=lf`)
+- Use `jq` to safely modify manifest.json in scripts
+- manifest.json uses `version` for Chrome's strict X.Y.Z format and `version_name` for custom display format
+- The Write tool in Claude Code may produce CRLF; always verify/fix with `sed -i 's/\r$//'` or rely on .gitattributes
+- Project root: manifest.json, background.js, modules/, shared/, vendor/, config/, scripts/
+
+---
+
+## 2026-03-05 - US-010
+- **Implemented:** Version bump script (`scripts/bump-version.sh`)
+- **Files changed:** `scripts/bump-version.sh` (new)
+- **Details:** Script accepts --major, --minor, --patch, --branch (s/b/d), --hash, --set-major, --set-minor, --dry-run flags. Updates manifest.json (version + version_name) and VERSION file using jq. Idempotent.
+- **Learnings for future iterations:**
+  - The current manifest.json `version` is "2.0" (not X.Y.Z) — the script normalizes it to "2.0.0"
+  - `jq` is installed at `/usr/bin/jq` (v1.6) in this environment
+  - `shellcheck` is NOT available in this environment
+  - .gitattributes already configures `*.sh text eol=lf` so git will handle line ending conversion
+---

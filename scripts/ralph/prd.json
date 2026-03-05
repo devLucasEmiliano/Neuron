@@ -7,7 +7,7 @@
       "id": "US-010",
       "title": "Version bump script",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "description": "Create a script that handles version bumping so that the CI and local workflows can reliably update version strings.",
       "acceptanceCriteria": [
         "A script scripts/bump-version.sh accepts parameters: major/minor increment, branch suffix, commit hash",
