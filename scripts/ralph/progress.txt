@@ -9,6 +9,8 @@
 - No npm/node build system - plain JS, validation is JSON well-formedness + shell script syntax
 - Popup footer layout: `d-flex justify-content-between` with link | version | theme controls - wrap grouped controls in a nested flex div
 - ThemeManager._enabled is synchronously available after init() for initial UI state
+- Content scripts handle theme independently from ThemeManager — use NeuronDB + NeuronSync directly with `.neuron-dark` class (not `data-bs-theme`)
+- Only `notificacoes.js` among content scripts has dynamic dark/light theme switching
 
 # Ralph Progress Log
 Started: Thu Mar  5 14:40:45 -03 2026
@@ -73,4 +75,21 @@ Started: Thu Mar  5 14:40:45 -03 2026
   - The sync architecture is layered: NeuronDB auto-broadcasts → ThemeManager catches broadcasts and dispatches DOM events → UI components listen to DOM events
   - When verifying sync stories, trace the full chain: persistence → broadcast → listener → DOM event → UI handler
   - US-001 through US-003 collectively built the complete sync mechanism — this story was effectively already done
+---
+
+## 2026-03-05 - US-005
+- Made `notificacoes.js` content script respect the `themeEnabled` preference
+- Added `themeEnabled` state variable, loaded from `NeuronDB.getPreference('themeEnabled')` during init
+- `applyTheme()` now forces light theme (removes `.neuron-dark`) when `themeEnabled` is false
+- Added `themeEnabled` handler in `NeuronSync.onPreferenceChange` listener for real-time sync
+- System theme change listener also gated by `themeEnabled` flag
+- Other content scripts (tratar-novo, arquivar, encaminhar, prorrogar, tramitar, tratar, sic) don't have dynamic theme switching — only static light-mode CSS variables
+- CSS transitions already exist on notification panel elements, ensuring smooth visual transition
+- Files changed: `modules/notificacoes/notificacoes.js`, `scripts/ralph/prd.json`
+- **Learnings for future iterations:**
+  - Only `notificacoes.js` has dynamic dark/light theme switching among content scripts — other modules use hardcoded light-mode CSS variables
+  - Content scripts don't load ThemeManager — they handle theme independently via NeuronDB + NeuronSync
+  - The `.neuron-dark` class on content script elements is the equivalent of `data-bs-theme` used in popup/options
+  - When adding `themeEnabled` awareness to content scripts, gate both `applyTheme()` and system media query listeners
+  - Manual browser verification needed (no browser tools available)
 ---

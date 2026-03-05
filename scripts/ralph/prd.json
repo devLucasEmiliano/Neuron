@@ -65,7 +65,7 @@
       "title": "Disable theme CSS on content pages (Fala.br)",
       "description": "As a user, I want the custom Neuron styling to be removed from Fala.br pages when the theme is disabled.",
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "When theme is disabled, content scripts stop applying custom theme styling to the page",
         "When theme is re-enabled, content scripts re-apply the custom theme styling",
