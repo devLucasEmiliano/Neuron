@@ -159,7 +159,7 @@
         
         selectElement.addEventListener('change', () => {
             exibirNomesParaSecretaria(selectElement, ulElement);
-            NeuronDB.setPreference('secretariaSelecionadaTramitar', selectElement.value);
+            NeuronDB.setPreference('secretariaSelecionadaTramitar', selectElement.value).catch(() => {});
             btnAutotramitar.disabled = !selectElement.value;
         });
 

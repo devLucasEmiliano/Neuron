@@ -302,7 +302,7 @@
         // Handle filter toggle
         if (targetId === 'neuron-filtro-usuario-toggle') {
             filtroUsuarioAtivado = target.checked;
-            NeuronDB.setPreference(PREF_KEY_FILTRO_USUARIO, filtroUsuarioAtivado);
+            NeuronDB.setPreference(PREF_KEY_FILTRO_USUARIO, filtroUsuarioAtivado).catch(() => {});
             renderizarPainel();
             return;
         }
@@ -535,6 +535,15 @@
         return Math.ceil((dataAlvo.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
     }
 
+    const handleStorageChanged = async (changes, areaName) => {
+        if (areaName !== 'local' || !isFeatureActive) return;
+        if (changes['neuron_demandas'] || changes['neuron_concluidas']) {
+            memoriaDeDemandas = await NeuronDB.getAllDemandasAsObject();
+            demandasConcluidas = await NeuronDB.getConcluidas();
+            renderizarPainel();
+        }
+    };
+
     async function ativarFuncionalidade() {
         if (isFeatureActive) return;
         await carregarConfiguracoes();
@@ -543,6 +552,7 @@
         document.addEventListener('click', handleUiInteraction);
         document.addEventListener('change', handleUiInteraction);
         document.addEventListener('dadosExtraidosNeuron', handleDadosExtraidos);
+        chrome.storage.onChanged.addListener(handleStorageChanged);
         inicializarDadosNotificacoes();
         isFeatureActive = true;
     }
@@ -553,6 +563,7 @@
         document.removeEventListener('click', handleUiInteraction);
         document.removeEventListener('change', handleUiInteraction);
         document.removeEventListener('dadosExtraidosNeuron', handleDadosExtraidos);
+        chrome.storage.onChanged.removeListener(handleStorageChanged);
         isFeatureActive = false;
     }
 

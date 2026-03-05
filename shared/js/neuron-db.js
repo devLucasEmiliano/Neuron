@@ -25,6 +25,28 @@ var NeuronDB = NeuronDB || (function () {
     let initialized = false;
 
     /**
+     * Check if the extension context is still valid
+     */
+    function isContextValid() {
+        try {
+            return !!chrome.runtime && !!chrome.runtime.id;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    /**
+     * Safe wrapper for chrome.storage.local.set that handles invalidated context
+     */
+    async function safeStorageSet(data) {
+        if (!isContextValid()) {
+            console.warn('NeuronDB: Extension context invalidated, skipping storage write.');
+            return;
+        }
+        await chrome.storage.local.set(data);
+    }
+
+    /**
      * Parse DD/MM/YYYY date string to timestamp
      */
     function parseDate(dateStr) {
@@ -52,6 +74,12 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function init() {
         if (initialized) return;
+
+        if (!isContextValid()) {
+            console.warn('NeuronDB: Extension context invalidated, using empty cache.');
+            initialized = true;
+            return;
+        }
 
         const data = await chrome.storage.local.get([
             KEY_DEMANDAS, KEY_CONCLUIDAS, KEY_METADATA, KEY_CONFIG, KEY_PREFERENCES
@@ -84,7 +112,7 @@ var NeuronDB = NeuronDB || (function () {
         await init();
         const record = prepareDemanda(demanda);
         cache[KEY_DEMANDAS][record.numero] = record;
-        await chrome.storage.local.set({ [KEY_DEMANDAS]: cache[KEY_DEMANDAS] });
+        await safeStorageSet({ [KEY_DEMANDAS]: cache[KEY_DEMANDAS] });
     }
 
     /**
@@ -98,7 +126,7 @@ var NeuronDB = NeuronDB || (function () {
             const record = prepareDemanda(d);
             cache[KEY_DEMANDAS][record.numero] = record;
         });
-        await chrome.storage.local.set({ [KEY_DEMANDAS]: cache[KEY_DEMANDAS] });
+        await safeStorageSet({ [KEY_DEMANDAS]: cache[KEY_DEMANDAS] });
     }
 
     /**
@@ -140,7 +168,7 @@ var NeuronDB = NeuronDB || (function () {
     async function deleteDemanda(numero) {
         await init();
         delete cache[KEY_DEMANDAS][numero];
-        await chrome.storage.local.set({ [KEY_DEMANDAS]: cache[KEY_DEMANDAS] });
+        await safeStorageSet({ [KEY_DEMANDAS]: cache[KEY_DEMANDAS] });
     }
 
     /**
@@ -149,7 +177,7 @@ var NeuronDB = NeuronDB || (function () {
     async function clearDemandas() {
         await init();
         cache[KEY_DEMANDAS] = {};
-        await chrome.storage.local.set({ [KEY_DEMANDAS]: cache[KEY_DEMANDAS] });
+        await safeStorageSet({ [KEY_DEMANDAS]: cache[KEY_DEMANDAS] });
     }
 
     /**
@@ -164,7 +192,7 @@ var NeuronDB = NeuronDB || (function () {
         } else {
             cache[KEY_CONCLUIDAS] = cache[KEY_CONCLUIDAS].filter(n => n !== numero);
         }
-        await chrome.storage.local.set({ [KEY_CONCLUIDAS]: cache[KEY_CONCLUIDAS] });
+        await safeStorageSet({ [KEY_CONCLUIDAS]: cache[KEY_CONCLUIDAS] });
     }
 
     /**
@@ -197,7 +225,7 @@ var NeuronDB = NeuronDB || (function () {
     async function clearConcluidas() {
         await init();
         cache[KEY_CONCLUIDAS] = [];
-        await chrome.storage.local.set({ [KEY_CONCLUIDAS]: cache[KEY_CONCLUIDAS] });
+        await safeStorageSet({ [KEY_CONCLUIDAS]: cache[KEY_CONCLUIDAS] });
     }
 
     /**
@@ -207,7 +235,7 @@ var NeuronDB = NeuronDB || (function () {
         await init();
         cache[KEY_DEMANDAS] = {};
         cache[KEY_CONCLUIDAS] = [];
-        await chrome.storage.local.set({
+        await safeStorageSet({
             [KEY_DEMANDAS]: cache[KEY_DEMANDAS],
             [KEY_CONCLUIDAS]: cache[KEY_CONCLUIDAS]
         });
@@ -227,7 +255,7 @@ var NeuronDB = NeuronDB || (function () {
     async function setMetadata(key, value) {
         await init();
         cache[KEY_METADATA][key] = value;
-        await chrome.storage.local.set({ [KEY_METADATA]: cache[KEY_METADATA] });
+        await safeStorageSet({ [KEY_METADATA]: cache[KEY_METADATA] });
     }
 
     /**
@@ -244,7 +272,7 @@ var NeuronDB = NeuronDB || (function () {
     async function setConfig(key, value) {
         await init();
         cache[KEY_CONFIG][key] = value;
-        await chrome.storage.local.set({ [KEY_CONFIG]: cache[KEY_CONFIG] });
+        await safeStorageSet({ [KEY_CONFIG]: cache[KEY_CONFIG] });
     }
 
     /**
@@ -261,7 +289,7 @@ var NeuronDB = NeuronDB || (function () {
     async function setPreference(key, value) {
         await init();
         cache[KEY_PREFERENCES][key] = value;
-        await chrome.storage.local.set({ [KEY_PREFERENCES]: cache[KEY_PREFERENCES] });
+        await safeStorageSet({ [KEY_PREFERENCES]: cache[KEY_PREFERENCES] });
     }
 
     /**

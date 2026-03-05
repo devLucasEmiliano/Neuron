@@ -15,6 +15,7 @@
 
     let config = {};
     let isFeatureActive = false;
+    let tipoRespostaObserver = null;
 
     async function carregarConfiguracoes() {
         config = await NeuronDB.getConfig(CONFIG_KEY) || {};
@@ -26,6 +27,33 @@
         return config.masterEnableNeuron !== false && config.modules?.[SCRIPT_ID] !== false;
     }
 
+    function isTipoRespostaSelecionado() {
+        const input = document.querySelector(`#${ID_TIPO_RESPOSTA_SELECT} input[type="text"]`);
+        if (!input) return false;
+        const valor = input.value.trim();
+        return valor !== '' && valor !== 'Selecione...';
+    }
+
+    function atualizarVisibilidadeNeuron() {
+        const container = document.getElementById(ID_NEURON_DROPDOWN_CONTAINER);
+        if (!container) return;
+        container.style.display = isTipoRespostaSelecionado() ? '' : 'none';
+    }
+
+    function iniciarObservadorTipoResposta() {
+        const tipoContainer = document.getElementById(ID_TIPO_RESPOSTA_SELECT);
+        if (!tipoContainer || tipoRespostaObserver) return;
+        tipoRespostaObserver = new MutationObserver(atualizarVisibilidadeNeuron);
+        tipoRespostaObserver.observe(tipoContainer, { subtree: true, attributes: true, childList: true, characterData: true });
+    }
+
+    function pararObservadorTipoResposta() {
+        if (tipoRespostaObserver) {
+            tipoRespostaObserver.disconnect();
+            tipoRespostaObserver = null;
+        }
+    }
+
     function criarUI() {
         if (document.getElementById(ID_NEURON_DROPDOWN_CONTAINER)) return;
 
@@ -33,7 +61,7 @@
         if (!containerOriginal) return;
         
         const novoDropdownHTML = `
-            <div class="br-select mb-3" id="${ID_NEURON_DROPDOWN_CONTAINER}">
+            <div class="br-select mb-3" id="${ID_NEURON_DROPDOWN_CONTAINER}" style="display: none;">
                 <label for="${ID_NEURON_DROPDOWN_INPUT}">Opções de Resposta (Neuron)</label>
                 <div class="br-input has-icon">
                     <input id="${ID_NEURON_DROPDOWN_INPUT}" type="text" placeholder="Clique para selecionar..." readonly disabled autocomplete="off">
@@ -108,6 +136,7 @@
             if (textoSelecionado) {
                 console.log(`%cNeuron (${SCRIPT_ID}): Estado inicial detectado: "${textoSelecionado}". Renderizando opções.`, "color: purple; font-weight: bold;");
                 renderizarOpcoesDeResposta(textoSelecionado);
+                atualizarVisibilidadeNeuron();
             }
         }
     }
@@ -135,6 +164,7 @@
             const selectedText = tipoRespostaItem.querySelector('label')?.textContent.trim();
             if (selectedText) {
                 renderizarOpcoesDeResposta(selectedText);
+                atualizarVisibilidadeNeuron();
             }
         }
     };
@@ -142,6 +172,8 @@
     function ativarFuncionalidade() {
         if (isFeatureActive) return;
         criarUI();
+        iniciarObservadorTipoResposta();
+        atualizarVisibilidadeNeuron();
         document.addEventListener('click', handleUiInteraction);
         isFeatureActive = true;
         
@@ -154,6 +186,7 @@
 
     function desativarFuncionalidade() {
         if (!isFeatureActive) return;
+        pararObservadorTipoResposta();
         removerUI();
         document.removeEventListener('click', handleUiInteraction);
         isFeatureActive = false;
