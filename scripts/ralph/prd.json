@@ -54,7 +54,7 @@
       "id": "US-004",
       "title": "Update background.js for new data layer",
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "description": "Update background.js to work with the new chrome.storage.local-based NeuronDB.",
       "acceptanceCriteria": [
         "importScripts() no longer includes vendor/idb.min.js",
