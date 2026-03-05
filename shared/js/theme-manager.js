@@ -5,19 +5,79 @@
  */
 const ThemeManager = {
     STORAGE_KEY: 'neuronThemePreference',
+    ENABLED_KEY: 'neuronThemeEnabled',
     VALID_THEMES: ['light', 'dark', 'system'],
+    _enabled: true,
 
     /**
      * Initialize the theme manager
-     * - Loads saved preference from storage
-     * - Applies the theme to the document
+     * - Loads saved enabled state and preference from storage
+     * - Applies the theme to the document (or disables it)
      * - Sets up system preference watcher
      */
     async init() {
+        this._enabled = await this.getEnabled();
         const preference = await this.getPreference();
-        this.applyTheme(preference);
+        if (this._enabled) {
+            this.applyTheme(preference);
+        } else {
+            this._disableTheme();
+        }
         this.watchSystemPreference();
         return preference;
+    },
+
+    /**
+     * Get the theme enabled state from NeuronDB
+     * @returns {Promise<boolean>} true if theme is enabled
+     */
+    async getEnabled() {
+        try {
+            if (typeof NeuronDB !== 'undefined') {
+                const val = await NeuronDB.getPreference('themeEnabled');
+                return val !== false;
+            }
+        } catch (e) {
+            console.warn('ThemeManager: Could not load enabled state from storage', e);
+        }
+        return true;
+    },
+
+    /**
+     * Set the theme enabled state
+     * @param {boolean} enabled - true to enable, false to disable
+     */
+    async setEnabled(enabled) {
+        enabled = !!enabled;
+        this._enabled = enabled;
+
+        try {
+            if (typeof NeuronDB !== 'undefined') {
+                await NeuronDB.setPreference('themeEnabled', enabled);
+            }
+        } catch (e) {
+            console.warn('ThemeManager: Could not save enabled state to storage', e);
+        }
+
+        if (enabled) {
+            const preference = await this.getPreference();
+            this.applyTheme(preference);
+        } else {
+            this._disableTheme();
+        }
+
+        // Dispatch custom event for UI components
+        const event = new CustomEvent('neuron-theme-enabled-change', {
+            detail: { enabled }
+        });
+        document.dispatchEvent(event);
+    },
+
+    /**
+     * Remove Neuron theme styling from the document
+     */
+    _disableTheme() {
+        document.documentElement.removeAttribute('data-bs-theme');
     },
 
     /**
@@ -54,7 +114,9 @@ const ThemeManager = {
             console.warn('ThemeManager: Could not save preference to storage', e);
         }
 
-        this.applyTheme(preference);
+        if (this._enabled) {
+            this.applyTheme(preference);
+        }
     },
 
     /**
@@ -110,6 +172,7 @@ const ThemeManager = {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
         const handler = async () => {
+            if (!this._enabled) return;
             const pref = await this.getPreference();
             if (pref === 'system') {
                 this.applyTheme('system');
@@ -200,7 +263,22 @@ const ThemeManager = {
 if (typeof NeuronSync !== 'undefined') {
     NeuronSync.onPreferenceChange(function (key, newValue) {
         if (key === 'theme' && ThemeManager.VALID_THEMES.includes(newValue)) {
-            ThemeManager.applyTheme(newValue);
+            if (ThemeManager._enabled) {
+                ThemeManager.applyTheme(newValue);
+            }
+        }
+        if (key === 'themeEnabled') {
+            ThemeManager._enabled = !!newValue;
+            if (newValue) {
+                ThemeManager.getPreference().then(function (pref) {
+                    ThemeManager.applyTheme(pref);
+                });
+            } else {
+                ThemeManager._disableTheme();
+            }
+            document.dispatchEvent(new CustomEvent('neuron-theme-enabled-change', {
+                detail: { enabled: !!newValue }
+            }));
         }
     });
 }

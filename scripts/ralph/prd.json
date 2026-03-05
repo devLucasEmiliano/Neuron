@@ -1,0 +1,91 @@
+{
+  "title": "Theme Enable/Disable Toggle",
+  "branchName": "developing",
+  "description": "Add an on/off toggle for the Neuron custom theme system, allowing users to completely disable the custom CSS styling injected into Fala.br pages, the popup, and the options page.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Store theme enabled preference",
+      "description": "As a developer, I need to persist the theme enabled/disabled state so it survives extension restarts.",
+      "priority": 1,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Add a neuronThemeEnabled key to the NeuronDB preferences store (default: true)",
+        "ThemeManager exposes getEnabled() and setEnabled(boolean) methods",
+        "setEnabled() persists to NeuronDB and dispatches a sync event via NeuronSync",
+        "init() reads the enabled state and applies it on startup",
+        "Typecheck/lint passes"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "Theme toggle switch in popup",
+      "description": "As a user, I want an on/off switch in the popup so I can quickly enable or disable the Neuron theme.",
+      "priority": 2,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Add a labeled toggle switch (e.g., Tema Neuron) above or beside the existing theme mode cycle button in popup.html",
+        "Toggle switch reflects current enabled state on popup open",
+        "Clicking the toggle calls ThemeManager.setEnabled() and updates the UI immediately",
+        "When theme is OFF: the theme mode cycle button is visually grayed out / disabled (non-clickable)",
+        "When theme is ON: the theme mode cycle button works normally (light/dark/system cycle)",
+        "Typecheck/lint passes"
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "Theme toggle switch in options page",
+      "description": "As a user, I want an on/off switch in the options page so I can enable or disable the Neuron theme from the settings dashboard.",
+      "priority": 3,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Add a labeled toggle switch (e.g., Habilitar tema personalizado) in the General settings section of options.html",
+        "Toggle switch reflects current enabled state on page load",
+        "Clicking the toggle calls ThemeManager.setEnabled() and updates the UI immediately",
+        "When theme is OFF: the theme mode selector (if present in options) is grayed out / disabled",
+        "When theme is ON: the theme mode selector works normally",
+        "Typecheck/lint passes"
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "Sync theme enabled state between popup and options",
+      "description": "As a user, I want the theme toggle state to stay in sync when I have both the popup and options page open.",
+      "priority": 4,
+      "passes": false,
+      "acceptanceCriteria": [
+        "When theme is toggled in popup, the options page updates its toggle switch and theme mode selector state in real time (and vice versa)",
+        "Uses existing NeuronSync broadcast mechanism (BroadcastChannel)",
+        "ThemeManager listens for sync events and calls the appropriate apply logic",
+        "Typecheck/lint passes"
+      ]
+    },
+    {
+      "id": "US-005",
+      "title": "Disable theme CSS on content pages (Fala.br)",
+      "description": "As a user, I want the custom Neuron styling to be removed from Fala.br pages when the theme is disabled.",
+      "priority": 5,
+      "passes": false,
+      "acceptanceCriteria": [
+        "When theme is disabled, content scripts stop applying custom theme styling to the page",
+        "When theme is re-enabled, content scripts re-apply the custom theme styling",
+        "Transition between enabled/disabled states is smooth (no harsh flash)",
+        "Typecheck/lint passes"
+      ]
+    },
+    {
+      "id": "US-006",
+      "title": "Disable theme on popup and options pages",
+      "description": "As a user, when theme is disabled, the popup and options pages should also revert to default Bootstrap styling.",
+      "priority": 6,
+      "passes": false,
+      "acceptanceCriteria": [
+        "When theme is OFF, the popup and options pages use default Bootstrap appearance (no Neuron custom properties applied)",
+        "When theme is ON, the Neuron theme variables and custom styles are active",
+        "The theme mode cycle button / selector remains visible but grayed out and non-interactive when OFF",
+        "Smooth CSS transition when toggling (no jarring flash)",
+        "Typecheck/lint passes"
+      ]
+    }
+  ]
+}
