@@ -52,7 +52,7 @@
       "title": "Sync theme enabled state between popup and options",
       "description": "As a user, I want the theme toggle state to stay in sync when I have both the popup and options page open.",
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "When theme is toggled in popup, the options page updates its toggle switch and theme mode selector state in real time (and vice versa)",
         "Uses existing NeuronSync broadcast mechanism (BroadcastChannel)",

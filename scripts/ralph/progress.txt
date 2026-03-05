@@ -62,3 +62,15 @@ Started: Thu Mar  5 14:40:45 -03 2026
   - Options page already has `themeToggle` and `themeIcon` IDs in the header for the cycle button
   - Manual browser verification needed (no browser tools available)
 ---
+
+## 2026-03-05 - US-004
+- Verified that sync between popup and options was already fully implemented across US-001, US-002, and US-003
+- The sync chain: `ThemeManager.setEnabled()` → `NeuronDB.setPreference()` → `NeuronSync.broadcast()` → other context's `NeuronSync.onPreferenceChange` listener in ThemeManager → dispatches `neuron-theme-enabled-change` event → UI listener calls `updateThemeEnabledUI()`
+- Theme preference (light/dark/system) also syncs: `setPreference('theme')` → broadcast → `applyTheme()` → dispatches `neuron-theme-change` → `updateThemeIcon()`
+- No code changes needed — all acceptance criteria already satisfied by existing implementation
+- Files changed: `scripts/ralph/prd.json` (marked passes: true)
+- **Learnings for future iterations:**
+  - The sync architecture is layered: NeuronDB auto-broadcasts → ThemeManager catches broadcasts and dispatches DOM events → UI components listen to DOM events
+  - When verifying sync stories, trace the full chain: persistence → broadcast → listener → DOM event → UI handler
+  - US-001 through US-003 collectively built the complete sync mechanism — this story was effectively already done
+---
