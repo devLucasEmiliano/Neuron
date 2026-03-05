@@ -24,7 +24,7 @@
       "id": "US-002",
       "title": "Rewrite NeuronSync to use chrome.storage.onChanged",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "description": "Replace BroadcastChannel in neuron-sync.js with chrome.storage.onChanged so that sync events work across all extension contexts.",
       "acceptanceCriteria": [
         "neuron-sync.js uses chrome.storage.onChanged listener instead of BroadcastChannel",
