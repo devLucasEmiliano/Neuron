@@ -3,8 +3,8 @@
  * @description Background service worker for Neuron extension
  */
 
-// Import idb library, NeuronDB, and NeuronSync
-importScripts('vendor/idb.min.js', 'shared/js/neuron-db.js', 'shared/js/neuron-sync.js');
+// Import NeuronDB and NeuronSync
+importScripts('shared/js/neuron-db.js', 'shared/js/neuron-sync.js');
 
 // Ensure proper extension initialization
 chrome.runtime.onInstalled.addListener(async () => {
@@ -17,7 +17,7 @@ chrome.runtime.onInstalled.addListener(async () => {
             const response = await fetch(chrome.runtime.getURL('config/config.json'));
             const defaultConfig = await response.json();
             await NeuronDB.setConfig('neuronUserConfig', defaultConfig);
-            console.log('Neuron: Default config initialized in IndexedDB');
+            console.log('Neuron: Default config initialized in chrome.storage.local');
         }
     } catch (error) {
         console.error('Neuron: Failed to initialize default config:', error);
@@ -34,7 +34,7 @@ self.addEventListener('error', (error) => {
     console.error('Neuron background script error:', error);
 });
 
-// Handle config changes via BroadcastChannel for debugging if needed
+// Handle config changes via chrome.storage.onChanged for debugging
 NeuronSync.onConfigChange((key) => {
     if (key === 'neuronUserConfig') {
         console.log('Neuron configuration updated');
