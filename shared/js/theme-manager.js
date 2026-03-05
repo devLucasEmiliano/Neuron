@@ -1,7 +1,7 @@
 /**
  * Neuron Theme Manager
  * Handles dark/light theme switching with system preference detection
- * and persistent storage in NeuronDB (IndexedDB).
+ * and persistent storage in NeuronDB (chrome.storage.local).
  */
 const ThemeManager = {
     STORAGE_KEY: 'neuronThemePreference',
@@ -306,7 +306,7 @@ if (typeof NeuronSync !== 'undefined') {
 }
 
 // Auto-initialize when script loads (prevents flash of wrong theme)
-// Falls back to system preference detection since IndexedDB is async
+// Falls back to system preference detection since chrome.storage.local is async
 (function () {
     var resolved = ThemeManager.getSystemTheme();
     document.documentElement.setAttribute('data-bs-theme', resolved);
