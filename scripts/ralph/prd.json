@@ -113,7 +113,7 @@
       "id": "US-009",
       "title": "Hotfix workflow",
       "priority": 9,
-      "passes": false,
+      "passes": true,
       "description": "Support hotfix branches off stable that merge back to both stable and developing.",
       "acceptanceCriteria": [
         "Hotfix branches are named hotfix/<description> and branch from stable",

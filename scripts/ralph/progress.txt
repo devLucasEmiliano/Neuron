@@ -24,6 +24,8 @@ Started: Thu Mar  5 13:44:16 -03 2026
 - Use `gh release create` with `--notes-file` (not `--notes`) to safely pass changelog content with special characters
 - `GH_TOKEN` env var is used by `gh` CLI; set it to `${{ github.token }}` in workflows
 - Write changelog to a temp file instead of using GITHUB_OUTPUT for multi-line content passed to shell commands
+- Hotfix branches use `hotfix/<description>` naming; backport to developing is handled by `hotfix-backport.yml`
+- Use `--body-file` with `gh pr create/edit` for PR bodies with special characters (safer than `--body`)
 
 ---
 
@@ -115,4 +117,16 @@ Started: Thu Mar  5 13:44:16 -03 2026
   - Writing multi-line content to a temp file is safer than passing via GITHUB_OUTPUT when it will be used in shell commands
   - `git tag --sort=-creatordate | grep '^v' | head -n 1` finds the most recent version tag
   - `permissions: contents: write` covers both pushing tags and creating releases
+---
+
+## 2026-03-05 - US-009
+- **Implemented:** GitHub Actions workflow for hotfix branch backport to developing
+- **Files changed:** `.github/workflows/hotfix-backport.yml` (new)
+- **Details:** Workflow triggers on `pull_request` closed+merged to `stable` where head branch starts with `hotfix/`. Steps: (1) Ensure hotfix branch still exists on remote (recreates from PR head SHA if auto-deleted), (2) Check for existing open backport PR, (3) Create or update PR from hotfix branch to developing with descriptive body referencing the original PR. Existing workflows (version-stamp.yml and release-artifact.yml) already handle patch version bumps and release creation on stable pushes, so hotfixes get the same treatment automatically.
+- **Learnings for future iterations:**
+  - `pull_request` event with `types: [closed]` fires before branch auto-deletion, so the branch ref is accessible
+  - `github.event.pull_request.head.sha` preserves the original branch tip even if the branch is deleted
+  - Use `--body-file` with `gh pr create/edit` instead of `--body` to avoid shell escaping issues with heredoc content
+  - `startsWith()` in GitHub Actions `if` expressions works on event payload fields for pattern matching
+  - Hotfix version bumps and release artifacts don't need separate workflows — existing stable-triggered workflows handle them
 ---
