@@ -6,14 +6,19 @@ on:
 
 jobs:
   build-artifact:
-    name: Package extension for release
+    name: Package extension and create release
     runs-on: ubuntu-latest
     # Skip version-stamp commits to avoid duplicate builds
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
 
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Read version string
         id: version
@@ -54,3 +59,44 @@ jobs:
           name: neuron-extension-${{ steps.version.outputs.version }}
           path: neuron-${{ steps.version.outputs.version }}.zip
           retention-days: 90
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+
+          # Find the previous stable release tag
+          PREV_TAG=$(git tag --sort=-creatordate | grep '^v' | head -n 1 || true)
+
+          if [ -n "$PREV_TAG" ]; then
+            echo "Generating changelog since $PREV_TAG"
+            CHANGELOG=$(git log "${PREV_TAG}..HEAD" --pretty=format:"- %s (%h)" --no-merges)
+          else
+            echo "No previous tag found, generating full changelog"
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges -50)
+          fi
+
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="- No notable changes"
+          fi
+
+          echo "$CHANGELOG" > changelog.md
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="v${VERSION}"
+          ZIPNAME="neuron-${VERSION}.zip"
+
+          # Create the tag
+          git tag "$TAG"
+          git push origin "$TAG"
+
+          # Create the release with changelog and zip asset
+          gh release create "$TAG" \
+            "$ZIPNAME" \
+            --title "Neuron $VERSION" \
+            --notes-file changelog.md \
+            --latest
