@@ -83,3 +83,19 @@ Started: Thu Mar  5 15:15:36 -03 2026
   - The module uses `demandasConcluidas.has()` which works because `getConcluidas()` returns a Set
   - `NeuronSync.broadcast()` was never called in notificacoes.js, so its removal in US-002 had no impact here
 ---
+
+## 2026-03-05 - US-006
+- Verified `modules/options/dashboard.js` and `modules/options/options.js` are fully compatible with the new chrome.storage.local data layer
+- dashboard.js: `NeuronDB.getStats()` returns all required fields (total, pendentes, prazosCurtos, taxaConclusao, prorrogadas, complementadas, topResponsaveis, byPrazoRange)
+- dashboard.js: `NeuronSync.onPreferenceChange()` fires correctly via chrome.storage.onChanged for dashboard refresh signals
+- options.js: `NeuronDB.getConfig()` and `NeuronDB.setConfig()` work correctly for reading/writing config shared across contexts
+- options.js: `NeuronSync.onConfigChange()` fires correctly when config changes from other contexts, updating the UI
+- Updated 1 stale comment referencing "BroadcastChannel" to "chrome.storage.onChanged" in options.js line 867
+- No business logic changes required - all API signatures match
+- Files changed: `modules/options/options.js` (comment update only)
+- **Learnings for future iterations:**
+  - dashboard.js uses `NeuronDashboard` IIFE pattern and is initialized lazily by options.js when the dashboard section is shown
+  - options.js uses `NeuronDB.getConfig(CONFIG_STORAGE_KEY)` where CONFIG_STORAGE_KEY='neuronUserConfig' - this is the main config key
+  - The `NeuronSync.onConfigChange()` callback in options.js deep-merges with defaultConfig before updating UI, which is correct behavior
+  - dashboard.js had no stale comments - only options.js had one BroadcastChannel reference
+---

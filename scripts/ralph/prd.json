@@ -86,7 +86,7 @@
       "id": "US-006",
       "title": "Verify core consumers - dashboard.js and options.js",
       "priority": 6,
-      "passes": false,
+      "passes": true,
       "description": "Verify that the options page modules work correctly with the new data layer.",
       "acceptanceCriteria": [
         "dashboard.js: NeuronDB.getStats() returns real statistics from data extracted by content scripts",
