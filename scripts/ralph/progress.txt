@@ -21,6 +21,9 @@ Started: Thu Mar  5 13:44:16 -03 2026
 - Pattern for finding existing PRs: `gh pr list --base X --head Y --state open --json number --jq '.[0].number'`
 - VERSION file is the single source of truth for the version string in CI workflows
 - Use `actions/upload-artifact@v4` for artifact uploads, `actions/download-artifact@v4` to retrieve them
+- Use `gh release create` with `--notes-file` (not `--notes`) to safely pass changelog content with special characters
+- `GH_TOKEN` env var is used by `gh` CLI; set it to `${{ github.token }}` in workflows
+- Write changelog to a temp file instead of using GITHUB_OUTPUT for multi-line content passed to shell commands
 
 ---
 
@@ -100,4 +103,16 @@ Started: Thu Mar  5 13:44:16 -03 2026
   - `actions/upload-artifact@v4` is the current stable version for uploading artifacts
   - No special permissions needed for artifact upload (it's within the same workflow run)
   - The VERSION file is the single source of truth for the version string in CI
+---
+
+## 2026-03-05 - US-008
+- **Implemented:** GitHub Release creation with auto-generated changelog on merge to stable
+- **Files changed:** `.github/workflows/release-artifact.yml` (updated)
+- **Details:** Extended the existing release-artifact workflow to also create a GitHub Release after building the zip. Steps added: (1) Generate changelog by finding the previous `v*` tag and collecting commits since then with `git log`, (2) Create a git tag `v{VERSION}` and push it, (3) Create a GitHub Release via `gh release create` with the zip as a downloadable asset, changelog from file, and `--latest` flag. Added `permissions: contents: write` and `fetch-depth: 0` to support tag pushing and git log history.
+- **Learnings for future iterations:**
+  - Use `--notes-file` instead of `--notes` with `gh release create` to avoid shell escaping issues with special characters in commit messages
+  - `GH_TOKEN` env var is the way to authenticate `gh` CLI in GitHub Actions (set to `${{ github.token }}`)
+  - Writing multi-line content to a temp file is safer than passing via GITHUB_OUTPUT when it will be used in shell commands
+  - `git tag --sort=-creatordate | grep '^v' | head -n 1` finds the most recent version tag
+  - `permissions: contents: write` covers both pushing tags and creating releases
 ---

@@ -100,7 +100,7 @@
       "id": "US-008",
       "title": "CI pipeline - Create GitHub Release with changelog",
       "priority": 8,
-      "passes": false,
+      "passes": true,
       "description": "Create a GitHub Release automatically on stable merges with an auto-generated changelog.",
       "acceptanceCriteria": [
         "A GitHub Release is created with the version tag (e.g., v2.01.a3f4s)",
