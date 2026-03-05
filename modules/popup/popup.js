@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         catProrrogadasInput?.addEventListener('change', handleNotificacoesSettingChange);
         catComplementadasInput?.addEventListener('change', handleNotificacoesSettingChange);
 
-        // Listen for config changes from other contexts via BroadcastChannel
+        // Listen for config changes from other contexts via chrome.storage.onChanged
         if (typeof NeuronSync !== 'undefined') {
             NeuronSync.onConfigChange(async (key, newValue) => {
                 if (key === CONFIG_KEY) {
