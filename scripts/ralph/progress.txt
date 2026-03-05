@@ -1,0 +1,145 @@
+# Ralph Progress Log
+Started: Thu Mar  5 15:15:36 -03 2026
+
+## Codebase Patterns
+- This is a vanilla Chrome Extension (MV3) with no build toolchain, no package.json, no tests, no linting
+- NeuronDB and NeuronSync are global IIFE modules loaded via `<script>` tags and `importScripts()`
+- All files use `var ModuleName = ModuleName || (function() { ... })();` pattern for safe re-declaration
+- The in-memory cache in NeuronDB is keyed by storage key names: `neuron_demandas`, `neuron_concluidas`, `neuron_metadata`, `neuron_config`, `neuron_preferences`
+- NeuronDB exposes `_updateCache(key, value)` for NeuronSync to update the cache when `chrome.storage.onChanged` fires from other contexts
+- `setConfig()` and `setPreference()` no longer call `NeuronSync.broadcast()` - `chrome.storage.onChanged` fires automatically
+- The `idb.min.js` library is loaded in: manifest.json content_scripts, options.html `<script>`, and background.js `importScripts()`
+- NeuronSync uses `chrome.storage.onChanged` and diffs old/new objects to fire per-key callbacks matching the original `(key, newValue)` signature
+- `NeuronSync.broadcast()` has been removed - `chrome.storage.onChanged` fires automatically on writes
+- popup.html also loads neuron-db.js and neuron-sync.js via `<script>` tags (not just options.html)
+- Content script modules use two patterns for NeuronDB/NeuronSync integration: (1) direct calls within IIFE, or (2) indirect via `NeuronUtils.isScriptAtivo()` and `NeuronUtils.createStorageListener()` which delegate to NeuronDB/NeuronSync
+- `module-factory.js` provides `createNeuronModule()` helper that encapsulates the common NeuronDB.getConfig + NeuronSync.onConfigChange + MutationObserver pattern
+
+---
+
+## 2026-03-05 - US-001
+- Rewrote `shared/js/neuron-db.js` from IndexedDB to chrome.storage.local with in-memory cache
+- All 5 stores mapped to chrome.storage.local keys as objects
+- `init()` pre-loads all data via single `chrome.storage.local.get()` call
+- All public API methods preserved with same names and signatures
+- Added `_updateCache(key, value)` for cross-context cache coherence via NeuronSync
+- Removed `NeuronSync.broadcast()` calls from `setConfig()` and `setPreference()` since `chrome.storage.onChanged` fires automatically
+- Files changed: `shared/js/neuron-db.js`
+- **Learnings for future iterations:**
+  - `neuron_concluidas` stores an array of numero strings (not objects with timestamps like IndexedDB version)
+  - `markConcluida()` with `isDone=false` must filter the array rather than delete by key
+  - All read methods call `await init()` to ensure cache is loaded, but reads are synchronous from cache after that
+  - The `getStats()` return object includes `demandas` array and `concluidasSet` Set - must preserve these for consumers
+---
+
+## 2026-03-05 - US-002
+- Rewrote `shared/js/neuron-sync.js` from BroadcastChannel to chrome.storage.onChanged
+- Removed `broadcast()` from the public API (no longer needed - chrome.storage.onChanged fires automatically)
+- `onConfigChange(callback)` and `onPreferenceChange(callback)` now subscribe via chrome.storage.onChanged listener
+- The onChanged listener diffs old vs new objects to find which individual keys changed, then fires callbacks with `(key, newValue)`
+- The onChanged listener also updates NeuronDB's in-memory cache via `_updateCache()` for ALL storage keys that change
+- Both subscription methods return unsubscribe functions
+- Files changed: `shared/js/neuron-sync.js`
+- **Learnings for future iterations:**
+  - `chrome.storage.onChanged` provides `{oldValue, newValue}` per storage key - since config/preferences are stored as whole objects, you must diff old vs new to find individual changed keys
+  - Consumers filter by individual config keys (e.g. `key === 'neuronUserConfig'`), so the diff-and-fire-per-key approach is essential
+  - `NeuronDB._updateCache()` must be called for all changed storage keys, not just config/preferences, to keep the cache coherent
+  - Some consumer files still have comments mentioning "BroadcastChannel" - these will be cleaned up in later stories (US-004, US-006, US-007)
+---
+
+## 2026-03-05 - US-003
+- Added `"storage"` to permissions array in manifest.json
+- Removed `vendor/idb.min.js` from manifest.json content_scripts js array
+- Removed `<script src="../../vendor/idb.min.js">` from options.html and popup.html
+- background.js importScripts already had idb.min.js removed (from US-001/US-002); updated stale comments (IndexedDB -> chrome.storage.local, BroadcastChannel -> chrome.storage.onChanged)
+- Deleted `vendor/idb.min.js` from the repository
+- Files changed: `manifest.json`, `background.js`, `modules/options/options.html`, `modules/popup/popup.html`, `vendor/idb.min.js` (deleted)
+- **Learnings for future iterations:**
+  - popup.html also had a `<script>` reference to idb.min.js that wasn't listed in the PRD acceptance criteria - always grep broadly
+  - background.js importScripts was already updated by a previous iteration but had stale comments referencing IndexedDB/BroadcastChannel
+  - Several consumer files (notificacoes.js, theme-manager.js) still have stale comments mentioning "IndexedDB" - should be cleaned up in US-005/US-007
+---
+
+## 2026-03-05 - US-004
+- Verified background.js is already fully compliant with the new data layer
+- `importScripts()` only loads neuron-db.js and neuron-sync.js (no idb.min.js)
+- `NeuronDB.init()` called on `onInstalled`, default config initialization works correctly
+- `NeuronSync.onConfigChange()` listener in place for debug logging
+- No stale IndexedDB/BroadcastChannel references remain
+- No code changes required - previous iterations (US-001, US-002, US-003) already updated background.js
+- Files changed: none (verification only)
+- **Learnings for future iterations:**
+  - background.js was incrementally updated during US-001/US-002/US-003, so by US-004 it was already compliant
+  - Verification stories may require no code changes if prior stories were thorough
+---
+
+## 2026-03-05 - US-005
+- Verified `modules/notificacoes/notificacoes.js` is fully compatible with the new chrome.storage.local data layer
+- All NeuronDB API calls verified: `init()`, `getAllDemandasAsObject()`, `getConcluidas()`, `saveDemandas()`, `markConcluida()`, `clearAll()`, `getConfig()`, `getPreference()`, `setPreference()`
+- All NeuronSync API calls verified: `onConfigChange()`, `onPreferenceChange()` - both fire correctly via chrome.storage.onChanged
+- Updated 4 stale comments referencing "IndexedDB" to "chrome.storage.local"
+- No business logic changes required - all API signatures match
+- Files changed: `modules/notificacoes/notificacoes.js` (comment updates only)
+- **Learnings for future iterations:**
+  - notificacoes.js uses a local `isNotificacaoRelevante()` and `calcularDiasRestantes()` which duplicate the ones in NeuronDB but with different logic (notificacoes.js version considers category visibility settings from config) - this is intentional and should not be collapsed
+  - The module uses `demandasConcluidas.has()` which works because `getConcluidas()` returns a Set
+  - `NeuronSync.broadcast()` was never called in notificacoes.js, so its removal in US-002 had no impact here
+---
+
+## 2026-03-05 - US-006
+- Verified `modules/options/dashboard.js` and `modules/options/options.js` are fully compatible with the new chrome.storage.local data layer
+- dashboard.js: `NeuronDB.getStats()` returns all required fields (total, pendentes, prazosCurtos, taxaConclusao, prorrogadas, complementadas, topResponsaveis, byPrazoRange)
+- dashboard.js: `NeuronSync.onPreferenceChange()` fires correctly via chrome.storage.onChanged for dashboard refresh signals
+- options.js: `NeuronDB.getConfig()` and `NeuronDB.setConfig()` work correctly for reading/writing config shared across contexts
+- options.js: `NeuronSync.onConfigChange()` fires correctly when config changes from other contexts, updating the UI
+- Updated 1 stale comment referencing "BroadcastChannel" to "chrome.storage.onChanged" in options.js line 867
+- No business logic changes required - all API signatures match
+- Files changed: `modules/options/options.js` (comment update only)
+- **Learnings for future iterations:**
+  - dashboard.js uses `NeuronDashboard` IIFE pattern and is initialized lazily by options.js when the dashboard section is shown
+  - options.js uses `NeuronDB.getConfig(CONFIG_STORAGE_KEY)` where CONFIG_STORAGE_KEY='neuronUserConfig' - this is the main config key
+  - The `NeuronSync.onConfigChange()` callback in options.js deep-merges with defaultConfig before updating UI, which is correct behavior
+  - dashboard.js had no stale comments - only options.js had one BroadcastChannel reference
+---
+
+## 2026-03-05 - US-007
+- Verified `modules/popup/popup.js` and `shared/js/theme-manager.js` are fully compatible with the new chrome.storage.local data layer
+- popup.js: `NeuronDB.getConfig()`, `NeuronDB.setConfig()` work correctly for reading/writing config
+- popup.js: `NeuronSync.onConfigChange()` fires correctly via chrome.storage.onChanged, updating UI when config changes from other contexts
+- popup.js: Theme management delegated to ThemeManager which uses NeuronDB.getPreference/setPreference
+- theme-manager.js: `NeuronDB.getPreference('theme')` and `NeuronDB.setPreference('theme', ...)` work for theme persistence
+- theme-manager.js: `NeuronDB.getPreference('themeEnabled')` and `NeuronDB.setPreference('themeEnabled', ...)` work for enabled state
+- theme-manager.js: `NeuronSync.onPreferenceChange()` fires correctly, updating theme across all contexts via chrome.storage.onChanged
+- Updated 1 stale comment in popup.js (BroadcastChannel -> chrome.storage.onChanged) at line 223
+- Updated 2 stale comments in theme-manager.js (IndexedDB -> chrome.storage.local) at lines 4 and 309
+- No business logic changes required - all API signatures match
+- Files changed: `modules/popup/popup.js` (comment update), `shared/js/theme-manager.js` (comment updates)
+- **Learnings for future iterations:**
+  - popup.js does not directly call NeuronDB.getPreference/setPreference — it delegates all theme logic to ThemeManager
+  - ThemeManager uses `typeof NeuronDB !== 'undefined'` guards before every NeuronDB call, making it safe if loaded without NeuronDB
+  - ThemeManager dispatches custom DOM events (`neuron-theme-change`, `neuron-theme-enabled-change`) for UI components to react
+  - The NeuronSync.onPreferenceChange listener in theme-manager.js handles both 'theme' and 'themeEnabled' keys in a single callback
+---
+
+## 2026-03-05 - US-008
+- Verified all 9 additional consumer modules are fully compatible with the new chrome.storage.local data layer
+- neuron-utils.js: `NeuronDB.getConfig()` and `NeuronSync.onConfigChange()` — compatible, no stale comments
+- date-utils.js: `NeuronDB.getConfig()` with `typeof NeuronDB === 'undefined'` guard — compatible
+- module-factory.js: `NeuronDB.getConfig()` and `NeuronSync.onConfigChange()` — compatible
+- loading.js: `NeuronDB.getConfig()` and `NeuronSync.onConfigChange()` — compatible
+- resposta.js: `NeuronDB.getConfig()` and `NeuronSync.onConfigChange()` — compatible
+- tramitar.js: `NeuronDB.getConfig()` and `NeuronSync.onConfigChange()` — compatible, also uses DateUtils
+- tramitar-pontos-focais.js: `NeuronDB.getConfig()`, `getPreference()`, `setPreference()`, and `NeuronSync.onConfigChange()` — compatible
+- tratar-novo-insert.js: Uses `NeuronUtils.isScriptAtivo()` → `NeuronDB.getConfig()`, `NeuronUtils.createStorageListener()` → `NeuronSync.onConfigChange()`, and `NeuronDB.getConfig()` directly — compatible
+- tratar-novo-pagesize.js: Uses `NeuronUtils.isScriptAtivo()` and `NeuronUtils.createStorageListener()` (delegating to NeuronDB/NeuronSync), plus `NeuronDB.getConfig()` directly — compatible
+- No stale IndexedDB/BroadcastChannel/idb references found in any file
+- No code changes required — all API signatures match the new data layer
+- Files changed: none (verification only)
+- **Learnings for future iterations:**
+  - Two integration patterns exist: (1) direct NeuronDB/NeuronSync calls within module IIFEs, (2) indirect via NeuronUtils helpers
+  - `NeuronUtils.createStorageListener()` wraps `NeuronSync.onConfigChange()` and filters by CONFIG_KEY
+  - `NeuronUtils.isScriptAtivo()` wraps `NeuronDB.getConfig()` and checks masterEnableNeuron + module-specific flag
+  - `module-factory.js` provides `createNeuronModule()` which encapsulates the full lifecycle pattern (config load, onConfigChange, MutationObserver)
+  - `date-utils.js` has a `typeof NeuronDB === 'undefined'` guard and exposes a `ready` Promise that other modules await
+  - `tramitar-pontos-focais.js` uses both `NeuronDB.getConfig()` for config AND `NeuronDB.getPreference()`/`setPreference()` for persisting UI state (selected secretaria)
+---
