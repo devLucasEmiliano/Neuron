@@ -11,6 +11,7 @@ Started: Thu Mar  5 15:15:36 -03 2026
 - The `idb.min.js` library is loaded in: manifest.json content_scripts, options.html `<script>`, and background.js `importScripts()`
 - NeuronSync uses `chrome.storage.onChanged` and diffs old/new objects to fire per-key callbacks matching the original `(key, newValue)` signature
 - `NeuronSync.broadcast()` has been removed - `chrome.storage.onChanged` fires automatically on writes
+- popup.html also loads neuron-db.js and neuron-sync.js via `<script>` tags (not just options.html)
 
 ---
 
@@ -42,4 +43,17 @@ Started: Thu Mar  5 15:15:36 -03 2026
   - Consumers filter by individual config keys (e.g. `key === 'neuronUserConfig'`), so the diff-and-fire-per-key approach is essential
   - `NeuronDB._updateCache()` must be called for all changed storage keys, not just config/preferences, to keep the cache coherent
   - Some consumer files still have comments mentioning "BroadcastChannel" - these will be cleaned up in later stories (US-004, US-006, US-007)
+---
+
+## 2026-03-05 - US-003
+- Added `"storage"` to permissions array in manifest.json
+- Removed `vendor/idb.min.js` from manifest.json content_scripts js array
+- Removed `<script src="../../vendor/idb.min.js">` from options.html and popup.html
+- background.js importScripts already had idb.min.js removed (from US-001/US-002); updated stale comments (IndexedDB -> chrome.storage.local, BroadcastChannel -> chrome.storage.onChanged)
+- Deleted `vendor/idb.min.js` from the repository
+- Files changed: `manifest.json`, `background.js`, `modules/options/options.html`, `modules/popup/popup.html`, `vendor/idb.min.js` (deleted)
+- **Learnings for future iterations:**
+  - popup.html also had a `<script>` reference to idb.min.js that wasn't listed in the PRD acceptance criteria - always grep broadly
+  - background.js importScripts was already updated by a previous iteration but had stale comments referencing IndexedDB/BroadcastChannel
+  - Several consumer files (notificacoes.js, theme-manager.js) still have stale comments mentioning "IndexedDB" - should be cleaned up in US-005/US-007
 ---

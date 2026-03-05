@@ -40,7 +40,7 @@
       "id": "US-003",
       "title": "Update manifest.json and remove idb dependency",
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "description": "Update manifest to add storage permission and remove idb.min.js dependency.",
       "acceptanceCriteria": [
         "storage is added to the permissions array in manifest.json",
