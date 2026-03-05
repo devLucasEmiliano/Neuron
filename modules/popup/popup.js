@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const itemsCard = document.getElementById('items-per-page-card');
     const themeToggle = document.getElementById('themeToggle');
     const themeIcon = document.getElementById('themeIcon');
+    const themeEnabledToggle = document.getElementById('themeEnabledToggle');
     const canvas = document.getElementById('falling-leaves-canvas');
     const ctx = canvas.getContext('2d');
 
@@ -58,6 +59,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    function updateThemeEnabledUI(enabled) {
+        if (themeEnabledToggle) {
+            themeEnabledToggle.checked = enabled;
+        }
+        if (themeToggle) {
+            themeToggle.disabled = !enabled;
+            if (enabled) {
+                themeToggle.classList.remove('theme-toggle-disabled');
+            } else {
+                themeToggle.classList.add('theme-toggle-disabled');
+            }
+        }
+    }
+
+    if (themeEnabledToggle) {
+        themeEnabledToggle.addEventListener('change', async () => {
+            await ThemeManager.setEnabled(themeEnabledToggle.checked);
+            updateThemeEnabledUI(themeEnabledToggle.checked);
+        });
+    }
+
     if (themeToggle) {
         themeToggle.addEventListener('click', async () => {
             await ThemeManager.cycle();
@@ -68,8 +90,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Listen for theme changes from other pages
     document.addEventListener('neuron-theme-change', updateThemeIcon);
 
-    // Initialize theme icon
+    // Listen for theme enabled changes (from sync or other contexts)
+    document.addEventListener('neuron-theme-enabled-change', (e) => {
+        updateThemeEnabledUI(e.detail.enabled);
+    });
+
+    // Initialize theme icon and enabled state
     await updateThemeIcon();
+    updateThemeEnabledUI(ThemeManager._enabled);
 
     // ========== Configuration Management ==========
 

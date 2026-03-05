@@ -7,6 +7,8 @@
 - Neuron custom CSS vars are defined in `shared/css/theme.css` and scoped to `[data-bs-theme]` selectors
 - UI labels are in Portuguese (pt-BR)
 - No npm/node build system - plain JS, validation is JSON well-formedness + shell script syntax
+- Popup footer layout: `d-flex justify-content-between` with link | version | theme controls - wrap grouped controls in a nested flex div
+- ThemeManager._enabled is synchronously available after init() for initial UI state
 
 # Ralph Progress Log
 Started: Thu Mar  5 14:40:45 -03 2026
@@ -27,4 +29,19 @@ Started: Thu Mar  5 14:40:45 -03 2026
   - ThemeManager auto-initializes synchronously on load via IIFE at bottom of file (prevents flash)
   - The `neuron-theme-change` custom event is dispatched by `applyTheme()` for icon/UI updates
   - Added new `neuron-theme-enabled-change` event for toggle switch UI sync
+---
+
+## 2026-03-05 - US-002
+- Added "Tema Neuron" labeled toggle switch in popup footer, beside existing theme mode cycle button
+- Toggle reflects current `ThemeManager._enabled` state on popup open
+- Clicking toggle calls `ThemeManager.setEnabled()` and updates UI immediately
+- When theme OFF: cycle button gets `disabled` attribute + `theme-toggle-disabled` class (grayed out, non-clickable)
+- When theme ON: cycle button works normally (light/dark/system)
+- Listens for `neuron-theme-enabled-change` event for cross-context sync
+- Files changed: `modules/popup/popup.html`, `modules/popup/popup.js`, `modules/popup/popup.css`, `scripts/ralph/prd.json`
+- **Learnings for future iterations:**
+  - Popup footer uses `d-flex justify-content-between align-items-center` layout - wrap new controls in a flex container with `gap-2`
+  - `ThemeManager._enabled` is available synchronously after `init()` - no need for async call to get initial state
+  - Use both `disabled` attribute and a CSS class for disabled buttons - the attribute prevents clicks, the class provides visual styling
+  - The `neuron-theme-enabled-change` custom event fires both from `setEnabled()` and from NeuronSync listener
 ---

@@ -93,8 +93,23 @@ main.overflow-auto::-webkit-scrollbar-thumb:hover {
     transition: transform 0.3s ease;
 }
 
-.btn-theme-toggle:hover {
+.btn-theme-toggle:hover:not(:disabled) {
     transform: scale(1.1);
+}
+
+/* Theme toggle disabled state */
+.btn-theme-toggle.theme-toggle-disabled {
+    opacity: 0.4;
+    filter: grayscale(80%);
+    pointer-events: none;
+    transform: none;
+}
+
+/* Theme enabled label in footer */
+.theme-enabled-label {
+    font-size: 0.75rem;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
 }
 
 /* Form switch sizing adjustment */

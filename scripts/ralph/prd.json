@@ -22,7 +22,7 @@
       "title": "Theme toggle switch in popup",
       "description": "As a user, I want an on/off switch in the popup so I can quickly enable or disable the Neuron theme.",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Add a labeled toggle switch (e.g., Tema Neuron) above or beside the existing theme mode cycle button in popup.html",
         "Toggle switch reflects current enabled state on popup open",
