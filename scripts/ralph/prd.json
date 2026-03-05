@@ -61,7 +61,7 @@
       "id": "US-005",
       "title": "CI pipeline - Auto-update version on merge",
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "description": "Automatically update version string when code is merged into any of the three main branches.",
       "acceptanceCriteria": [
         "On merge to developing, version is stamped with suffix d and current commit hash",

@@ -14,6 +14,8 @@ Started: Thu Mar  5 13:44:16 -03 2026
 - VERSION file at project root contains the custom version string (X.XX.XXXXy format)
 - GitHub Actions workflows live in `.github/workflows/`; use `::error::` prefix for inline PR annotations
 - Branch protection rules (blocking PR merges on failed checks) are configured in GitHub repo settings, not workflow files
+- Use `[skip ci]` in commit messages from automated workflows to prevent infinite CI loops
+- Workflows that push commits need `permissions: contents: write` and `fetch-depth: 0`
 
 ---
 
@@ -58,4 +60,16 @@ Started: Thu Mar  5 13:44:16 -03 2026
   - Use `::error::` prefix in `echo` for GitHub Actions to annotate errors inline on PRs
   - Branch protection rules to block PR merges on failed checks must be configured in GitHub repo settings (not in the workflow file itself)
   - No YAML parser available in this dev environment to validate workflow files locally
+---
+
+## 2026-03-05 - US-005
+- **Implemented:** GitHub Actions workflow to auto-update version on merge to developing/testing/stable
+- **Files changed:** `.github/workflows/version-stamp.yml` (new)
+- **Details:** Workflow triggers on push to developing/testing/stable. Uses `[skip ci]` in commit message to avoid infinite loops. Maps branches to suffixes (d/b/s). On stable merges, also applies `--patch` bump to Chrome X.Y.Z version. Uses bump-version.sh with `--branch`, `--hash` (from GITHUB_SHA), and optional `--patch`. Bot commits with `github-actions[bot]` identity. Only commits if files actually changed.
+- **Learnings for future iterations:**
+  - Use `[skip ci]` in commit messages to prevent CI from re-triggering on automated commits
+  - `GITHUB_REF_NAME` gives the branch name, `GITHUB_SHA` gives the full commit hash
+  - `permissions: contents: write` is needed for the workflow to push commits back
+  - `fetch-depth: 0` ensures full git history is available for the bump script
+  - The `$BUMP` variable expands to nothing for developing/testing (no version bump) — shell word splitting handles this correctly without quotes
 ---
