@@ -10,6 +10,7 @@
     let memoriaDeDemandas = {};
     let isFeatureActive = false;
     let currentTheme = 'system';
+    let themeEnabled = true;
     let dbInitialized = false;
 
     // Default notification settings
@@ -60,7 +61,7 @@
 
     function applyTheme(preference) {
         currentTheme = preference;
-        const effectiveTheme = getEffectiveTheme(preference);
+        const effectiveTheme = themeEnabled ? getEffectiveTheme(preference) : 'light';
         const painel = document.getElementById('neuron-notificacao-painel');
         const trigger = document.getElementById('neuron-notificacao-trigger');
 
@@ -83,6 +84,8 @@
 
     async function loadThemePreference() {
         try {
+            const enabledVal = await NeuronDB.getPreference('themeEnabled');
+            themeEnabled = enabledVal !== false;
             const preference = await NeuronDB.getPreference('theme') || 'system';
             applyTheme(preference);
         } catch (error) {
@@ -93,7 +96,7 @@
 
     // Listen for system theme changes
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-        if (currentTheme === 'system') {
+        if (themeEnabled && currentTheme === 'system') {
             applyTheme('system');
         }
     });
@@ -579,6 +582,10 @@
         }
         if (key === 'theme' && isFeatureActive) {
             applyTheme(newValue || 'system');
+        }
+        if (key === 'themeEnabled' && isFeatureActive) {
+            themeEnabled = !!newValue;
+            applyTheme(currentTheme);
         }
     });
 
