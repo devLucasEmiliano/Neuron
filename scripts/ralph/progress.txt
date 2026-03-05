@@ -99,3 +99,22 @@ Started: Thu Mar  5 15:15:36 -03 2026
   - The `NeuronSync.onConfigChange()` callback in options.js deep-merges with defaultConfig before updating UI, which is correct behavior
   - dashboard.js had no stale comments - only options.js had one BroadcastChannel reference
 ---
+
+## 2026-03-05 - US-007
+- Verified `modules/popup/popup.js` and `shared/js/theme-manager.js` are fully compatible with the new chrome.storage.local data layer
+- popup.js: `NeuronDB.getConfig()`, `NeuronDB.setConfig()` work correctly for reading/writing config
+- popup.js: `NeuronSync.onConfigChange()` fires correctly via chrome.storage.onChanged, updating UI when config changes from other contexts
+- popup.js: Theme management delegated to ThemeManager which uses NeuronDB.getPreference/setPreference
+- theme-manager.js: `NeuronDB.getPreference('theme')` and `NeuronDB.setPreference('theme', ...)` work for theme persistence
+- theme-manager.js: `NeuronDB.getPreference('themeEnabled')` and `NeuronDB.setPreference('themeEnabled', ...)` work for enabled state
+- theme-manager.js: `NeuronSync.onPreferenceChange()` fires correctly, updating theme across all contexts via chrome.storage.onChanged
+- Updated 1 stale comment in popup.js (BroadcastChannel -> chrome.storage.onChanged) at line 223
+- Updated 2 stale comments in theme-manager.js (IndexedDB -> chrome.storage.local) at lines 4 and 309
+- No business logic changes required - all API signatures match
+- Files changed: `modules/popup/popup.js` (comment update), `shared/js/theme-manager.js` (comment updates)
+- **Learnings for future iterations:**
+  - popup.js does not directly call NeuronDB.getPreference/setPreference — it delegates all theme logic to ThemeManager
+  - ThemeManager uses `typeof NeuronDB !== 'undefined'` guards before every NeuronDB call, making it safe if loaded without NeuronDB
+  - ThemeManager dispatches custom DOM events (`neuron-theme-change`, `neuron-theme-enabled-change`) for UI components to react
+  - The NeuronSync.onPreferenceChange listener in theme-manager.js handles both 'theme' and 'themeEnabled' keys in a single callback
+---

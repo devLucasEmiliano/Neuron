@@ -101,7 +101,7 @@
       "id": "US-007",
       "title": "Verify core consumers - popup.js and theme-manager.js",
       "priority": 7,
-      "passes": false,
+      "passes": true,
       "description": "Verify that the popup and theme manager work correctly with the new data layer.",
       "acceptanceCriteria": [
         "popup.js: NeuronDB.getConfig(), setConfig(), getPreference(), setPreference() all work",
