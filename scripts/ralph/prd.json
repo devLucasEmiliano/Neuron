@@ -126,7 +126,7 @@
       "id": "US-001",
       "title": "Create permanent branch structure",
       "priority": 10,
-      "passes": false,
+      "passes": true,
       "description": "Create three permanent branches (stable, testing, developing) so that code flows through a structured promotion pipeline. NOTE: This story requires GitHub admin access and should be done manually or after all CI workflows are in place.",
       "acceptanceCriteria": [
         "Branch developing exists and is the default working branch for new features",

@@ -26,6 +26,7 @@ Started: Thu Mar  5 13:44:16 -03 2026
 - Write changelog to a temp file instead of using GITHUB_OUTPUT for multi-line content passed to shell commands
 - Hotfix branches use `hotfix/<description>` naming; backport to developing is handled by `hotfix-backport.yml`
 - Use `--body-file` with `gh pr create/edit` for PR bodies with special characters (safer than `--body`)
+- `git ls-remote --heads origin BRANCH` checks if a remote branch exists; use `gh repo edit --default-branch` to change default
 
 ---
 
@@ -129,4 +130,16 @@ Started: Thu Mar  5 13:44:16 -03 2026
   - Use `--body-file` with `gh pr create/edit` instead of `--body` to avoid shell escaping issues with heredoc content
   - `startsWith()` in GitHub Actions `if` expressions works on event payload fields for pattern matching
   - Hotfix version bumps and release artifacts don't need separate workflows — existing stable-triggered workflows handle them
+---
+
+## 2026-03-05 - US-001
+- **Implemented:** Permanent branch structure (stable, testing, developing) and setup script
+- **Files changed:** `scripts/setup-branches.sh` (new)
+- **Details:** Created setup script that: (1) creates stable/testing/developing branches from a source branch and pushes to origin, (2) sets developing as default branch via `gh repo edit`, (3) configures branch protection rules for stable and testing via GitHub API. Script supports `--dry-run`, `--skip-protection`, and `--source BRANCH` flags. Executed the script to create and push all three branches from main.
+- **Learnings for future iterations:**
+  - The Write tool in Claude Code produces CRLF — always run `sed -i 's/\r$//'` on new shell scripts (or rely on .gitattributes `*.sh text eol=lf` at git stage)
+  - `gh repo edit --default-branch` changes the repo default branch; requires admin access
+  - Branch protection via GitHub API: `PUT /repos/{owner}/{repo}/branches/{branch}/protection` with JSON body for required checks and PR reviews
+  - Setting default branch and branch protection requires `gh auth login` — the script gracefully warns when auth is unavailable
+  - `git ls-remote --heads origin BRANCH` is the reliable way to check if a remote branch exists
 ---
