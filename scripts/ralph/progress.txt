@@ -1,3 +1,28 @@
 # Ralph Progress Log
 Started: Thu Mar  5 15:15:36 -03 2026
+
+## Codebase Patterns
+- This is a vanilla Chrome Extension (MV3) with no build toolchain, no package.json, no tests, no linting
+- NeuronDB and NeuronSync are global IIFE modules loaded via `<script>` tags and `importScripts()`
+- All files use `var ModuleName = ModuleName || (function() { ... })();` pattern for safe re-declaration
+- The in-memory cache in NeuronDB is keyed by storage key names: `neuron_demandas`, `neuron_concluidas`, `neuron_metadata`, `neuron_config`, `neuron_preferences`
+- NeuronDB exposes `_updateCache(key, value)` for NeuronSync to update the cache when `chrome.storage.onChanged` fires from other contexts
+- `setConfig()` and `setPreference()` no longer call `NeuronSync.broadcast()` - `chrome.storage.onChanged` fires automatically
+- The `idb.min.js` library is loaded in: manifest.json content_scripts, options.html `<script>`, and background.js `importScripts()`
+
+---
+
+## 2026-03-05 - US-001
+- Rewrote `shared/js/neuron-db.js` from IndexedDB to chrome.storage.local with in-memory cache
+- All 5 stores mapped to chrome.storage.local keys as objects
+- `init()` pre-loads all data via single `chrome.storage.local.get()` call
+- All public API methods preserved with same names and signatures
+- Added `_updateCache(key, value)` for cross-context cache coherence via NeuronSync
+- Removed `NeuronSync.broadcast()` calls from `setConfig()` and `setPreference()` since `chrome.storage.onChanged` fires automatically
+- Files changed: `shared/js/neuron-db.js`
+- **Learnings for future iterations:**
+  - `neuron_concluidas` stores an array of numero strings (not objects with timestamps like IndexedDB version)
+  - `markConcluida()` with `isDone=false` must filter the array rather than delete by key
+  - All read methods call `await init()` to ensure cache is loaded, but reads are synchronous from cache after that
+  - The `getStats()` return object includes `demandas` array and `concluidasSet` Set - must preserve these for consumers
 ---

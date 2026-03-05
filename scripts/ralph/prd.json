@@ -6,7 +6,7 @@
       "id": "US-001",
       "title": "Rewrite NeuronDB to use chrome.storage.local",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "description": "Replace the IndexedDB backend in neuron-db.js with chrome.storage.local so that data is shared across all extension contexts.",
       "acceptanceCriteria": [
         "neuron-db.js uses chrome.storage.local instead of IndexedDB for all operations",
