@@ -78,7 +78,7 @@
       "title": "Disable theme on popup and options pages",
       "description": "As a user, when theme is disabled, the popup and options pages should also revert to default Bootstrap styling.",
       "priority": 6,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "When theme is OFF, the popup and options pages use default Bootstrap appearance (no Neuron custom properties applied)",
         "When theme is ON, the Neuron theme variables and custom styles are active",
