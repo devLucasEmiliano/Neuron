@@ -35,7 +35,7 @@
       "id": "US-003",
       "title": "Display version in popup UI",
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "description": "Display the current extension version in the popup so users know which build they are running.",
       "acceptanceCriteria": [
         "The popup page displays the custom version_name from manifest.json",

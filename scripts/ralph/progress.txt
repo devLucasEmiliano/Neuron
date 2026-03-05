@@ -8,6 +8,8 @@ Started: Thu Mar  5 13:44:16 -03 2026
 - manifest.json uses `version` for Chrome's strict X.Y.Z format and `version_name` for custom display format
 - The Write tool in Claude Code may produce CRLF; always verify/fix with `sed -i 's/\r$//'` or rely on .gitattributes
 - Project root: manifest.json, background.js, modules/, shared/, vendor/, config/, scripts/
+- Use `chrome.runtime.getManifest()` to read manifest fields from extension pages (popup, options, background)
+- No build toolchain or linter — quality checks are JSON validation and manual review
 - bump-version.sh uses sed for in-place manifest edits (preserves formatting) and jq for validation only
 - VERSION file at project root contains the custom version string (X.XX.XXXXy format)
 
@@ -32,4 +34,14 @@ Started: Thu Mar  5 13:44:16 -03 2026
   - `jq` rewrites entire JSON files when used for modification, producing huge diffs. Use `sed` for surgical edits and `jq` only for validation/reading.
   - When updating manifest.json version field with sed, exclude `manifest_version` and `version_name` lines to avoid false matches
   - The version_name field is inserted right after the version field in manifest.json
+---
+
+## 2026-03-05 - US-003
+- **Implemented:** Version display in popup UI footer
+- **Files changed:** `modules/popup/popup.html` (added version span), `modules/popup/popup.js` (read manifest version_name), `modules/popup/popup.css` (version label styling)
+- **Details:** Added a `<span id="versionLabel">` in the popup footer between the "Opcoes Avancadas" link and theme toggle button. JS uses `chrome.runtime.getManifest().version_name` (with fallback to `version`) to populate it. Styled as small, muted text.
+- **Learnings for future iterations:**
+  - Use `chrome.runtime.getManifest()` to access manifest fields from extension pages (popup, options, background)
+  - The popup footer uses Bootstrap flex layout (`d-flex justify-content-between`) — adding centered items just requires inserting between the two endpoints
+  - No build toolchain or linter in this project — quality checks are limited to JSON validation and manual review
 ---
