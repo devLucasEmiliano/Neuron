@@ -8,7 +8,7 @@
       "title": "Store theme enabled preference",
       "description": "As a developer, I need to persist the theme enabled/disabled state so it survives extension restarts.",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Add a neuronThemeEnabled key to the NeuronDB preferences store (default: true)",
         "ThemeManager exposes getEnabled() and setEnabled(boolean) methods",

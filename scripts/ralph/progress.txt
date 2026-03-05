@@ -1,3 +1,30 @@
+## Codebase Patterns
+- ThemeManager is a global singleton in `shared/js/theme-manager.js` - uses NeuronDB preferences store for persistence
+- NeuronDB preferences: `getPreference(key)` / `setPreference(key, value)` - auto-broadcasts via NeuronSync
+- NeuronSync broadcasts with `type: 'preference'` and `type: 'config'` - listeners via `onPreferenceChange(callback)` / `onConfigChange(callback)`
+- Theme CSS is NOT injected into content scripts via manifest - only loaded in popup.html and options.html via `<link>` tags
+- Bootstrap theming uses `data-bs-theme` attribute on `<html>` element
+- Neuron custom CSS vars are defined in `shared/css/theme.css` and scoped to `[data-bs-theme]` selectors
+- UI labels are in Portuguese (pt-BR)
+- No npm/node build system - plain JS, validation is JSON well-formedness + shell script syntax
+
 # Ralph Progress Log
 Started: Thu Mar  5 14:40:45 -03 2026
+---
+
+## 2026-03-05 - US-001
+- Implemented `getEnabled()` and `setEnabled(boolean)` methods on ThemeManager
+- Added `themeEnabled` preference key in NeuronDB (default: `true`)
+- `setEnabled()` persists to NeuronDB, which auto-broadcasts via NeuronSync
+- `init()` reads enabled state and conditionally applies or disables theme
+- `_disableTheme()` removes `data-bs-theme` attribute from document
+- NeuronSync listener handles `themeEnabled` changes from other contexts
+- `setPreference()`, `watchSystemPreference()`, and sync listener all respect `_enabled` flag
+- Dispatches `neuron-theme-enabled-change` custom event for UI components
+- Files changed: `shared/js/theme-manager.js`, `scripts/ralph/prd.json`
+- **Learnings for future iterations:**
+  - NeuronDB.setPreference() automatically calls NeuronSync.broadcast() - no need to manually broadcast
+  - ThemeManager auto-initializes synchronously on load via IIFE at bottom of file (prevents flash)
+  - The `neuron-theme-change` custom event is dispatched by `applyTheme()` for icon/UI updates
+  - Added new `neuron-theme-enabled-change` event for toggle switch UI sync
 ---
