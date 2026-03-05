@@ -84,6 +84,60 @@ jobs:
 
           echo "$CHANGELOG" > changelog.md
 
+      - name: Update CHANGELOG.md
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          DATE=$(date +%Y-%m-%d)
+          CHANGELOG=$(cat changelog.md)
+
+          # Build the new version section
+          NEW_SECTION="## [${VERSION}] - ${DATE}\n\n### Changes\n${CHANGELOG}"
+
+          # Insert after [Unreleased] section (or at the top if not found)
+          if grep -q '## \[Unreleased\]' CHANGELOG.md; then
+            # Find everything between [Unreleased] header and the next ## header
+            # Replace unreleased content and add the new version section
+            awk -v section="$NEW_SECTION" '
+              /^## \[Unreleased\]/ {
+                print
+                print ""
+                found_unreleased=1
+                next
+              }
+              found_unreleased && /^## \[/ {
+                printf "%s\n\n", section
+                found_unreleased=0
+              }
+              found_unreleased && /^###/ { next }
+              found_unreleased && /^- / { next }
+              found_unreleased && /^$/ { next }
+              { print }
+            ' CHANGELOG.md > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+          else
+            # No Unreleased section, insert after the header
+            awk -v section="$NEW_SECTION" '
+              NR==1 { print; next }
+              NR==2 && /^$/ { print; next }
+              NR==3 && /^All notable/ { print; printf "\n%s\n\n", section; skip=1; next }
+              !skip { print }
+              skip && /^## \[/ { print; skip=0 }
+            ' CHANGELOG.md > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+          fi
+
+      - name: Commit CHANGELOG.md
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add CHANGELOG.md
+          if git diff --cached --quiet; then
+            echo "No changelog changes to commit"
+          else
+            VERSION="${{ steps.version.outputs.version }}"
+            git commit -m "docs: update CHANGELOG.md for ${VERSION} [skip ci]"
+            git push
+          fi
+
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
