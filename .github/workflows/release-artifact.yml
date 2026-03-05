@@ -1,0 +1,56 @@
+name: Build Release Artifact
+
+on:
+  push:
+    branches: [stable]
+
+jobs:
+  build-artifact:
+    name: Package extension for release
+    runs-on: ubuntu-latest
+    # Skip version-stamp commits to avoid duplicate builds
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Read version string
+        id: version
+        run: |
+          VERSION=$(cat VERSION)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Building release artifact for version: $VERSION"
+
+      - name: Package extension into zip
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          ZIPNAME="neuron-${VERSION}.zip"
+
+          zip -r "$ZIPNAME" . \
+            -x ".git/*" \
+            -x ".github/*" \
+            -x ".claude/*" \
+            -x ".devcontainer/*" \
+            -x ".vscode/*" \
+            -x ".gitignore" \
+            -x ".gitattributes" \
+            -x "tasks/*" \
+            -x "tests/*" \
+            -x "scripts/*" \
+            -x "node_modules/*" \
+            -x "*.md" \
+            -x "LICENSE" \
+            -x "*.tmp" \
+            -x "*.log" \
+            -x "*.backup"
+
+          echo "Created $ZIPNAME"
+          ls -lh "$ZIPNAME"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: neuron-extension-${{ steps.version.outputs.version }}
+          path: neuron-${{ steps.version.outputs.version }}.zip
+          retention-days: 90
