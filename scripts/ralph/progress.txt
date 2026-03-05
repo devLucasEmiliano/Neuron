@@ -12,6 +12,8 @@ Started: Thu Mar  5 15:15:36 -03 2026
 - NeuronSync uses `chrome.storage.onChanged` and diffs old/new objects to fire per-key callbacks matching the original `(key, newValue)` signature
 - `NeuronSync.broadcast()` has been removed - `chrome.storage.onChanged` fires automatically on writes
 - popup.html also loads neuron-db.js and neuron-sync.js via `<script>` tags (not just options.html)
+- Content script modules use two patterns for NeuronDB/NeuronSync integration: (1) direct calls within IIFE, or (2) indirect via `NeuronUtils.isScriptAtivo()` and `NeuronUtils.createStorageListener()` which delegate to NeuronDB/NeuronSync
+- `module-factory.js` provides `createNeuronModule()` helper that encapsulates the common NeuronDB.getConfig + NeuronSync.onConfigChange + MutationObserver pattern
 
 ---
 
@@ -117,4 +119,27 @@ Started: Thu Mar  5 15:15:36 -03 2026
   - ThemeManager uses `typeof NeuronDB !== 'undefined'` guards before every NeuronDB call, making it safe if loaded without NeuronDB
   - ThemeManager dispatches custom DOM events (`neuron-theme-change`, `neuron-theme-enabled-change`) for UI components to react
   - The NeuronSync.onPreferenceChange listener in theme-manager.js handles both 'theme' and 'themeEnabled' keys in a single callback
+---
+
+## 2026-03-05 - US-008
+- Verified all 9 additional consumer modules are fully compatible with the new chrome.storage.local data layer
+- neuron-utils.js: `NeuronDB.getConfig()` and `NeuronSync.onConfigChange()` — compatible, no stale comments
+- date-utils.js: `NeuronDB.getConfig()` with `typeof NeuronDB === 'undefined'` guard — compatible
+- module-factory.js: `NeuronDB.getConfig()` and `NeuronSync.onConfigChange()` — compatible
+- loading.js: `NeuronDB.getConfig()` and `NeuronSync.onConfigChange()` — compatible
+- resposta.js: `NeuronDB.getConfig()` and `NeuronSync.onConfigChange()` — compatible
+- tramitar.js: `NeuronDB.getConfig()` and `NeuronSync.onConfigChange()` — compatible, also uses DateUtils
+- tramitar-pontos-focais.js: `NeuronDB.getConfig()`, `getPreference()`, `setPreference()`, and `NeuronSync.onConfigChange()` — compatible
+- tratar-novo-insert.js: Uses `NeuronUtils.isScriptAtivo()` → `NeuronDB.getConfig()`, `NeuronUtils.createStorageListener()` → `NeuronSync.onConfigChange()`, and `NeuronDB.getConfig()` directly — compatible
+- tratar-novo-pagesize.js: Uses `NeuronUtils.isScriptAtivo()` and `NeuronUtils.createStorageListener()` (delegating to NeuronDB/NeuronSync), plus `NeuronDB.getConfig()` directly — compatible
+- No stale IndexedDB/BroadcastChannel/idb references found in any file
+- No code changes required — all API signatures match the new data layer
+- Files changed: none (verification only)
+- **Learnings for future iterations:**
+  - Two integration patterns exist: (1) direct NeuronDB/NeuronSync calls within module IIFEs, (2) indirect via NeuronUtils helpers
+  - `NeuronUtils.createStorageListener()` wraps `NeuronSync.onConfigChange()` and filters by CONFIG_KEY
+  - `NeuronUtils.isScriptAtivo()` wraps `NeuronDB.getConfig()` and checks masterEnableNeuron + module-specific flag
+  - `module-factory.js` provides `createNeuronModule()` which encapsulates the full lifecycle pattern (config load, onConfigChange, MutationObserver)
+  - `date-utils.js` has a `typeof NeuronDB === 'undefined'` guard and exposes a `ready` Promise that other modules await
+  - `tramitar-pontos-focais.js` uses both `NeuronDB.getConfig()` for config AND `NeuronDB.getPreference()`/`setPreference()` for persisting UI state (selected secretaria)
 ---

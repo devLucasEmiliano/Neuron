@@ -115,7 +115,7 @@
       "id": "US-008",
       "title": "Verify additional consumers",
       "priority": 8,
-      "passes": false,
+      "passes": true,
       "description": "Verify that all additional modules using NeuronDB/NeuronSync continue working with the new data layer.",
       "acceptanceCriteria": [
         "shared/js/neuron-utils.js: NeuronDB.getConfig() and NeuronSync.onConfigChange() work correctly",
