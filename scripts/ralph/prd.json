@@ -1,0 +1,134 @@
+{
+  "title": "Neuron Data Layer Migration - IndexedDB to chrome.storage.local",
+  "branchName": "feat/data-layer-migration",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Rewrite NeuronDB to use chrome.storage.local",
+      "priority": 1,
+      "passes": false,
+      "description": "Replace the IndexedDB backend in neuron-db.js with chrome.storage.local so that data is shared across all extension contexts.",
+      "acceptanceCriteria": [
+        "neuron-db.js uses chrome.storage.local instead of IndexedDB for all operations",
+        "All 5 stores mapped to chrome.storage.local keys: neuron_demandas (object keyed by numero), neuron_concluidas (array of numeros), neuron_metadata (object key-value), neuron_config (object key-value), neuron_preferences (object key-value)",
+        "init() pre-loads all data from chrome.storage.local into an in-memory cache and returns a resolved promise",
+        "All existing public API methods preserved with same names and signatures",
+        "Batch operations (saveDemandas, saveDemandasFromObject) use a single chrome.storage.local.set() call",
+        "getStats() calculates same statistics operating on the in-memory cache",
+        "Pure utility functions (parseDate, calcularDiasRestantes, isNotificacaoRelevante) remain unchanged",
+        "Write operations update both the in-memory cache and chrome.storage.local",
+        "No references to IndexedDB, idb, or openDB remain in the file"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "Rewrite NeuronSync to use chrome.storage.onChanged",
+      "priority": 2,
+      "passes": false,
+      "description": "Replace BroadcastChannel in neuron-sync.js with chrome.storage.onChanged so that sync events work across all extension contexts.",
+      "acceptanceCriteria": [
+        "neuron-sync.js uses chrome.storage.onChanged listener instead of BroadcastChannel",
+        "broadcast() is no longer needed as changes are detected automatically by chrome.storage.onChanged",
+        "onConfigChange(callback) fires when neuron_config key changes in storage",
+        "onPreferenceChange(callback) fires when neuron_preferences key changes in storage",
+        "Both subscription methods return an unsubscribe function",
+        "No references to BroadcastChannel remain in the file",
+        "The onChanged listener also updates NeuronDB's in-memory cache when changes come from other contexts"
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "Update manifest.json and remove idb dependency",
+      "priority": 3,
+      "passes": false,
+      "description": "Update manifest to add storage permission and remove idb.min.js dependency.",
+      "acceptanceCriteria": [
+        "storage is added to the permissions array in manifest.json",
+        "All references to vendor/idb.min.js removed from manifest.json content_scripts entries",
+        "All references to vendor/idb.min.js removed from options page HTML",
+        "The file vendor/idb.min.js is deleted from the repository",
+        "background.js no longer imports vendor/idb.min.js via importScripts()"
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "Update background.js for new data layer",
+      "priority": 4,
+      "passes": false,
+      "description": "Update background.js to work with the new chrome.storage.local-based NeuronDB.",
+      "acceptanceCriteria": [
+        "importScripts() no longer includes vendor/idb.min.js",
+        "NeuronDB.init() is still called on onInstalled to pre-load the cache",
+        "Default config initialization (config.json loading) still works correctly",
+        "NeuronSync.onConfigChange() listener still works for debug logging",
+        "No other logic changes in background.js"
+      ]
+    },
+    {
+      "id": "US-005",
+      "title": "Verify core consumers - notificacoes.js",
+      "priority": 5,
+      "passes": false,
+      "description": "Verify that modules/notificacoes/notificacoes.js works correctly with the new data layer.",
+      "acceptanceCriteria": [
+        "NeuronDB.init() call works and pre-loads cache",
+        "getAllDemandasAsObject() returns demandas extracted by content scripts",
+        "getConcluidas() returns the set of completed demanda numbers",
+        "saveDemandas() persists extracted demandas to chrome.storage.local",
+        "markConcluida() persists completion status across all contexts",
+        "clearAll() clears data visible to all contexts",
+        "getConfig(), getPreference(), setPreference() work correctly",
+        "NeuronSync.onConfigChange() and onPreferenceChange() fire when changes occur from other contexts",
+        "No changes to business logic required"
+      ]
+    },
+    {
+      "id": "US-006",
+      "title": "Verify core consumers - dashboard.js and options.js",
+      "priority": 6,
+      "passes": false,
+      "description": "Verify that the options page modules work correctly with the new data layer.",
+      "acceptanceCriteria": [
+        "dashboard.js: NeuronDB.getStats() returns real statistics from data extracted by content scripts",
+        "dashboard.js: NeuronSync.onPreferenceChange() fires when preferences change",
+        "options.js: NeuronDB.getConfig() reads config shared across all contexts",
+        "options.js: NeuronDB.setConfig() persists config changes visible to all contexts",
+        "options.js: NeuronSync.onConfigChange() fires when config changes from other contexts",
+        "No changes to business logic required in either file"
+      ]
+    },
+    {
+      "id": "US-007",
+      "title": "Verify core consumers - popup.js and theme-manager.js",
+      "priority": 7,
+      "passes": false,
+      "description": "Verify that the popup and theme manager work correctly with the new data layer.",
+      "acceptanceCriteria": [
+        "popup.js: NeuronDB.getConfig(), setConfig(), getPreference(), setPreference() all work",
+        "popup.js: NeuronSync.onConfigChange() and onPreferenceChange() fire correctly",
+        "theme-manager.js: NeuronDB.getPreference() and setPreference() work for theme persistence",
+        "Theme changes in popup reflect immediately in dashboard and content scripts via onChanged",
+        "No changes to business logic required in either file"
+      ]
+    },
+    {
+      "id": "US-008",
+      "title": "Verify additional consumers",
+      "priority": 8,
+      "passes": false,
+      "description": "Verify that all additional modules using NeuronDB/NeuronSync continue working with the new data layer.",
+      "acceptanceCriteria": [
+        "shared/js/neuron-utils.js: NeuronDB.getConfig() and NeuronSync.onConfigChange() work correctly",
+        "shared/js/date-utils.js: any NeuronDB usage works correctly",
+        "shared/js/module-factory.js: any NeuronDB usage works correctly",
+        "modules/loading/loading.js: any NeuronDB/NeuronSync usage works correctly",
+        "modules/ouvidoria/resposta/resposta.js: any NeuronDB usage works correctly",
+        "modules/ouvidoria/tramitar/tramitar.js: any NeuronDB usage works correctly",
+        "modules/ouvidoria/tramitar/tramitar-pontos-focais.js: any NeuronDB usage works correctly",
+        "modules/ouvidoria/tratar-novo/tratar-novo-insert.js: any NeuronDB usage works correctly",
+        "modules/ouvidoria/tratar-novo/tratar-novo-pagesize.js: any NeuronDB usage works correctly",
+        "No changes to business logic required"
+      ]
+    }
+  ]
+}
