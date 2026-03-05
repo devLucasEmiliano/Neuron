@@ -133,12 +133,24 @@ if $DRY_RUN; then
   exit 0
 fi
 
-# Update manifest.json using jq
-TEMP_MANIFEST="$(mktemp)"
-jq --arg cv "$CHROME_VERSION" --arg vn "$CUSTOM_VERSION" \
-  '.version = $cv | .version_name = $vn' \
-  "$MANIFEST" > "$TEMP_MANIFEST"
-mv "$TEMP_MANIFEST" "$MANIFEST"
+# Update manifest.json using jq (read) + sed (write) to preserve formatting
+# First verify manifest is valid JSON
+jq empty "$MANIFEST" 2>/dev/null || die "manifest.json is not valid JSON"
+
+# Check if version_name field already exists
+if jq -e '.version_name' "$MANIFEST" > /dev/null 2>&1; then
+  # Update existing version_name
+  sed -i "s/\"version_name\": \"[^\"]*\"/\"version_name\": \"$CUSTOM_VERSION\"/" "$MANIFEST"
+else
+  # Add version_name after version field
+  sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$CHROME_VERSION\",\n  \"version_name\": \"$CUSTOM_VERSION\"/" "$MANIFEST"
+fi
+
+# Update version field (match the line that has "version" but NOT "version_name" or "manifest_version")
+sed -i "/\"manifest_version\"/!{ /\"version_name\"/!{ s/\"version\": \"[^\"]*\"/\"version\": \"$CHROME_VERSION\"/; } }" "$MANIFEST"
+
+# Validate the result is still valid JSON
+jq empty "$MANIFEST" 2>/dev/null || die "manifest.json became invalid after update"
 
 # Update VERSION file
 echo "$CUSTOM_VERSION" > "$VERSION_FILE"
