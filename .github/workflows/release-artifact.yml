@@ -1,23 +1,25 @@
 name: Build Release Artifact
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Version Stamp"]
+    types: [completed]
     branches: [stable]
 
 jobs:
   build-artifact:
     name: Package extension and create release
     runs-on: ubuntu-latest
-    # Skip version-stamp commits to avoid duplicate builds
-    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    if: github.event.workflow_run.conclusion == 'success'
 
     permissions:
       contents: write
 
     steps:
-      - name: Checkout code
+      - name: Checkout stable
         uses: actions/checkout@v4
         with:
+          ref: stable
           fetch-depth: 0
 
       - name: Read version string
