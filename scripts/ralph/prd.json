@@ -68,7 +68,7 @@
       "id": "US-005",
       "title": "Verify core consumers - notificacoes.js",
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "description": "Verify that modules/notificacoes/notificacoes.js works correctly with the new data layer.",
       "acceptanceCriteria": [
         "NeuronDB.init() call works and pre-loads cache",

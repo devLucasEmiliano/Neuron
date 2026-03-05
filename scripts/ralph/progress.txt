@@ -70,3 +70,16 @@ Started: Thu Mar  5 15:15:36 -03 2026
   - background.js was incrementally updated during US-001/US-002/US-003, so by US-004 it was already compliant
   - Verification stories may require no code changes if prior stories were thorough
 ---
+
+## 2026-03-05 - US-005
+- Verified `modules/notificacoes/notificacoes.js` is fully compatible with the new chrome.storage.local data layer
+- All NeuronDB API calls verified: `init()`, `getAllDemandasAsObject()`, `getConcluidas()`, `saveDemandas()`, `markConcluida()`, `clearAll()`, `getConfig()`, `getPreference()`, `setPreference()`
+- All NeuronSync API calls verified: `onConfigChange()`, `onPreferenceChange()` - both fire correctly via chrome.storage.onChanged
+- Updated 4 stale comments referencing "IndexedDB" to "chrome.storage.local"
+- No business logic changes required - all API signatures match
+- Files changed: `modules/notificacoes/notificacoes.js` (comment updates only)
+- **Learnings for future iterations:**
+  - notificacoes.js uses a local `isNotificacaoRelevante()` and `calcularDiasRestantes()` which duplicate the ones in NeuronDB but with different logic (notificacoes.js version considers category visibility settings from config) - this is intentional and should not be collapsed
+  - The module uses `demandasConcluidas.has()` which works because `getConcluidas()` returns a Set
+  - `NeuronSync.broadcast()` was never called in notificacoes.js, so its removal in US-002 had no impact here
+---
