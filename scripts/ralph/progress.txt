@@ -45,3 +45,20 @@ Started: Thu Mar  5 14:40:45 -03 2026
   - Use both `disabled` attribute and a CSS class for disabled buttons - the attribute prevents clicks, the class provides visual styling
   - The `neuron-theme-enabled-change` custom event fires both from `setEnabled()` and from NeuronSync listener
 ---
+
+## 2026-03-05 - US-003
+- Added "Habilitar tema personalizado" labeled toggle switch in General settings section of options.html
+- Toggle placed in same card as master enable, separated by `<hr>`, following existing card layout pattern
+- Toggle reflects current `ThemeManager._enabled` state on page load
+- Clicking toggle calls `ThemeManager.setEnabled()` and updates UI immediately
+- When theme OFF: header cycle button gets `disabled` attribute + `theme-toggle-disabled` class (grayed out, non-clickable)
+- When theme ON: cycle button works normally (light/dark/system cycle)
+- Listens for `neuron-theme-enabled-change` event for cross-context sync (popup <-> options)
+- Added `.theme-toggle-disabled` and `:hover:not(:disabled)` CSS to options.css
+- Files changed: `modules/options/options.html`, `modules/options/options.js`, `modules/options/options.css`, `scripts/ralph/prd.json`
+- **Learnings for future iterations:**
+  - Options page General section has a card with master enable toggle - new toggles can share the same card with `<hr>` separator
+  - The same `updateThemeEnabledUI()` pattern from popup works identically in options - set checkbox, toggle disabled attr + CSS class on cycle button
+  - Options page already has `themeToggle` and `themeIcon` IDs in the header for the cycle button
+  - Manual browser verification needed (no browser tools available)
+---

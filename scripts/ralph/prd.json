@@ -37,7 +37,7 @@
       "title": "Theme toggle switch in options page",
       "description": "As a user, I want an on/off switch in the options page so I can enable or disable the Neuron theme from the settings dashboard.",
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Add a labeled toggle switch (e.g., Habilitar tema personalizado) in the General settings section of options.html",
         "Toggle switch reflects current enabled state on page load",
