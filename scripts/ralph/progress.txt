@@ -12,6 +12,8 @@ Started: Thu Mar  5 13:44:16 -03 2026
 - No build toolchain or linter — quality checks are JSON validation and manual review
 - bump-version.sh uses sed for in-place manifest edits (preserves formatting) and jq for validation only
 - VERSION file at project root contains the custom version string (X.XX.XXXXy format)
+- GitHub Actions workflows live in `.github/workflows/`; use `::error::` prefix for inline PR annotations
+- Branch protection rules (blocking PR merges on failed checks) are configured in GitHub repo settings, not workflow files
 
 ---
 
@@ -44,4 +46,16 @@ Started: Thu Mar  5 13:44:16 -03 2026
   - Use `chrome.runtime.getManifest()` to access manifest fields from extension pages (popup, options, background)
   - The popup footer uses Bootstrap flex layout (`d-flex justify-content-between`) — adding centered items just requires inserting between the two endpoints
   - No build toolchain or linter in this project — quality checks are limited to JSON validation and manual review
+---
+
+## 2026-03-05 - US-004
+- **Implemented:** GitHub Actions CI workflow for validation on push/PR
+- **Files changed:** `.github/workflows/validate.yml` (new)
+- **Details:** Workflow triggers on push to developing/testing/stable and on PRs targeting those branches. Validates: manifest.json well-formed JSON, required manifest fields (manifest_version, name, version in X.Y.Z, description), VERSION file consistency with manifest version_name, all JSON files validity, shell script syntax.
+- **Learnings for future iterations:**
+  - GitHub Actions workflow files go in `.github/workflows/`
+  - `jq` is available by default on `ubuntu-latest` runners
+  - Use `::error::` prefix in `echo` for GitHub Actions to annotate errors inline on PRs
+  - Branch protection rules to block PR merges on failed checks must be configured in GitHub repo settings (not in the workflow file itself)
+  - No YAML parser available in this dev environment to validate workflow files locally
 ---

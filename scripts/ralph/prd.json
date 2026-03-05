@@ -47,7 +47,7 @@
       "id": "US-004",
       "title": "CI pipeline - Validate on push/PR",
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "description": "Run validation (lint, manifest checks) on every push and PR so that broken code is caught early.",
       "acceptanceCriteria": [
         "GitHub Actions workflow triggers on push to developing, testing, stable",
