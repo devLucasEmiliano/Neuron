@@ -19,6 +19,8 @@ Started: Thu Mar  5 13:44:16 -03 2026
 - `workflow_run` events only trigger workflows present on the default branch
 - Use `origin/branch` refs (not local) for cross-branch git log comparisons in CI
 - Pattern for finding existing PRs: `gh pr list --base X --head Y --state open --json number --jq '.[0].number'`
+- VERSION file is the single source of truth for the version string in CI workflows
+- Use `actions/upload-artifact@v4` for artifact uploads, `actions/download-artifact@v4` to retrieve them
 
 ---
 
@@ -87,4 +89,15 @@ Started: Thu Mar  5 13:44:16 -03 2026
   - `gh pr list --base X --head Y --state open --json number --jq '.[0].number'` is the pattern to find existing PRs
   - YAML `|` block scalars strip leading indentation based on first content line — heredocs inside work cleanly
   - `permissions: pull-requests: write` is needed for `gh pr create` / `gh pr edit`
+---
+
+## 2026-03-05 - US-007
+- **Implemented:** GitHub Actions workflow to build release artifact (.zip) on merge to stable
+- **Files changed:** `.github/workflows/release-artifact.yml` (new)
+- **Details:** Workflow triggers on push to stable (skips `[skip ci]` commits). Reads VERSION file for the version string. Packages extension into `neuron-{version}.zip` excluding dev-only files (.github/, .claude/, .devcontainer/, .vscode/, tasks/, tests/, scripts/, node_modules/, *.md, LICENSE). Uploads the zip as a GitHub Actions artifact with 90-day retention using `actions/upload-artifact@v4`.
+- **Learnings for future iterations:**
+  - `zip -r` with `-x` patterns needs `/*` suffix for directories (e.g., `.github/*`)
+  - `actions/upload-artifact@v4` is the current stable version for uploading artifacts
+  - No special permissions needed for artifact upload (it's within the same workflow run)
+  - The VERSION file is the single source of truth for the version string in CI
 ---

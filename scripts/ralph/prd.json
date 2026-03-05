@@ -87,7 +87,7 @@
       "id": "US-007",
       "title": "CI pipeline - Build release artifact for stable",
       "priority": 7,
-      "passes": false,
+      "passes": true,
       "description": "Build a .zip artifact automatically when code is merged to stable.",
       "acceptanceCriteria": [
         "On merge to stable, workflow packages the extension into a .zip file",
