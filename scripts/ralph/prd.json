@@ -75,7 +75,7 @@
       "id": "US-006",
       "title": "CI pipeline - Auto-promote developing to testing",
       "priority": 6,
-      "passes": false,
+      "passes": true,
       "description": "Automatically promote code from developing to testing when all CI checks pass.",
       "acceptanceCriteria": [
         "When all checks pass on a push/merge to developing, a PR is auto-created from developing to testing",

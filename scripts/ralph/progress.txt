@@ -16,6 +16,9 @@ Started: Thu Mar  5 13:44:16 -03 2026
 - Branch protection rules (blocking PR merges on failed checks) are configured in GitHub repo settings, not workflow files
 - Use `[skip ci]` in commit messages from automated workflows to prevent infinite CI loops
 - Workflows that push commits need `permissions: contents: write` and `fetch-depth: 0`
+- `workflow_run` events only trigger workflows present on the default branch
+- Use `origin/branch` refs (not local) for cross-branch git log comparisons in CI
+- Pattern for finding existing PRs: `gh pr list --base X --head Y --state open --json number --jq '.[0].number'`
 
 ---
 
@@ -72,4 +75,16 @@ Started: Thu Mar  5 13:44:16 -03 2026
   - `permissions: contents: write` is needed for the workflow to push commits back
   - `fetch-depth: 0` ensures full git history is available for the bump script
   - The `$BUMP` variable expands to nothing for developing/testing (no version bump) — shell word splitting handles this correctly without quotes
+---
+
+## 2026-03-05 - US-006
+- **Implemented:** GitHub Actions workflow to auto-promote developing → testing when CI passes
+- **Files changed:** `.github/workflows/auto-promote.yml` (new)
+- **Details:** Workflow uses `workflow_run` trigger to run after the Validate workflow completes successfully on the `developing` branch. Gathers commit log with `git log origin/testing..origin/developing`, checks for an existing open PR from developing to testing (updates it if found, creates new one otherwise). Uses `gh pr create`/`gh pr edit` with `GITHUB_TOKEN`.
+- **Learnings for future iterations:**
+  - `workflow_run` events only trigger workflows on the **default branch** — the workflow file must exist on the default branch to run
+  - Use `origin/branch` refs in `git log` comparisons within CI since local branch refs may not exist
+  - `gh pr list --base X --head Y --state open --json number --jq '.[0].number'` is the pattern to find existing PRs
+  - YAML `|` block scalars strip leading indentation based on first content line — heredocs inside work cleanly
+  - `permissions: pull-requests: write` is needed for `gh pr create` / `gh pr edit`
 ---
