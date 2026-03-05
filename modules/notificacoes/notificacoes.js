@@ -206,7 +206,7 @@
             // Initialize NeuronDB
             await NeuronDB.init();
 
-            // Load data from IndexedDB
+            // Load data from chrome.storage.local
             const [demandas, concluidas] = await Promise.all([
                 NeuronDB.getAllDemandasAsObject(),
                 NeuronDB.getConcluidas()
@@ -218,7 +218,7 @@
 
             renderizarPainel();
         } catch (error) {
-            console.error(`Neuron (${SCRIPT_ID}): Error loading data from IndexedDB:`, error);
+            console.error(`Neuron (${SCRIPT_ID}): Error loading data from chrome.storage.local:`, error);
             // Fallback: initialize with empty data
             memoriaDeDemandas = {};
             demandasConcluidas = new Set();
@@ -237,7 +237,7 @@
             }
         });
 
-        // Save to IndexedDB
+        // Save to chrome.storage.local
         if (newDemandas.length > 0) {
             try {
                 await NeuronDB.saveDemandas(newDemandas);
@@ -453,7 +453,7 @@
                     item.classList.remove('done');
                 }
 
-                // Save to IndexedDB
+                // Save to chrome.storage.local
                 try {
                     await NeuronDB.markConcluida(numero, isDone);
                 } catch (error) {
