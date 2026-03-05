@@ -2,7 +2,7 @@ name: Version Stamp
 
 on:
   push:
-    branches: [developing, testing, stable]
+    branches: [testing, stable]
 
 jobs:
   version-stamp:
