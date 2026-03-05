@@ -57,3 +57,16 @@ Started: Thu Mar  5 15:15:36 -03 2026
   - background.js importScripts was already updated by a previous iteration but had stale comments referencing IndexedDB/BroadcastChannel
   - Several consumer files (notificacoes.js, theme-manager.js) still have stale comments mentioning "IndexedDB" - should be cleaned up in US-005/US-007
 ---
+
+## 2026-03-05 - US-004
+- Verified background.js is already fully compliant with the new data layer
+- `importScripts()` only loads neuron-db.js and neuron-sync.js (no idb.min.js)
+- `NeuronDB.init()` called on `onInstalled`, default config initialization works correctly
+- `NeuronSync.onConfigChange()` listener in place for debug logging
+- No stale IndexedDB/BroadcastChannel references remain
+- No code changes required - previous iterations (US-001, US-002, US-003) already updated background.js
+- Files changed: none (verification only)
+- **Learnings for future iterations:**
+  - background.js was incrementally updated during US-001/US-002/US-003, so by US-004 it was already compliant
+  - Verification stories may require no code changes if prior stories were thorough
+---
