@@ -22,7 +22,7 @@
 
 .stat-card:hover {
     transform: translateY(-2px);
-    box-shadow: var(--neuron-shadow);
+    box-shadow: var(--neuron-shadow, 0 4px 12px rgba(0, 0, 0, 0.1));
 }
 
 .stat-icon {
@@ -83,7 +83,7 @@
 }
 
 .chart-title i {
-    color: var(--neuron-primary);
+    color: var(--neuron-primary, var(--bs-primary, #0d6efd));
 }
 
 .chart-container {

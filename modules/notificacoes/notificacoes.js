@@ -10,6 +10,7 @@
     let memoriaDeDemandas = {};
     let isFeatureActive = false;
     let currentTheme = 'system';
+    let themeEnabled = true;
     let dbInitialized = false;
 
     // Default notification settings
@@ -60,7 +61,7 @@
 
     function applyTheme(preference) {
         currentTheme = preference;
-        const effectiveTheme = getEffectiveTheme(preference);
+        const effectiveTheme = themeEnabled ? getEffectiveTheme(preference) : 'light';
         const painel = document.getElementById('neuron-notificacao-painel');
         const trigger = document.getElementById('neuron-notificacao-trigger');
 
@@ -83,6 +84,8 @@
 
     async function loadThemePreference() {
         try {
+            const enabledVal = await NeuronDB.getPreference('themeEnabled');
+            themeEnabled = enabledVal !== false;
             const preference = await NeuronDB.getPreference('theme') || 'system';
             applyTheme(preference);
         } catch (error) {
@@ -93,7 +96,7 @@
 
     // Listen for system theme changes
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-        if (currentTheme === 'system') {
+        if (themeEnabled && currentTheme === 'system') {
             applyTheme('system');
         }
     });
@@ -203,7 +206,7 @@
             // Initialize NeuronDB
             await NeuronDB.init();
 
-            // Load data from IndexedDB
+            // Load data from chrome.storage.local
             const [demandas, concluidas] = await Promise.all([
                 NeuronDB.getAllDemandasAsObject(),
                 NeuronDB.getConcluidas()
@@ -215,7 +218,7 @@
 
             renderizarPainel();
         } catch (error) {
-            console.error(`Neuron (${SCRIPT_ID}): Error loading data from IndexedDB:`, error);
+            console.error(`Neuron (${SCRIPT_ID}): Error loading data from chrome.storage.local:`, error);
             // Fallback: initialize with empty data
             memoriaDeDemandas = {};
             demandasConcluidas = new Set();
@@ -234,7 +237,7 @@
             }
         });
 
-        // Save to IndexedDB
+        // Save to chrome.storage.local
         if (newDemandas.length > 0) {
             try {
                 await NeuronDB.saveDemandas(newDemandas);
@@ -299,7 +302,7 @@
         // Handle filter toggle
         if (targetId === 'neuron-filtro-usuario-toggle') {
             filtroUsuarioAtivado = target.checked;
-            NeuronDB.setPreference(PREF_KEY_FILTRO_USUARIO, filtroUsuarioAtivado);
+            NeuronDB.setPreference(PREF_KEY_FILTRO_USUARIO, filtroUsuarioAtivado).catch(() => {});
             renderizarPainel();
             return;
         }
@@ -450,7 +453,7 @@
                     item.classList.remove('done');
                 }
 
-                // Save to IndexedDB
+                // Save to chrome.storage.local
                 try {
                     await NeuronDB.markConcluida(numero, isDone);
                 } catch (error) {
@@ -532,6 +535,15 @@
         return Math.ceil((dataAlvo.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
     }
 
+    const handleStorageChanged = async (changes, areaName) => {
+        if (areaName !== 'local' || !isFeatureActive) return;
+        if (changes['neuron_demandas'] || changes['neuron_concluidas']) {
+            memoriaDeDemandas = await NeuronDB.getAllDemandasAsObject();
+            demandasConcluidas = await NeuronDB.getConcluidas();
+            renderizarPainel();
+        }
+    };
+
     async function ativarFuncionalidade() {
         if (isFeatureActive) return;
         await carregarConfiguracoes();
@@ -540,6 +552,7 @@
         document.addEventListener('click', handleUiInteraction);
         document.addEventListener('change', handleUiInteraction);
         document.addEventListener('dadosExtraidosNeuron', handleDadosExtraidos);
+        chrome.storage.onChanged.addListener(handleStorageChanged);
         inicializarDadosNotificacoes();
         isFeatureActive = true;
     }
@@ -550,6 +563,7 @@
         document.removeEventListener('click', handleUiInteraction);
         document.removeEventListener('change', handleUiInteraction);
         document.removeEventListener('dadosExtraidosNeuron', handleDadosExtraidos);
+        chrome.storage.onChanged.removeListener(handleStorageChanged);
         isFeatureActive = false;
     }
 
@@ -579,6 +593,10 @@
         }
         if (key === 'theme' && isFeatureActive) {
             applyTheme(newValue || 'system');
+        }
+        if (key === 'themeEnabled' && isFeatureActive) {
+            themeEnabled = !!newValue;
+            applyTheme(currentTheme);
         }
     });
 

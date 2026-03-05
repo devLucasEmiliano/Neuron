@@ -192,7 +192,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         catProrrogadasInput?.addEventListener('change', handleNotificacoesSettingChange);
         catComplementadasInput?.addEventListener('change', handleNotificacoesSettingChange);
 
-        // Listen for config changes from other contexts via BroadcastChannel
+        // Listen for config changes from other contexts via chrome.storage.onChanged
         if (typeof NeuronSync !== 'undefined') {
             NeuronSync.onConfigChange(async (key, newValue) => {
                 if (key === CONFIG_KEY) {
@@ -294,6 +294,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     window.addEventListener('unload', pararAnimacao);
+
+    // ========== Version Display ==========
+
+    const versionLabel = document.getElementById('versionLabel');
+    if (versionLabel) {
+        const manifest = chrome.runtime.getManifest();
+        versionLabel.textContent = 'v' + (manifest.version_name || manifest.version);
+    }
 
     // ========== Initialize ==========
 

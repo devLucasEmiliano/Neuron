@@ -78,43 +78,43 @@
 
   "defaultResponses": {
     "Pedido de Complementação": {
-      "options": [
+      "novoDropdownOptions": [
         {
-          "label": "Faltam Documentos Essenciais",
-          "text": "Prezado(a),\n\nAnalisámos o seu pedido e verificámos que faltam documentos essenciais para podermos continuar. Por favor, anexe os seguintes itens:\n\n- [Nome do Documento 1]\n- [Nome do Documento 2]\n\nAgradecemos a sua cooperação.",
+          "text": "Faltam Documentos Essenciais",
+          "conteudoTextarea": "Prezado(a),\n\nAnalisámos o seu pedido e verificámos que faltam documentos essenciais para podermos continuar. Por favor, anexe os seguintes itens:\n\n- [Nome do Documento 1]\n- [Nome do Documento 2]\n\nAgradecemos a sua cooperação.",
           "responsavel": "Departamento de Análise"
         },
         {
-          "label": "Informações Incompletas no Formulário",
-          "text": "Olá,\n\nRecebemos o seu formulário, mas algumas informações importantes não foram preenchidas. Por favor, reveja e complete os campos destacados abaixo:\n\n- Campo X\n- Campo Y\n\nEstamos à disposição para ajudar.",
+          "text": "Informações Incompletas no Formulário",
+          "conteudoTextarea": "Olá,\n\nRecebemos o seu formulário, mas algumas informações importantes não foram preenchidas. Por favor, reveja e complete os campos destacados abaixo:\n\n- Campo X\n- Campo Y\n\nEstamos à disposição para ajudar.",
           "responsavel": "Equipa de Suporte"
         }
       ]
     },
     "Resposta Conclusiva": {
-      "options": [
+      "novoDropdownOptions": [
         {
-          "label": "Como acompanhar o meu pedido?",
-          "text": "Para acompanhar o estado do seu pedido, pode aceder ao nosso portal online através do link [Link do Portal] e inserir o seu número de protocolo.",
+          "text": "Como acompanhar o meu pedido?",
+          "conteudoTextarea": "Para acompanhar o estado do seu pedido, pode aceder ao nosso portal online através do link [Link do Portal] e inserir o seu número de protocolo.",
           "responsavel": "Atendimento ao Cliente"
         },
         {
-          "label": "Quais são os prazos?",
-          "text": "O prazo padrão para a sua solicitação é de 10 dias úteis. Receberá uma notificação por e-mail assim que houver uma atualização.",
+          "text": "Quais são os prazos?",
+          "conteudoTextarea": "O prazo padrão para a sua solicitação é de 10 dias úteis. Receberá uma notificação por e-mail assim que houver uma atualização.",
           "responsavel": "Atendimento ao Cliente"
         }
       ]
     },
     "Resposta Intermediária": {
-      "options": [
+      "novoDropdownOptions": [
         {
-          "label": "Faltam Documentos Essenciais",
-          "text": "Prezado(a),\n\nAnalisámos o seu pedido e verificámos que faltam documentos essenciais para podermos continuar. Por favor, anexe os seguintes itens:\n\n- [Nome do Documento 1]\n- [Nome do Documento 2]\n\nAgradecemos a sua cooperação.",
+          "text": "Faltam Documentos Essenciais",
+          "conteudoTextarea": "Prezado(a),\n\nAnalisámos o seu pedido e verificámos que faltam documentos essenciais para podermos continuar. Por favor, anexe os seguintes itens:\n\n- [Nome do Documento 1]\n- [Nome do Documento 2]\n\nAgradecemos a sua cooperação.",
           "responsavel": "Departamento de Análise"
         },
         {
-          "label": "Informações Incompletas no Formulário",
-          "text": "Olá,\n\nRecebemos o seu formulário, mas algumas informações importantes não foram preenchidas. Por favor, reveja e complete os campos destacados abaixo:\n\n- Campo X\n- Campo Y\n\nEstamos à disposição para ajudar.",
+          "text": "Informações Incompletas no Formulário",
+          "conteudoTextarea": "Olá,\n\nRecebemos o seu formulário, mas algumas informações importantes não foram preenchidas. Por favor, reveja e complete os campos destacados abaixo:\n\n- Campo X\n- Campo Y\n\nEstamos à disposição para ajudar.",
           "responsavel": "Equipa de Suporte"
         }
       ]

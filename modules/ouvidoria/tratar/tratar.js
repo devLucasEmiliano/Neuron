@@ -7,8 +7,6 @@ createNeuronModule({
     onScriptAtivo: ({ config, log }) => {
         const TARGET_DIV_SELECTOR = '#ConteudoForm_ConteudoGeral_ConteudoFormComAjax_UpdatePanel3';
         const BTN_IMPORTAR_ID = 'neuronBtnImportarCidadao';
-        const BTN_PRORROGACAO_ID = 'neuronBtnTextoProrrogacao';
-
         const panel = document.querySelector(TARGET_DIV_SELECTOR);
         const contribInput = document.getElementById('ConteudoForm_ConteudoGeral_ConteudoFormComAjax_txtContribuicao');
 
@@ -34,22 +32,13 @@ createNeuronModule({
             contribInput.value = `Nome: ${nome}\nDocumento (${tipoDoc}): ${documento}\nEmail: ${email}`;
         };
 
-        const inserirTextoProrrogacaoAction = () => {
-            const prazo = document.getElementById('ConteudoForm_ConteudoGeral_ConteudoFormComAjax_infoManifestacoes_infoManifestacao_txtPrazoAtendimento')?.textContent.trim() || '{PRAZO}';
-            const textoBase = config.textModels?.Tratar?.["Texto Padrão Prorrogação"] || "Prazo estendido até {datalimite}.";
-            contribInput.value = textoBase.replace('{datalimite}', prazo);
-        };
-
         const btnImportar = criarBotao(BTN_IMPORTAR_ID, 'Importar dados do cidadão', importarDadosAction);
-        const btnTextoProrrogacao = criarBotao(BTN_PRORROGACAO_ID, 'Texto de Prorrogação', inserirTextoProrrogacaoAction);
 
         panel.appendChild(btnImportar);
-        panel.appendChild(btnTextoProrrogacao);
-        log("Botões auxiliares de 'Tratar' adicionados.");
+        log("Botão auxiliar de 'Tratar' adicionado.");
     },
 
     onScriptInativo: () => {
         document.getElementById('neuronBtnImportarCidadao')?.remove();
-        document.getElementById('neuronBtnTextoProrrogacao')?.remove();
     }
 });

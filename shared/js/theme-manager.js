@@ -1,23 +1,99 @@
 /**
  * Neuron Theme Manager
  * Handles dark/light theme switching with system preference detection
- * and persistent storage in NeuronDB (IndexedDB).
+ * and persistent storage in NeuronDB (chrome.storage.local).
  */
 const ThemeManager = {
     STORAGE_KEY: 'neuronThemePreference',
+    ENABLED_KEY: 'neuronThemeEnabled',
     VALID_THEMES: ['light', 'dark', 'system'],
+    _enabled: true,
 
     /**
      * Initialize the theme manager
-     * - Loads saved preference from storage
-     * - Applies the theme to the document
+     * - Loads saved enabled state and preference from storage
+     * - Applies the theme to the document (or disables it)
      * - Sets up system preference watcher
      */
     async init() {
+        this._enabled = await this.getEnabled();
         const preference = await this.getPreference();
-        this.applyTheme(preference);
+        if (this._enabled) {
+            this.applyTheme(preference);
+        } else {
+            this._disableTheme();
+        }
         this.watchSystemPreference();
         return preference;
+    },
+
+    /**
+     * Get the theme enabled state from NeuronDB
+     * @returns {Promise<boolean>} true if theme is enabled
+     */
+    async getEnabled() {
+        try {
+            if (typeof NeuronDB !== 'undefined') {
+                const val = await NeuronDB.getPreference('themeEnabled');
+                return val !== false;
+            }
+        } catch (e) {
+            console.warn('ThemeManager: Could not load enabled state from storage', e);
+        }
+        return true;
+    },
+
+    /**
+     * Set the theme enabled state
+     * @param {boolean} enabled - true to enable, false to disable
+     */
+    async setEnabled(enabled) {
+        enabled = !!enabled;
+        this._enabled = enabled;
+
+        try {
+            if (typeof NeuronDB !== 'undefined') {
+                await NeuronDB.setPreference('themeEnabled', enabled);
+            }
+        } catch (e) {
+            console.warn('ThemeManager: Could not save enabled state to storage', e);
+        }
+
+        if (enabled) {
+            const preference = await this.getPreference();
+            this.applyTheme(preference);
+        } else {
+            this._disableTheme();
+        }
+
+        // Dispatch custom event for UI components
+        const event = new CustomEvent('neuron-theme-enabled-change', {
+            detail: { enabled }
+        });
+        document.dispatchEvent(event);
+    },
+
+    /**
+     * Remove Neuron theme styling from the document
+     */
+    _disableTheme() {
+        clearTimeout(this._styleDisableTimer);
+        document.documentElement.removeAttribute('data-bs-theme');
+        var link = this._getThemeStylesheet();
+        if (link) {
+            // Delay disabling stylesheet so CSS transitions can finish smoothly
+            this._styleDisableTimer = setTimeout(function () {
+                link.disabled = true;
+            }, 350);
+        }
+    },
+
+    /**
+     * Find the Neuron theme.css <link> element
+     * @returns {HTMLLinkElement|null}
+     */
+    _getThemeStylesheet() {
+        return document.querySelector('link[href*="theme.css"]');
     },
 
     /**
@@ -54,7 +130,9 @@ const ThemeManager = {
             console.warn('ThemeManager: Could not save preference to storage', e);
         }
 
-        this.applyTheme(preference);
+        if (this._enabled) {
+            this.applyTheme(preference);
+        }
     },
 
     /**
@@ -63,6 +141,9 @@ const ThemeManager = {
      * @returns {string} The actual theme applied ('light' or 'dark')
      */
     applyTheme(preference) {
+        // Cancel any pending stylesheet disable from _disableTheme()
+        clearTimeout(this._styleDisableTimer);
+
         let theme;
 
         if (preference === 'system') {
@@ -70,6 +151,9 @@ const ThemeManager = {
         } else {
             theme = preference;
         }
+
+        var link = this._getThemeStylesheet();
+        if (link) link.disabled = false;
 
         document.documentElement.setAttribute('data-bs-theme', theme);
 
@@ -110,6 +194,7 @@ const ThemeManager = {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
         const handler = async () => {
+            if (!this._enabled) return;
             const pref = await this.getPreference();
             if (pref === 'system') {
                 this.applyTheme('system');
@@ -200,13 +285,28 @@ const ThemeManager = {
 if (typeof NeuronSync !== 'undefined') {
     NeuronSync.onPreferenceChange(function (key, newValue) {
         if (key === 'theme' && ThemeManager.VALID_THEMES.includes(newValue)) {
-            ThemeManager.applyTheme(newValue);
+            if (ThemeManager._enabled) {
+                ThemeManager.applyTheme(newValue);
+            }
+        }
+        if (key === 'themeEnabled') {
+            ThemeManager._enabled = !!newValue;
+            if (newValue) {
+                ThemeManager.getPreference().then(function (pref) {
+                    ThemeManager.applyTheme(pref);
+                });
+            } else {
+                ThemeManager._disableTheme();
+            }
+            document.dispatchEvent(new CustomEvent('neuron-theme-enabled-change', {
+                detail: { enabled: !!newValue }
+            }));
         }
     });
 }
 
 // Auto-initialize when script loads (prevents flash of wrong theme)
-// Falls back to system preference detection since IndexedDB is async
+// Falls back to system preference detection since chrome.storage.local is async
 (function () {
     var resolved = ThemeManager.getSystemTheme();
     document.documentElement.setAttribute('data-bs-theme', resolved);

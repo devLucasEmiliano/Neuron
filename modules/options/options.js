@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Theme toggle setup
     const themeToggle = document.getElementById('themeToggle');
     const themeIcon = document.getElementById('themeIcon');
+    const themeEnabledToggle = document.getElementById('themeEnabledToggle');
 
     async function updateThemeIcon() {
         const preference = await ThemeManager.getPreference();
@@ -19,6 +20,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    function updateThemeEnabledUI(enabled) {
+        if (themeEnabledToggle) {
+            themeEnabledToggle.checked = enabled;
+        }
+        if (themeToggle) {
+            themeToggle.disabled = !enabled;
+            if (enabled) {
+                themeToggle.classList.remove('theme-toggle-disabled');
+            } else {
+                themeToggle.classList.add('theme-toggle-disabled');
+            }
+        }
+    }
+
+    if (themeEnabledToggle) {
+        themeEnabledToggle.addEventListener('change', async () => {
+            await ThemeManager.setEnabled(themeEnabledToggle.checked);
+            updateThemeEnabledUI(themeEnabledToggle.checked);
+        });
+    }
+
     if (themeToggle) {
         themeToggle.addEventListener('click', async () => {
             await ThemeManager.cycle();
@@ -27,7 +49,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     document.addEventListener('neuron-theme-change', updateThemeIcon);
+
+    // Listen for theme enabled changes (from sync or other contexts)
+    document.addEventListener('neuron-theme-enabled-change', (e) => {
+        updateThemeEnabledUI(e.detail.enabled);
+    });
+
     await updateThemeIcon();
+    updateThemeEnabledUI(ThemeManager._enabled);
 
     const ui = {
         masterEnable: document.getElementById('masterEnableOptions'),
@@ -835,7 +864,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Listen for config changes from other contexts via BroadcastChannel
+    // Listen for config changes from other contexts via chrome.storage.onChanged
     NeuronSync.onConfigChange(async (key, newValue) => {
         if (key === CONFIG_STORAGE_KEY && newValue) {
             fullConfig = deepMerge(JSON.parse(JSON.stringify(defaultConfig)), newValue);

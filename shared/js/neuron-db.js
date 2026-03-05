@@ -1,21 +1,50 @@
 /**
- * NeuronDB - IndexedDB Service Layer for Neuron Extension
- * Manages demand data storage using IndexedDB
+ * NeuronDB - chrome.storage.local Service Layer for Neuron Extension
+ * Manages demand data storage using chrome.storage.local with in-memory cache
  */
 
 var NeuronDB = NeuronDB || (function () {
     'use strict';
 
-    const DB_NAME = 'NeuronDB';
-    const DB_VERSION = 2;
-    const STORE_DEMANDAS = 'demandas';
-    const STORE_CONCLUIDAS = 'concluidas';
-    const STORE_METADATA = 'metadata';
-    const STORE_CONFIG = 'config';
-    const STORE_PREFERENCES = 'preferences';
+    // Storage keys mapping (replaces IndexedDB object stores)
+    const KEY_DEMANDAS = 'neuron_demandas';       // object keyed by numero
+    const KEY_CONCLUIDAS = 'neuron_concluidas';     // array of numeros
+    const KEY_METADATA = 'neuron_metadata';         // object key-value
+    const KEY_CONFIG = 'neuron_config';             // object key-value
+    const KEY_PREFERENCES = 'neuron_preferences';   // object key-value
 
-    let dbInstance = null;
-    let idbLib = null;
+    // In-memory cache
+    let cache = {
+        [KEY_DEMANDAS]: {},
+        [KEY_CONCLUIDAS]: [],
+        [KEY_METADATA]: {},
+        [KEY_CONFIG]: {},
+        [KEY_PREFERENCES]: {}
+    };
+
+    let initialized = false;
+
+    /**
+     * Check if the extension context is still valid
+     */
+    function isContextValid() {
+        try {
+            return !!chrome.runtime && !!chrome.runtime.id;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    /**
+     * Safe wrapper for chrome.storage.local.set that handles invalidated context
+     */
+    async function safeStorageSet(data) {
+        if (!isContextValid()) {
+            console.warn('NeuronDB: Extension context invalidated, skipping storage write.');
+            return;
+        }
+        await chrome.storage.local.set(data);
+    }
 
     /**
      * Parse DD/MM/YYYY date string to timestamp
@@ -41,70 +70,28 @@ var NeuronDB = NeuronDB || (function () {
     }
 
     /**
-     * Initialize the idb library
-     */
-    async function loadIdb() {
-        if (idbLib) return idbLib;
-
-        // Try to get from global (UMD build - loaded via manifest or importScripts)
-        if (typeof idb !== 'undefined') {
-            idbLib = idb;
-            return idbLib;
-        }
-
-        // Wait a bit for async script loading
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        if (typeof idb !== 'undefined') {
-            idbLib = idb;
-            return idbLib;
-        }
-
-        throw new Error('NeuronDB: idb library not loaded. Ensure idb.min.js is loaded before neuron-db.js');
-    }
-
-    /**
-     * Initialize the database
+     * Initialize the database - pre-loads all data from chrome.storage.local into cache
      */
     async function init() {
-        if (dbInstance) return dbInstance;
+        if (initialized) return;
 
-        await loadIdb();
+        if (!isContextValid()) {
+            console.warn('NeuronDB: Extension context invalidated, using empty cache.');
+            initialized = true;
+            return;
+        }
 
-        dbInstance = await idbLib.openDB(DB_NAME, DB_VERSION, {
-            upgrade(db, oldVersion, newVersion, transaction) {
-                // Create demandas store
-                if (!db.objectStoreNames.contains(STORE_DEMANDAS)) {
-                    const demandasStore = db.createObjectStore(STORE_DEMANDAS, { keyPath: 'numero' });
-                    demandasStore.createIndex('by_prazo', 'prazoTimestamp');
-                    demandasStore.createIndex('by_situacao', 'situacao');
-                    demandasStore.createIndex('by_dataCadastro', 'cadastroTimestamp');
-                    demandasStore.createIndex('by_responsaveis', 'responsaveis', { multiEntry: true });
-                    demandasStore.createIndex('by_possivelRespondida', 'possivelRespondida');
-                    demandasStore.createIndex('by_possivelobservacao', 'possivelobservacao');
-                }
+        const data = await chrome.storage.local.get([
+            KEY_DEMANDAS, KEY_CONCLUIDAS, KEY_METADATA, KEY_CONFIG, KEY_PREFERENCES
+        ]);
 
-                // Create concluidas store
-                if (!db.objectStoreNames.contains(STORE_CONCLUIDAS)) {
-                    db.createObjectStore(STORE_CONCLUIDAS, { keyPath: 'numero' });
-                }
+        cache[KEY_DEMANDAS] = data[KEY_DEMANDAS] || {};
+        cache[KEY_CONCLUIDAS] = data[KEY_CONCLUIDAS] || [];
+        cache[KEY_METADATA] = data[KEY_METADATA] || {};
+        cache[KEY_CONFIG] = data[KEY_CONFIG] || {};
+        cache[KEY_PREFERENCES] = data[KEY_PREFERENCES] || {};
 
-                // Create metadata store
-                if (!db.objectStoreNames.contains(STORE_METADATA)) {
-                    db.createObjectStore(STORE_METADATA, { keyPath: 'key' });
-                }
-
-                // v2: Add config and preferences stores
-                if (!db.objectStoreNames.contains(STORE_CONFIG)) {
-                    db.createObjectStore(STORE_CONFIG, { keyPath: 'key' });
-                }
-                if (!db.objectStoreNames.contains(STORE_PREFERENCES)) {
-                    db.createObjectStore(STORE_PREFERENCES, { keyPath: 'key' });
-                }
-            }
-        });
-
-        return dbInstance;
+        initialized = true;
     }
 
     /**
@@ -122,9 +109,10 @@ var NeuronDB = NeuronDB || (function () {
      * Save a single demanda
      */
     async function saveDemanda(demanda) {
-        const db = await init();
+        await init();
         const record = prepareDemanda(demanda);
-        await db.put(STORE_DEMANDAS, record);
+        cache[KEY_DEMANDAS][record.numero] = record;
+        await safeStorageSet({ [KEY_DEMANDAS]: cache[KEY_DEMANDAS] });
     }
 
     /**
@@ -133,13 +121,12 @@ var NeuronDB = NeuronDB || (function () {
     async function saveDemandas(demandas) {
         if (!demandas || demandas.length === 0) return;
 
-        const db = await init();
-        const tx = db.transaction(STORE_DEMANDAS, 'readwrite');
-
-        const promises = demandas.map(d => tx.store.put(prepareDemanda(d)));
-        promises.push(tx.done);
-
-        await Promise.all(promises);
+        await init();
+        demandas.forEach(d => {
+            const record = prepareDemanda(d);
+            cache[KEY_DEMANDAS][record.numero] = record;
+        });
+        await safeStorageSet({ [KEY_DEMANDAS]: cache[KEY_DEMANDAS] });
     }
 
     /**
@@ -155,170 +142,163 @@ var NeuronDB = NeuronDB || (function () {
      * Get a single demanda by numero
      */
     async function getDemanda(numero) {
-        const db = await init();
-        return db.get(STORE_DEMANDAS, numero);
+        await init();
+        return cache[KEY_DEMANDAS][numero] || undefined;
     }
 
     /**
      * Get all demandas
      */
     async function getAllDemandas() {
-        const db = await init();
-        return db.getAll(STORE_DEMANDAS);
+        await init();
+        return Object.values(cache[KEY_DEMANDAS]);
     }
 
     /**
      * Get all demandas as object (keyed by numero)
      */
     async function getAllDemandasAsObject() {
-        const demandas = await getAllDemandas();
-        const obj = {};
-        demandas.forEach(d => {
-            obj[d.numero] = d;
-        });
-        return obj;
+        await init();
+        return { ...cache[KEY_DEMANDAS] };
     }
 
     /**
      * Delete a demanda
      */
     async function deleteDemanda(numero) {
-        const db = await init();
-        await db.delete(STORE_DEMANDAS, numero);
+        await init();
+        delete cache[KEY_DEMANDAS][numero];
+        await safeStorageSet({ [KEY_DEMANDAS]: cache[KEY_DEMANDAS] });
     }
 
     /**
      * Clear all demandas
      */
     async function clearDemandas() {
-        const db = await init();
-        await db.clear(STORE_DEMANDAS);
+        await init();
+        cache[KEY_DEMANDAS] = {};
+        await safeStorageSet({ [KEY_DEMANDAS]: cache[KEY_DEMANDAS] });
     }
 
     /**
      * Mark a demanda as concluida (completed)
      */
     async function markConcluida(numero, isDone = true) {
-        const db = await init();
+        await init();
         if (isDone) {
-            await db.put(STORE_CONCLUIDAS, { numero, timestamp: Date.now() });
+            if (!cache[KEY_CONCLUIDAS].includes(numero)) {
+                cache[KEY_CONCLUIDAS].push(numero);
+            }
         } else {
-            await db.delete(STORE_CONCLUIDAS, numero);
+            cache[KEY_CONCLUIDAS] = cache[KEY_CONCLUIDAS].filter(n => n !== numero);
         }
+        await safeStorageSet({ [KEY_CONCLUIDAS]: cache[KEY_CONCLUIDAS] });
     }
 
     /**
      * Check if a demanda is concluida
      */
     async function isConcluida(numero) {
-        const db = await init();
-        const record = await db.get(STORE_CONCLUIDAS, numero);
-        return !!record;
+        await init();
+        return cache[KEY_CONCLUIDAS].includes(numero);
     }
 
     /**
      * Get all concluidas as a Set of numeros
      */
     async function getConcluidas() {
-        const db = await init();
-        const records = await db.getAll(STORE_CONCLUIDAS);
-        return new Set(records.map(r => r.numero));
+        await init();
+        return new Set(cache[KEY_CONCLUIDAS]);
     }
 
     /**
      * Get concluidas as array
      */
     async function getConcluidasArray() {
-        const db = await init();
-        const records = await db.getAll(STORE_CONCLUIDAS);
-        return records.map(r => r.numero);
+        await init();
+        return [...cache[KEY_CONCLUIDAS]];
     }
 
     /**
      * Clear all concluidas
      */
     async function clearConcluidas() {
-        const db = await init();
-        await db.clear(STORE_CONCLUIDAS);
+        await init();
+        cache[KEY_CONCLUIDAS] = [];
+        await safeStorageSet({ [KEY_CONCLUIDAS]: cache[KEY_CONCLUIDAS] });
     }
 
     /**
      * Clear both demandas and concluidas
      */
     async function clearAll() {
-        const db = await init();
-        await Promise.all([
-            db.clear(STORE_DEMANDAS),
-            db.clear(STORE_CONCLUIDAS)
-        ]);
+        await init();
+        cache[KEY_DEMANDAS] = {};
+        cache[KEY_CONCLUIDAS] = [];
+        await safeStorageSet({
+            [KEY_DEMANDAS]: cache[KEY_DEMANDAS],
+            [KEY_CONCLUIDAS]: cache[KEY_CONCLUIDAS]
+        });
     }
 
     /**
      * Get metadata value
      */
     async function getMetadata(key) {
-        const db = await init();
-        const record = await db.get(STORE_METADATA, key);
-        return record ? record.value : null;
+        await init();
+        return cache[KEY_METADATA][key] !== undefined ? cache[KEY_METADATA][key] : null;
     }
 
     /**
      * Set metadata value
      */
     async function setMetadata(key, value) {
-        const db = await init();
-        await db.put(STORE_METADATA, { key, value, timestamp: Date.now() });
+        await init();
+        cache[KEY_METADATA][key] = value;
+        await safeStorageSet({ [KEY_METADATA]: cache[KEY_METADATA] });
     }
 
     /**
      * Get a config value by key
      */
     async function getConfig(key) {
-        const db = await init();
-        const record = await db.get(STORE_CONFIG, key);
-        return record ? record.value : null;
+        await init();
+        return cache[KEY_CONFIG][key] !== undefined ? cache[KEY_CONFIG][key] : null;
     }
 
     /**
      * Set a config value
      */
     async function setConfig(key, value) {
-        const db = await init();
-        await db.put(STORE_CONFIG, { key, value, timestamp: Date.now() });
-        if (typeof NeuronSync !== 'undefined') {
-            NeuronSync.broadcast('config', key, value);
-        }
+        await init();
+        cache[KEY_CONFIG][key] = value;
+        await safeStorageSet({ [KEY_CONFIG]: cache[KEY_CONFIG] });
     }
 
     /**
      * Get a preference value by key
      */
     async function getPreference(key) {
-        const db = await init();
-        const record = await db.get(STORE_PREFERENCES, key);
-        return record ? record.value : null;
+        await init();
+        return cache[KEY_PREFERENCES][key] !== undefined ? cache[KEY_PREFERENCES][key] : null;
     }
 
     /**
      * Set a preference value
      */
     async function setPreference(key, value) {
-        const db = await init();
-        await db.put(STORE_PREFERENCES, { key, value, timestamp: Date.now() });
-        if (typeof NeuronSync !== 'undefined') {
-            NeuronSync.broadcast('preference', key, value);
-        }
+        await init();
+        cache[KEY_PREFERENCES][key] = value;
+        await safeStorageSet({ [KEY_PREFERENCES]: cache[KEY_PREFERENCES] });
     }
 
     /**
      * Get dashboard statistics
      */
     async function getStats() {
-        const db = await init();
-        const [demandas, concluidas] = await Promise.all([
-            getAllDemandas(),
-            getConcluidas()
-        ]);
+        await init();
+        const demandas = Object.values(cache[KEY_DEMANDAS]);
+        const concluidas = new Set(cache[KEY_CONCLUIDAS]);
 
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
@@ -452,6 +432,15 @@ var NeuronDB = NeuronDB || (function () {
         return relevantes.length;
     }
 
+    /**
+     * Update a specific cache key (used by NeuronSync for cross-context updates)
+     */
+    function _updateCache(key, value) {
+        if (cache.hasOwnProperty(key)) {
+            cache[key] = value;
+        }
+    }
+
     // Public API
     return {
         init,
@@ -493,7 +482,10 @@ var NeuronDB = NeuronDB || (function () {
         // Statistics
         getStats,
         isNotificacaoRelevante,
-        getNotificationCount
+        getNotificationCount,
+
+        // Internal - used by NeuronSync for cache coherence
+        _updateCache
     };
 })();
 

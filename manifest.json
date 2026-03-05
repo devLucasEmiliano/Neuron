@@ -1,7 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Neuron",
-  "version": "2.0",
+  "version": "2.0.0",
+  "version_name": "2.00.c780d",
   "description": "Otimizador de fluxos de trabalho na plataforma Fala.br",
   "author": "MAPA - DF",
   "icons": {
@@ -17,7 +18,7 @@
       "128": "images/icons/neuronon128.png"
     }
   },
-  "permissions": [],
+  "permissions": ["storage"],
   "host_permissions": [
     "https://falabr.cgu.gov.br/*",
     "https://treinafalabr.cgu.gov.br/*",
@@ -33,7 +34,7 @@
         "https://treinafalabr.cgu.gov.br/*",
         "https://falabr-h.cgu.gov.br/*"
       ],
-      "js": ["vendor/idb.min.js", "shared/js/neuron-db.js", "shared/js/neuron-sync.js", "modules/loading/loading.js"],
+      "js": ["shared/js/neuron-db.js", "shared/js/neuron-sync.js", "modules/loading/loading.js"],
       "css": ["modules/loading/loading.css"],
       "run_at": "document_start"
     },
