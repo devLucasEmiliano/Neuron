@@ -74,14 +74,14 @@ body {
 
 .sidebar-nav-link:hover {
     background-color: var(--bs-tertiary-bg);
-    color: var(--neuron-primary);
+    color: var(--neuron-primary, var(--bs-primary, #0d6efd));
     text-decoration: none;
 }
 
 .sidebar-nav-link.active {
-    background-color: var(--neuron-primary-light);
-    color: var(--neuron-primary);
-    border-left-color: var(--neuron-primary);
+    background-color: var(--neuron-primary-light, var(--bs-primary-bg-subtle, #cfe2ff));
+    color: var(--neuron-primary, var(--bs-primary, #0d6efd));
+    border-left-color: var(--neuron-primary, var(--bs-primary, #0d6efd));
     font-weight: 600;
 }
 
@@ -203,7 +203,7 @@ body {
 .text-model-item .nested-items {
     margin-top: 1rem;
     padding-left: 1rem;
-    border-left: 3px solid var(--neuron-primary);
+    border-left: 3px solid var(--neuron-primary, var(--bs-primary, #0d6efd));
 }
 
 .text-model-item .nested-item {
@@ -216,8 +216,8 @@ body {
 }
 
 .focal-point-group .accordion-button:not(.collapsed) {
-    background-color: var(--neuron-primary-light);
-    color: var(--neuron-primary);
+    background-color: var(--neuron-primary-light, var(--bs-primary-bg-subtle, #cfe2ff));
+    color: var(--neuron-primary, var(--bs-primary, #0d6efd));
 }
 
 .focal-point-input {
@@ -260,14 +260,14 @@ body {
 
 /* Add button dashed style for focal points */
 .add-point-btn-dashed {
-    border: 2px dashed var(--neuron-primary);
+    border: 2px dashed var(--neuron-primary, var(--bs-primary, #0d6efd));
     background-color: transparent;
-    color: var(--neuron-primary);
+    color: var(--neuron-primary, var(--bs-primary, #0d6efd));
     transition: all 0.2s ease;
 }
 
 .add-point-btn-dashed:hover {
-    background-color: var(--neuron-primary-light);
+    background-color: var(--neuron-primary-light, var(--bs-primary-bg-subtle, #cfe2ff));
     border-style: solid;
 }
 
@@ -288,7 +288,7 @@ body {
 }
 
 .card:hover {
-    box-shadow: var(--neuron-shadow);
+    box-shadow: var(--neuron-shadow, 0 4px 12px rgba(0, 0, 0, 0.1));
 }
 
 /* Import/Export section */
@@ -378,7 +378,7 @@ body {
 
     .sidebar-nav-link.active {
         border-left-color: transparent;
-        border-bottom-color: var(--neuron-primary);
+        border-bottom-color: var(--neuron-primary, var(--bs-primary, #0d6efd));
     }
 
     .sidebar-nav-link i {

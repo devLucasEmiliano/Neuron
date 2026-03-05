@@ -77,7 +77,23 @@ const ThemeManager = {
      * Remove Neuron theme styling from the document
      */
     _disableTheme() {
+        clearTimeout(this._styleDisableTimer);
         document.documentElement.removeAttribute('data-bs-theme');
+        var link = this._getThemeStylesheet();
+        if (link) {
+            // Delay disabling stylesheet so CSS transitions can finish smoothly
+            this._styleDisableTimer = setTimeout(function () {
+                link.disabled = true;
+            }, 350);
+        }
+    },
+
+    /**
+     * Find the Neuron theme.css <link> element
+     * @returns {HTMLLinkElement|null}
+     */
+    _getThemeStylesheet() {
+        return document.querySelector('link[href*="theme.css"]');
     },
 
     /**
@@ -125,6 +141,9 @@ const ThemeManager = {
      * @returns {string} The actual theme applied ('light' or 'dark')
      */
     applyTheme(preference) {
+        // Cancel any pending stylesheet disable from _disableTheme()
+        clearTimeout(this._styleDisableTimer);
+
         let theme;
 
         if (preference === 'system') {
@@ -132,6 +151,9 @@ const ThemeManager = {
         } else {
             theme = preference;
         }
+
+        var link = this._getThemeStylesheet();
+        if (link) link.disabled = false;
 
         document.documentElement.setAttribute('data-bs-theme', theme);
 
