@@ -25,7 +25,7 @@ window.DateUtils = (function() {
             // Check if NeuronDB is available
             if (typeof NeuronDB === 'undefined') {
                 console.warn("DATE_UTILS v4.0: NeuronDB não disponível. Usando configurações padrão.");
-                globalRules.weekend = 'next';
+                globalRules.weekend = 'modo1';
                 globalRules.holiday = 'proximo_dia';
                 holidays = [];
                 return;
@@ -34,21 +34,21 @@ window.DateUtils = (function() {
             const config = await NeuronDB.getConfig('neuronUserConfig');
             if (config) {
 
-                globalRules.weekend = config.prazosSettings?.tratarNovoAjusteFds || 'next';
+                globalRules.weekend = config.prazosSettings?.tratarNovoAjusteFds || 'modo1';
                 globalRules.holiday = config.prazosSettings?.tratarNovoAjusteFeriado || 'proximo_dia';
                 holidays = Array.isArray(config.holidays) ? config.holidays : [];
 
                 console.log("DATE_UTILS v4.0: Regras e feriados carregados.", { globalRules, holidays: holidays.length });
             } else {
                 console.warn("DATE_UTILS v4.0: Configuração não encontrada. Usando valores padrão.");
-                globalRules.weekend = 'next';
+                globalRules.weekend = 'modo1';
                 globalRules.holiday = 'proximo_dia';
                 holidays = [];
             }
         } catch (error) {
             console.error("DATE_UTILS: Falha crítica ao carregar configurações.", error);
             // Set safe defaults on error
-            globalRules.weekend = 'next';
+            globalRules.weekend = 'modo1';
             globalRules.holiday = 'proximo_dia';
             holidays = [];
         } finally {
@@ -72,37 +72,45 @@ window.DateUtils = (function() {
         return holidays.some(f => f.date === formatarData(date));
     }
     
-    function ajustarDataFinal(data, ruleOverrides = {}) {
-        let dataAjustada = new Date(data.valueOf());
-        
-        const fdsRule = ruleOverrides.ajusteFds || globalRules.weekend;
-        const holidayRule = ruleOverrides.ajusteFeriado || globalRules.holiday;
-        
-        // Adjust for weekends first
+    function ajustarFds(dataAjustada, fdsRule) {
         const diaDaSemana = dataAjustada.getDay();
         if (diaDaSemana === 6) { // Sábado
             if (fdsRule === 'modo1' || fdsRule === 'modo3') dataAjustada.setDate(dataAjustada.getDate() - 1);
-            else dataAjustada.setDate(dataAjustada.getDate() + 2);
+            else if (fdsRule === 'modo2') dataAjustada.setDate(dataAjustada.getDate() + 2);
         } else if (diaDaSemana === 0) { // Domingo
             if (fdsRule === 'modo2' || fdsRule === 'modo3') dataAjustada.setDate(dataAjustada.getDate() + 1);
-            else dataAjustada.setDate(dataAjustada.getDate() - 2);
+            else if (fdsRule === 'modo1') dataAjustada.setDate(dataAjustada.getDate() - 2);
         }
-        
-        // Then adjust for holidays with safety limit to prevent infinite loops
-        if (holidayRule !== 'none') {
-            let tentativas = 0;
-            const maxTentativas = 30; // Safety limit to prevent infinite loops
-            
-            while (isFeriado(dataAjustada) && tentativas < maxTentativas) {
+    }
+
+    function ajustarDataFinal(data, ruleOverrides = {}) {
+        let dataAjustada = new Date(data.valueOf());
+
+        const fdsRule = ruleOverrides.ajusteFds || globalRules.weekend;
+        const holidayRule = ruleOverrides.ajusteFeriado || globalRules.holiday;
+
+        let tentativas = 0;
+        const maxTentativas = 30;
+
+        // Combined loop: adjust weekends and holidays until stable
+        do {
+            if (fdsRule !== 'none') {
+                ajustarFds(dataAjustada, fdsRule);
+            }
+
+            if (holidayRule !== 'none' && isFeriado(dataAjustada)) {
                 dataAjustada.setDate(dataAjustada.getDate() + (holidayRule === 'dia_anterior' ? -1 : 1));
-                tentativas++;
+            } else {
+                break;
             }
-            
-            if (tentativas >= maxTentativas) {
-                console.warn('DATE_UTILS: Limite de tentativas atingido ao ajustar feriados. Retornando data sem ajuste completo.');
-            }
+
+            tentativas++;
+        } while (tentativas < maxTentativas);
+
+        if (tentativas >= maxTentativas) {
+            console.warn('DATE_UTILS: Limite de tentativas atingido ao ajustar data. Retornando data sem ajuste completo.');
         }
-        
+
         return dataAjustada;
     }
 
@@ -139,8 +147,9 @@ window.DateUtils = (function() {
     function calcularDiasRestantes(dataAlvo) {
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
-        const dataFinal = (dataAlvo instanceof Date) ? dataAlvo : parsearData(dataAlvo);
+        const dataFinal = (dataAlvo instanceof Date) ? new Date(dataAlvo.valueOf()) : parsearData(dataAlvo);
         if (!dataFinal) return '';
+        dataFinal.setHours(0, 0, 0, 0);
         const diffTime = dataFinal.getTime() - hoje.getTime();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         if (diffDays === 0) return '(Hoje)';
