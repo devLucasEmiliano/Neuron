@@ -9,6 +9,8 @@ Started: Thu Mar  5 15:15:36 -03 2026
 - NeuronDB exposes `_updateCache(key, value)` for NeuronSync to update the cache when `chrome.storage.onChanged` fires from other contexts
 - `setConfig()` and `setPreference()` no longer call `NeuronSync.broadcast()` - `chrome.storage.onChanged` fires automatically
 - The `idb.min.js` library is loaded in: manifest.json content_scripts, options.html `<script>`, and background.js `importScripts()`
+- NeuronSync uses `chrome.storage.onChanged` and diffs old/new objects to fire per-key callbacks matching the original `(key, newValue)` signature
+- `NeuronSync.broadcast()` has been removed - `chrome.storage.onChanged` fires automatically on writes
 
 ---
 
@@ -25,4 +27,19 @@ Started: Thu Mar  5 15:15:36 -03 2026
   - `markConcluida()` with `isDone=false` must filter the array rather than delete by key
   - All read methods call `await init()` to ensure cache is loaded, but reads are synchronous from cache after that
   - The `getStats()` return object includes `demandas` array and `concluidasSet` Set - must preserve these for consumers
+---
+
+## 2026-03-05 - US-002
+- Rewrote `shared/js/neuron-sync.js` from BroadcastChannel to chrome.storage.onChanged
+- Removed `broadcast()` from the public API (no longer needed - chrome.storage.onChanged fires automatically)
+- `onConfigChange(callback)` and `onPreferenceChange(callback)` now subscribe via chrome.storage.onChanged listener
+- The onChanged listener diffs old vs new objects to find which individual keys changed, then fires callbacks with `(key, newValue)`
+- The onChanged listener also updates NeuronDB's in-memory cache via `_updateCache()` for ALL storage keys that change
+- Both subscription methods return unsubscribe functions
+- Files changed: `shared/js/neuron-sync.js`
+- **Learnings for future iterations:**
+  - `chrome.storage.onChanged` provides `{oldValue, newValue}` per storage key - since config/preferences are stored as whole objects, you must diff old vs new to find individual changed keys
+  - Consumers filter by individual config keys (e.g. `key === 'neuronUserConfig'`), so the diff-and-fire-per-key approach is essential
+  - `NeuronDB._updateCache()` must be called for all changed storage keys, not just config/preferences, to keep the cache coherent
+  - Some consumer files still have comments mentioning "BroadcastChannel" - these will be cleaned up in later stories (US-004, US-006, US-007)
 ---
