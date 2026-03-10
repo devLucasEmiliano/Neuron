@@ -7,7 +7,22 @@
     const LOCK_PANE_ID = 'skm_LockPane';
     const LOCK_PANE_TEXT_ID = 'skm_LockPaneText';
     const NEURON_LOADING_CSS_CLASS = 'neuron-loading-active';
-    const TEMPLATE_URL = chrome.runtime.getURL('modules/loading/loading.html');
+
+    function getTemplateURL() {
+        try {
+            return chrome.runtime.getURL('modules/loading/loading.html');
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function isContextValid() {
+        try {
+            return !!chrome.runtime && !!chrome.runtime.id;
+        } catch (e) {
+            return false;
+        }
+    }
 
     let config = {};
     let paneObserver = null;
@@ -26,13 +41,14 @@
     }
 
     function carregarVersaoManifest() {
+        if (!isContextValid()) return;
         try {
             const manifest = chrome.runtime.getManifest();
             if (manifest && manifest.version) {
                 manifestVersion = "v" + manifest.version;
             }
         } catch (e) {
-            console.warn(`[Neuron|${SCRIPT_ID}] Não foi possível obter a versão do manifest.`, e);
+            // Silently keep default version if context is invalidated
         }
     }
 
@@ -69,6 +85,8 @@
     }
 
     async function aplicarEstiloNeuron() {
+        if (!isContextValid()) return;
+
         const lockPane = document.getElementById(LOCK_PANE_ID);
         const lockPaneText = document.getElementById(LOCK_PANE_TEXT_ID);
 
@@ -79,11 +97,14 @@
         if (originalPaneTextInnerHTML === null && !lockPaneText.querySelector('.neuron-loading-container')) {
             originalPaneTextInnerHTML = lockPaneText.innerHTML;
         }
-        
+
         try {
-            const response = await fetch(TEMPLATE_URL);
+            const templateUrl = getTemplateURL();
+            if (!templateUrl) return;
+
+            const response = await fetch(templateUrl);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            
+
             let htmlContent = await response.text();
             htmlContent = htmlContent.replace('{{GIF_URL}}', chrome.runtime.getURL('images/Intro-Neuron.gif'));
             htmlContent = htmlContent.replace('{{MANIFEST_VERSION}}', manifestVersion);
@@ -93,6 +114,7 @@
             isNeuronStyleApplied = true;
             iniciarAnimacao();
         } catch (error) {
+            if (error?.message?.includes('Extension context invalidated')) return;
             console.error(`[Neuron|${SCRIPT_ID}] Falha ao aplicar estilo de loading.`, error);
             reverterEstiloNeuron();
         }
@@ -157,6 +179,7 @@
     
     NeuronSync.onConfigChange((key) => {
         if (key === CONFIG_KEY) {
+            if (!isContextValid()) return;
             console.warn(`[Neuron|${SCRIPT_ID}] Configuração alterada. Reavaliando...`);
             verificarEstadoAtualEAgir();
         }
