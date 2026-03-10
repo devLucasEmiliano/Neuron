@@ -334,6 +334,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         const container = document.getElementById('optionsContainer');
         const statusEl = document.getElementById('respostasStatus');
 
+        // Validate each response type has a novoDropdownOptions array
+        if (fullConfig.defaultResponses) {
+            for (const key in fullConfig.defaultResponses) {
+                if (!Array.isArray(fullConfig.defaultResponses[key]?.novoDropdownOptions)) {
+                    const defaultArr = defaultConfig.defaultResponses?.[key]?.novoDropdownOptions;
+                    fullConfig.defaultResponses[key].novoDropdownOptions = defaultArr
+                        ? JSON.parse(JSON.stringify(defaultArr))
+                        : [];
+                }
+            }
+        }
+
         select.innerHTML = '<option value="">Selecione um Tipo de Resposta...</option>';
         Object.keys(fullConfig.defaultResponses).sort().forEach(key => {
             select.innerHTML += `<option value="${key}">${key}</option>`;
@@ -358,6 +370,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 conteudoTextarea: "Escreva o conteúdo aqui...",
                 responsavel: "Defina o responsável"
             };
+            if (!Array.isArray(fullConfig.defaultResponses[tipoResposta].novoDropdownOptions)) {
+                fullConfig.defaultResponses[tipoResposta].novoDropdownOptions = [];
+            }
             fullConfig.defaultResponses[tipoResposta].novoDropdownOptions.push(newOption);
             renderResponseOptions(tipoResposta);
         });
@@ -371,7 +386,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const tipoResposta = select.value;
             if (!tipoResposta || !confirm(`Isso restaurará as respostas de "${tipoResposta}" para o padrão. Deseja continuar?`)) return;
 
-            fullConfig.defaultResponses[tipoResposta] = JSON.parse(JSON.stringify(defaultConfig.defaultResponses[tipoResposta]));
+            const defaultEntry = defaultConfig.defaultResponses?.[tipoResposta];
+            fullConfig.defaultResponses[tipoResposta] = defaultEntry
+                ? JSON.parse(JSON.stringify(defaultEntry))
+                : { novoDropdownOptions: [] };
             renderResponseOptions(tipoResposta);
             displayStatus(statusEl, 'Respostas restauradas para o padrão.', false);
         });
@@ -408,7 +426,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         listEl.querySelectorAll('.remove-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const indexToRemove = parseInt(e.target.closest('.remove-btn').dataset.index, 10);
-                fullConfig.defaultResponses[tipoResposta].novoDropdownOptions.splice(indexToRemove, 1);
+                const opts = fullConfig.defaultResponses[tipoResposta]?.novoDropdownOptions;
+                if (Array.isArray(opts)) {
+                    opts.splice(indexToRemove, 1);
+                }
                 renderResponseOptions(tipoResposta);
             });
         });
