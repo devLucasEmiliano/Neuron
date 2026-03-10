@@ -107,8 +107,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const source = sources.shift();
         if (isObject(target) && isObject(source)) {
             for (const key in source) {
-                if (isObject(source[key])) {
-                    if (!target[key]) Object.assign(target, { [key]: {} });
+                if (Array.isArray(source[key])) {
+                    target[key] = source[key];
+                } else if (isObject(source[key])) {
+                    if (!isObject(target[key])) Object.assign(target, { [key]: {} });
                     deepMerge(target[key], source[key]);
                 } else {
                     Object.assign(target, { [key]: source[key] });
@@ -118,6 +120,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         return deepMerge(target, ...sources);
     };
 
+    function ensureResponseArrays() {
+        if (!fullConfig.defaultResponses) return;
+        for (const key in fullConfig.defaultResponses) {
+            if (!Array.isArray(fullConfig.defaultResponses[key].novoDropdownOptions)) {
+                const defaultArr = defaultConfig.defaultResponses?.[key]?.novoDropdownOptions;
+                fullConfig.defaultResponses[key].novoDropdownOptions = defaultArr
+                    ? JSON.parse(JSON.stringify(defaultArr))
+                    : [];
+            }
+        }
+    }
+
     async function loadConfig() {
         try {
             const response = await fetch(chrome.runtime.getURL(DEFAULT_CONFIG_PATH));
@@ -125,6 +139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             defaultConfig = await response.json();
             const savedConfig = await NeuronDB.getConfig(CONFIG_STORAGE_KEY);
             fullConfig = deepMerge(JSON.parse(JSON.stringify(defaultConfig)), savedConfig || {});
+            ensureResponseArrays();
         } catch (error) {
             displayStatus(ui.globalStatus, `ERRO CRÍTICO: Falha ao carregar configuração. ${error.message}`, true, 15000);
         }
@@ -319,6 +334,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         const container = document.getElementById('optionsContainer');
         const statusEl = document.getElementById('respostasStatus');
 
+        // Validate each response type has a novoDropdownOptions array
+        if (fullConfig.defaultResponses) {
+            for (const key in fullConfig.defaultResponses) {
+                if (!Array.isArray(fullConfig.defaultResponses[key]?.novoDropdownOptions)) {
+                    const defaultArr = defaultConfig.defaultResponses?.[key]?.novoDropdownOptions;
+                    fullConfig.defaultResponses[key].novoDropdownOptions = defaultArr
+                        ? JSON.parse(JSON.stringify(defaultArr))
+                        : [];
+                }
+            }
+        }
+
         select.innerHTML = '<option value="">Selecione um Tipo de Resposta...</option>';
         Object.keys(fullConfig.defaultResponses).sort().forEach(key => {
             select.innerHTML += `<option value="${key}">${key}</option>`;
@@ -343,6 +370,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 conteudoTextarea: "Escreva o conteúdo aqui...",
                 responsavel: "Defina o responsável"
             };
+            if (!Array.isArray(fullConfig.defaultResponses[tipoResposta].novoDropdownOptions)) {
+                fullConfig.defaultResponses[tipoResposta].novoDropdownOptions = [];
+            }
             fullConfig.defaultResponses[tipoResposta].novoDropdownOptions.push(newOption);
             renderResponseOptions(tipoResposta);
         });
@@ -356,7 +386,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const tipoResposta = select.value;
             if (!tipoResposta || !confirm(`Isso restaurará as respostas de "${tipoResposta}" para o padrão. Deseja continuar?`)) return;
 
-            fullConfig.defaultResponses[tipoResposta] = JSON.parse(JSON.stringify(defaultConfig.defaultResponses[tipoResposta]));
+            const defaultEntry = defaultConfig.defaultResponses?.[tipoResposta];
+            fullConfig.defaultResponses[tipoResposta] = defaultEntry
+                ? JSON.parse(JSON.stringify(defaultEntry))
+                : { novoDropdownOptions: [] };
             renderResponseOptions(tipoResposta);
             displayStatus(statusEl, 'Respostas restauradas para o padrão.', false);
         });
@@ -393,7 +426,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         listEl.querySelectorAll('.remove-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const indexToRemove = parseInt(e.target.closest('.remove-btn').dataset.index, 10);
-                fullConfig.defaultResponses[tipoResposta].novoDropdownOptions.splice(indexToRemove, 1);
+                const opts = fullConfig.defaultResponses[tipoResposta]?.novoDropdownOptions;
+                if (Array.isArray(opts)) {
+                    opts.splice(indexToRemove, 1);
+                }
                 renderResponseOptions(tipoResposta);
             });
         });
@@ -868,6 +904,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     NeuronSync.onConfigChange(async (key, newValue) => {
         if (key === CONFIG_STORAGE_KEY && newValue) {
             fullConfig = deepMerge(JSON.parse(JSON.stringify(defaultConfig)), newValue);
+            ensureResponseArrays();
             populateAllTabs();
         }
     });
