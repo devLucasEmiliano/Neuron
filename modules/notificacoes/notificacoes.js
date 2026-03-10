@@ -242,7 +242,9 @@
             try {
                 await NeuronDB.saveDemandas(newDemandas);
             } catch (error) {
-                console.error(`Neuron (${SCRIPT_ID}): Error saving demandas:`, error);
+                if (!error.message?.includes('Extension context invalidated')) {
+                    console.error(`Neuron (${SCRIPT_ID}): Error saving demandas:`, error);
+                }
             }
         }
 
