@@ -185,7 +185,54 @@
         }
     });
 
+    function isNewStylePage() {
+        return window.location.pathname.startsWith('/web/');
+    }
+
+    function createNewStyleOverlay() {
+        const lockPane = document.createElement('div');
+        lockPane.id = LOCK_PANE_ID;
+
+        const lockPaneText = document.createElement('div');
+        lockPaneText.id = LOCK_PANE_TEXT_ID;
+
+        lockPane.appendChild(lockPaneText);
+        document.body.appendChild(lockPane);
+    }
+
+    function removeNewStyleOverlay() {
+        reverterEstiloNeuron();
+        const lockPane = document.getElementById(LOCK_PANE_ID);
+        if (lockPane) {
+            lockPane.remove();
+        }
+    }
+
     async function init() {
+        carregarVersaoManifest();
+
+        if (isNewStylePage()) {
+            if (document.readyState === 'loading') {
+                await new Promise(resolve =>
+                    document.addEventListener('DOMContentLoaded', resolve, { once: true })
+                );
+            }
+
+            await carregarConfiguracoes();
+            if (!isScriptAtivo()) return;
+
+            createNewStyleOverlay();
+            await aplicarEstiloNeuron();
+
+            if (document.readyState === 'complete') {
+                removeNewStyleOverlay();
+            } else {
+                window.addEventListener('load', () => removeNewStyleOverlay(), { once: true });
+            }
+            return;
+        }
+
+        // Legacy ASP.NET page: poll for skm_LockPane element
         const MAX_ATTEMPTS = 100;
         let attempts = 0;
 
@@ -208,7 +255,6 @@
             }
         });
 
-        carregarVersaoManifest();
         verificarEstadoAtualEAgir();
     }
 
