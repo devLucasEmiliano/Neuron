@@ -40,10 +40,16 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function safeStorageSet(data) {
         if (!isContextValid()) {
-            console.warn('NeuronDB: Extension context invalidated, skipping storage write.');
             return;
         }
-        await chrome.storage.local.set(data);
+        try {
+            await chrome.storage.local.set(data);
+        } catch (e) {
+            if (e && e.message && e.message.includes('Extension context invalidated')) {
+                return;
+            }
+            throw e;
+        }
     }
 
     /**
@@ -76,20 +82,25 @@ var NeuronDB = NeuronDB || (function () {
         if (initialized) return;
 
         if (!isContextValid()) {
-            console.warn('NeuronDB: Extension context invalidated, using empty cache.');
             initialized = true;
             return;
         }
 
-        const data = await chrome.storage.local.get([
-            KEY_DEMANDAS, KEY_CONCLUIDAS, KEY_METADATA, KEY_CONFIG, KEY_PREFERENCES
-        ]);
+        try {
+            const data = await chrome.storage.local.get([
+                KEY_DEMANDAS, KEY_CONCLUIDAS, KEY_METADATA, KEY_CONFIG, KEY_PREFERENCES
+            ]);
 
-        cache[KEY_DEMANDAS] = data[KEY_DEMANDAS] || {};
-        cache[KEY_CONCLUIDAS] = data[KEY_CONCLUIDAS] || [];
-        cache[KEY_METADATA] = data[KEY_METADATA] || {};
-        cache[KEY_CONFIG] = data[KEY_CONFIG] || {};
-        cache[KEY_PREFERENCES] = data[KEY_PREFERENCES] || {};
+            cache[KEY_DEMANDAS] = data[KEY_DEMANDAS] || {};
+            cache[KEY_CONCLUIDAS] = data[KEY_CONCLUIDAS] || [];
+            cache[KEY_METADATA] = data[KEY_METADATA] || {};
+            cache[KEY_CONFIG] = data[KEY_CONFIG] || {};
+            cache[KEY_PREFERENCES] = data[KEY_PREFERENCES] || {};
+        } catch (e) {
+            if (!(e && e.message && e.message.includes('Extension context invalidated'))) {
+                throw e;
+            }
+        }
 
         initialized = true;
     }
