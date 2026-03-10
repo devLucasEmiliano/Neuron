@@ -107,8 +107,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const source = sources.shift();
         if (isObject(target) && isObject(source)) {
             for (const key in source) {
-                if (isObject(source[key])) {
-                    if (!target[key]) Object.assign(target, { [key]: {} });
+                if (Array.isArray(source[key])) {
+                    target[key] = source[key];
+                } else if (isObject(source[key])) {
+                    if (!isObject(target[key])) Object.assign(target, { [key]: {} });
                     deepMerge(target[key], source[key]);
                 } else {
                     Object.assign(target, { [key]: source[key] });
@@ -118,6 +120,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         return deepMerge(target, ...sources);
     };
 
+    function ensureResponseArrays() {
+        if (!fullConfig.defaultResponses) return;
+        for (const key in fullConfig.defaultResponses) {
+            if (!Array.isArray(fullConfig.defaultResponses[key].novoDropdownOptions)) {
+                const defaultArr = defaultConfig.defaultResponses?.[key]?.novoDropdownOptions;
+                fullConfig.defaultResponses[key].novoDropdownOptions = defaultArr
+                    ? JSON.parse(JSON.stringify(defaultArr))
+                    : [];
+            }
+        }
+    }
+
     async function loadConfig() {
         try {
             const response = await fetch(chrome.runtime.getURL(DEFAULT_CONFIG_PATH));
@@ -125,6 +139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             defaultConfig = await response.json();
             const savedConfig = await NeuronDB.getConfig(CONFIG_STORAGE_KEY);
             fullConfig = deepMerge(JSON.parse(JSON.stringify(defaultConfig)), savedConfig || {});
+            ensureResponseArrays();
         } catch (error) {
             displayStatus(ui.globalStatus, `ERRO CRÍTICO: Falha ao carregar configuração. ${error.message}`, true, 15000);
         }
@@ -868,6 +883,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     NeuronSync.onConfigChange(async (key, newValue) => {
         if (key === CONFIG_STORAGE_KEY && newValue) {
             fullConfig = deepMerge(JSON.parse(JSON.stringify(defaultConfig)), newValue);
+            ensureResponseArrays();
             populateAllTabs();
         }
     });
