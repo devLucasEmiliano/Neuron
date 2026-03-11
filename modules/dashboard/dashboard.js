@@ -49,6 +49,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 chartPrazos.destroy();
                 chartPrazos = null;
             }
+            if (chartResponsaveis) {
+                chartResponsaveis.destroy();
+                chartResponsaveis = null;
+            }
             refreshDashboard();
         });
     }
@@ -74,12 +78,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             urgentes: isDark ? '#ffb74d' : '#ffc107',
             proximas: isDark ? '#4fc3f7' : '#0d6efd',
             normais: isDark ? '#81c784' : '#198754',
+            // Responsaveis bar color
+            responsaveis: isDark ? '#7c4dff' : '#6f42c1',
         };
     }
 
     // --- Chart instances ---
     let chartStatus = null;
     let chartPrazos = null;
+    let chartResponsaveis = null;
 
     // --- Stats Cards ---
 
@@ -103,6 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Update charts
         updateStatusChart(stats);
         updatePrazosChart(stats);
+        updateResponsaveisChart(stats);
     }
 
     // --- Status Distribution Donut Chart ---
@@ -248,6 +256,82 @@ document.addEventListener('DOMContentLoaded', async () => {
                     y: {
                         ticks: {
                             color: colors.textColor
+                        },
+                        grid: {
+                            color: colors.gridColor
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // --- Top 10 Responsaveis Vertical Bar Chart ---
+
+    function updateResponsaveisChart(stats) {
+        const ctx = document.getElementById('chart-responsaveis');
+        if (!ctx) return;
+
+        const colors = getThemeColors();
+        const topResp = (stats.topResponsaveis || []).slice(0, 10);
+        const labels = topResp.map(r => r.name);
+        const data = topResp.map(r => r.count);
+
+        if (chartResponsaveis) {
+            chartResponsaveis.data.labels = labels;
+            chartResponsaveis.data.datasets[0].data = data;
+            chartResponsaveis.data.datasets[0].backgroundColor = colors.responsaveis;
+            chartResponsaveis.options.scales.x.ticks.color = colors.textColor;
+            chartResponsaveis.options.scales.x.grid.color = colors.gridColor;
+            chartResponsaveis.options.scales.y.ticks.color = colors.textColor;
+            chartResponsaveis.options.scales.y.grid.color = colors.gridColor;
+            chartResponsaveis.update();
+            return;
+        }
+
+        chartResponsaveis = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    data,
+                    backgroundColor: colors.responsaveis,
+                    borderRadius: 4,
+                    barThickness: 28
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: function(items) {
+                                return items[0].label;
+                            },
+                            label: function(context) {
+                                return context.parsed.y + ' demandas';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: colors.textColor,
+                            maxRotation: 45,
+                            minRotation: 25
+                        },
+                        grid: {
+                            color: colors.gridColor
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: colors.textColor,
+                            precision: 0
                         },
                         grid: {
                             color: colors.gridColor
