@@ -242,6 +242,74 @@ document.addEventListener('DOMContentLoaded', async () => {
         updatePrazosChart(stats);
         updateResponsaveisChart(stats);
         updateTemporalChart(stats);
+
+        // Update table
+        renderDemandasTable(stats);
+    }
+
+    // --- Demandas Table ---
+
+    /**
+     * Render the demandas table with urgency-based row coloring
+     */
+    function renderDemandasTable(stats) {
+        const tbody = document.getElementById('demandas-tbody');
+        const emptyMsg = document.getElementById('demandas-empty');
+        if (!tbody) return;
+
+        const demandas = stats.demandas || [];
+        const concluidasSet = stats.concluidasSet || new Set();
+
+        if (demandas.length === 0) {
+            tbody.innerHTML = '';
+            if (emptyMsg) emptyMsg.style.display = '';
+            return;
+        }
+        if (emptyMsg) emptyMsg.style.display = 'none';
+
+        const rows = [];
+        for (const d of demandas) {
+            const diasRestantes = NeuronDB.calcularDiasRestantes(d.prazo);
+
+            // Row urgency class
+            let rowClass = '';
+            if (diasRestantes !== null && diasRestantes < 0) {
+                rowClass = 'table-danger';
+            } else if (diasRestantes !== null && diasRestantes <= 2) {
+                rowClass = 'table-warning';
+            }
+
+            // Dias restantes badge
+            let badgeHtml = '';
+            if (diasRestantes !== null) {
+                let badgeClass = 'bg-success';
+                if (diasRestantes < 0) {
+                    badgeClass = 'bg-danger';
+                } else if (diasRestantes <= 2) {
+                    badgeClass = 'bg-warning text-dark';
+                }
+                badgeHtml = '<span class="badge ' + badgeClass + '">' + diasRestantes + ' dia' + (Math.abs(diasRestantes) !== 1 ? 's' : '') + '</span>';
+            } else {
+                badgeHtml = '<span class="text-body-secondary">-</span>';
+            }
+
+            // Responsaveis
+            const responsaveis = Array.isArray(d.responsaveis) ? d.responsaveis.join(', ') : '';
+
+            const esc = window.NeuronUtils ? window.NeuronUtils.escapeHtml : (s) => s;
+            rows.push(
+                '<tr class="' + rowClass + '">' +
+                '<td>' + esc(d.numero || '') + '</td>' +
+                '<td>' + esc(d.dataCadastro || '') + '</td>' +
+                '<td>' + esc(d.prazo || '') + '</td>' +
+                '<td>' + badgeHtml + '</td>' +
+                '<td>' + esc(d.situacao || '') + '</td>' +
+                '<td>' + esc(responsaveis) + '</td>' +
+                '</tr>'
+            );
+        }
+
+        tbody.innerHTML = rows.join('');
     }
 
     // --- Status Distribution Donut Chart ---

@@ -106,6 +106,20 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
+#demandas-table th {
+    white-space: nowrap;
+    font-size: 0.85rem;
+}
+
+#demandas-table td {
+    font-size: 0.85rem;
+    vertical-align: middle;
+}
+
+#demandas-empty {
+    font-size: 0.9rem;
+}
+
 /* ========================================
    Dark Mode
    ======================================== */
