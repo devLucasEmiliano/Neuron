@@ -65,6 +65,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentFilter = 'all'; // 'all' or 'mine'
     let currentUser = null;
 
+    // --- Search & Sort State ---
+    let searchQuery = '';
+    let sortColumn = null; // 'numero', 'dataCadastro', 'prazo', 'diasRestantes'
+    let sortDirection = 'asc'; // 'asc' or 'desc'
+
     // Load saved filter preference and current user
     if (typeof NeuronDB !== 'undefined') {
         const savedFilter = await NeuronDB.getPreference('dashboardFilter');
@@ -96,6 +101,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             refreshDashboard();
         });
     }
+
+    // --- Search Input ---
+    const searchInput = document.getElementById('demandas-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            searchQuery = searchInput.value.trim();
+            renderDemandasTable(null); // re-render with current stats
+        });
+    }
+
+    // --- Sortable Headers ---
+    document.querySelectorAll('#demandas-table .sortable-header').forEach(th => {
+        th.addEventListener('click', () => {
+            const col = th.dataset.sort;
+            if (sortColumn === col) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = col;
+                sortDirection = 'asc';
+            }
+            renderDemandasTable(null); // re-render with current stats
+        });
+    });
 
     // --- Theme Colors ---
 
@@ -247,28 +275,106 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderDemandasTable(stats);
     }
 
-    // --- Demandas Table ---
+    // --- Search & Sort Logic ---
 
     /**
-     * Render the demandas table with urgency-based row coloring
+     * Filter demandas by search query (case-insensitive match against numero, situacao, responsaveis)
+     */
+    function searchDemandas(demandas) {
+        if (!searchQuery) return demandas;
+        const q = searchQuery.toLowerCase();
+        return demandas.filter(d => {
+            const numero = (d.numero || '').toLowerCase();
+            const situacao = (d.situacao || '').toLowerCase();
+            const responsaveis = Array.isArray(d.responsaveis) ? d.responsaveis.join(', ').toLowerCase() : '';
+            return numero.includes(q) || situacao.includes(q) || responsaveis.includes(q);
+        });
+    }
+
+    /**
+     * Sort demandas by the current sort column and direction
+     */
+    function sortDemandas(demandas) {
+        if (!sortColumn) return demandas;
+        const sorted = [...demandas];
+        const dir = sortDirection === 'asc' ? 1 : -1;
+
+        sorted.sort((a, b) => {
+            let va, vb;
+            if (sortColumn === 'numero') {
+                va = (a.numero || '').toLowerCase();
+                vb = (b.numero || '').toLowerCase();
+                return va < vb ? -dir : va > vb ? dir : 0;
+            } else if (sortColumn === 'dataCadastro') {
+                va = a.cadastroTimestamp || 0;
+                vb = b.cadastroTimestamp || 0;
+                return (va - vb) * dir;
+            } else if (sortColumn === 'prazo') {
+                va = a.prazoTimestamp || 0;
+                vb = b.prazoTimestamp || 0;
+                return (va - vb) * dir;
+            } else if (sortColumn === 'diasRestantes') {
+                va = NeuronDB.calcularDiasRestantes(a.prazo);
+                vb = NeuronDB.calcularDiasRestantes(b.prazo);
+                // Null values go to end
+                if (va === null && vb === null) return 0;
+                if (va === null) return 1;
+                if (vb === null) return -1;
+                return (va - vb) * dir;
+            }
+            return 0;
+        });
+        return sorted;
+    }
+
+    /**
+     * Update sort indicator icons in the table header
+     */
+    function updateSortIndicators() {
+        document.querySelectorAll('#demandas-table .sortable-header').forEach(th => {
+            const icon = th.querySelector('.sort-icon');
+            if (!icon) return;
+            if (th.dataset.sort === sortColumn) {
+                icon.className = 'bi sort-icon ' + (sortDirection === 'asc' ? 'bi-arrow-up' : 'bi-arrow-down');
+            } else {
+                icon.className = 'bi bi-arrow-down-up sort-icon text-body-secondary';
+            }
+        });
+    }
+
+    // --- Demandas Table ---
+
+    /** Current stats reference for re-rendering on search/sort changes */
+    let lastStats = null;
+
+    /**
+     * Render the demandas table with urgency-based row coloring, search, and sort
      */
     function renderDemandasTable(stats) {
+        if (stats) lastStats = stats;
+        if (!lastStats) return;
+
         const tbody = document.getElementById('demandas-tbody');
         const emptyMsg = document.getElementById('demandas-empty');
         if (!tbody) return;
 
-        const demandas = stats.demandas || [];
-        const concluidasSet = stats.concluidasSet || new Set();
+        const demandas = lastStats.demandas || [];
 
-        if (demandas.length === 0) {
+        // Apply search then sort
+        const filtered = sortDemandas(searchDemandas(demandas));
+
+        if (filtered.length === 0) {
             tbody.innerHTML = '';
-            if (emptyMsg) emptyMsg.style.display = '';
+            if (emptyMsg) {
+                emptyMsg.textContent = searchQuery ? 'Nenhuma demanda encontrada para a busca.' : 'Nenhuma demanda encontrada.';
+                emptyMsg.style.display = '';
+            }
             return;
         }
         if (emptyMsg) emptyMsg.style.display = 'none';
 
         const rows = [];
-        for (const d of demandas) {
+        for (const d of filtered) {
             const diasRestantes = NeuronDB.calcularDiasRestantes(d.prazo);
 
             // Row urgency class
@@ -310,6 +416,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         tbody.innerHTML = rows.join('');
+        updateSortIndicators();
     }
 
     // --- Status Distribution Donut Chart ---

@@ -106,9 +106,28 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
+.table-search-wrapper {
+    width: 320px;
+    max-width: 100%;
+}
+
 #demandas-table th {
     white-space: nowrap;
     font-size: 0.85rem;
+}
+
+#demandas-table th.sortable-header {
+    cursor: pointer;
+    user-select: none;
+}
+
+#demandas-table th.sortable-header:hover {
+    background-color: var(--bs-tertiary-bg);
+}
+
+#demandas-table th.sortable-header .sort-icon {
+    font-size: 0.75rem;
+    margin-left: 0.25rem;
 }
 
 #demandas-table td {
