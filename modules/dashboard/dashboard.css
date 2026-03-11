@@ -139,6 +139,14 @@
     font-size: 0.9rem;
 }
 
+#pagination-footer {
+    font-size: 0.85rem;
+}
+
+#pagination-footer .pagination {
+    flex-wrap: wrap;
+}
+
 /* ========================================
    Dark Mode
    ======================================== */

@@ -70,6 +70,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let sortColumn = null; // 'numero', 'dataCadastro', 'prazo', 'diasRestantes'
     let sortDirection = 'asc'; // 'asc' or 'desc'
 
+    // --- Pagination State ---
+    let currentPage = 1;
+    let itemsPerPage = 25;
+
     // Load saved filter preference and current user
     if (typeof NeuronDB !== 'undefined') {
         const savedFilter = await NeuronDB.getPreference('dashboardFilter');
@@ -77,6 +81,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentFilter = savedFilter;
         }
         currentUser = await NeuronDB.getMetadata('currentUser');
+
+        const savedPerPage = await NeuronDB.getPreference('dashboardItemsPerPage');
+        if (savedPerPage && [10, 25, 50, 100].includes(Number(savedPerPage))) {
+            itemsPerPage = Number(savedPerPage);
+        }
+    }
+
+    // Sync items-per-page select with saved value
+    const itemsPerPageSelect = document.getElementById('items-per-page');
+    if (itemsPerPageSelect) {
+        itemsPerPageSelect.value = String(itemsPerPage);
+        itemsPerPageSelect.addEventListener('change', async () => {
+            itemsPerPage = Number(itemsPerPageSelect.value);
+            currentPage = 1;
+            if (typeof NeuronDB !== 'undefined') {
+                await NeuronDB.setPreference('dashboardItemsPerPage', itemsPerPage);
+            }
+            renderDemandasTable(null);
+        });
     }
 
     // Setup filter toggle buttons
@@ -98,6 +121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (typeof NeuronDB !== 'undefined') {
                 await NeuronDB.setPreference('dashboardFilter', currentFilter);
             }
+            currentPage = 1;
             refreshDashboard();
         });
     }
@@ -107,6 +131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (searchInput) {
         searchInput.addEventListener('input', () => {
             searchQuery = searchInput.value.trim();
+            currentPage = 1;
             renderDemandasTable(null); // re-render with current stats
         });
     }
@@ -348,7 +373,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let lastStats = null;
 
     /**
-     * Render the demandas table with urgency-based row coloring, search, and sort
+     * Render the demandas table with urgency-based row coloring, search, sort, and pagination
      */
     function renderDemandasTable(stats) {
         if (stats) lastStats = stats;
@@ -362,19 +387,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Apply search then sort
         const filtered = sortDemandas(searchDemandas(demandas));
+        const totalFiltered = filtered.length;
 
-        if (filtered.length === 0) {
+        if (totalFiltered === 0) {
             tbody.innerHTML = '';
             if (emptyMsg) {
                 emptyMsg.textContent = searchQuery ? 'Nenhuma demanda encontrada para a busca.' : 'Nenhuma demanda encontrada.';
                 emptyMsg.style.display = '';
             }
+            renderPagination(0, 0);
             return;
         }
         if (emptyMsg) emptyMsg.style.display = 'none';
 
+        // Pagination calculations
+        const totalPages = Math.ceil(totalFiltered / itemsPerPage);
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, totalFiltered);
+        const paged = filtered.slice(startIndex, endIndex);
+
         const rows = [];
-        for (const d of filtered) {
+        for (const d of paged) {
             const diasRestantes = NeuronDB.calcularDiasRestantes(d.prazo);
 
             // Row urgency class
@@ -417,6 +452,100 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         tbody.innerHTML = rows.join('');
         updateSortIndicators();
+        renderPagination(totalFiltered, totalPages);
+    }
+
+    /**
+     * Render pagination controls and info text
+     */
+    function renderPagination(totalFiltered, totalPages) {
+        const paginationInfo = document.getElementById('pagination-info');
+        const paginationControls = document.getElementById('pagination-controls');
+        const paginationFooter = document.getElementById('pagination-footer');
+
+        if (paginationFooter) {
+            paginationFooter.style.display = totalFiltered === 0 ? 'none' : '';
+        }
+
+        if (paginationInfo) {
+            if (totalFiltered === 0) {
+                paginationInfo.textContent = '';
+            } else {
+                const start = (currentPage - 1) * itemsPerPage + 1;
+                const end = Math.min(currentPage * itemsPerPage, totalFiltered);
+                paginationInfo.textContent = 'Mostrando ' + start + ' a ' + end + ' de ' + totalFiltered + ' demandas';
+            }
+        }
+
+        if (!paginationControls) return;
+
+        if (totalPages <= 1) {
+            paginationControls.innerHTML = '';
+            return;
+        }
+
+        const items = [];
+
+        // First button
+        items.push(
+            '<li class="page-item ' + (currentPage === 1 ? 'disabled' : '') + '">' +
+            '<a class="page-link" href="#" data-page="1" aria-label="Primeira">' +
+            '<i class="bi bi-chevron-double-left"></i></a></li>'
+        );
+
+        // Previous button
+        items.push(
+            '<li class="page-item ' + (currentPage === 1 ? 'disabled' : '') + '">' +
+            '<a class="page-link" href="#" data-page="' + (currentPage - 1) + '" aria-label="Anterior">' +
+            '<i class="bi bi-chevron-left"></i></a></li>'
+        );
+
+        // Page numbers — show up to 5 around current page
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4) {
+            startPage = Math.max(1, endPage - 4);
+        }
+
+        for (let p = startPage; p <= endPage; p++) {
+            items.push(
+                '<li class="page-item ' + (p === currentPage ? 'active' : '') + '">' +
+                '<a class="page-link" href="#" data-page="' + p + '">' + p + '</a></li>'
+            );
+        }
+
+        // Next button
+        items.push(
+            '<li class="page-item ' + (currentPage === totalPages ? 'disabled' : '') + '">' +
+            '<a class="page-link" href="#" data-page="' + (currentPage + 1) + '" aria-label="Proxima">' +
+            '<i class="bi bi-chevron-right"></i></a></li>'
+        );
+
+        // Last button
+        items.push(
+            '<li class="page-item ' + (currentPage === totalPages ? 'disabled' : '') + '">' +
+            '<a class="page-link" href="#" data-page="' + totalPages + '" aria-label="Ultima">' +
+            '<i class="bi bi-chevron-double-right"></i></a></li>'
+        );
+
+        paginationControls.innerHTML = items.join('');
+    }
+
+    // --- Pagination Click Handler ---
+    const paginationControls = document.getElementById('pagination-controls');
+    if (paginationControls) {
+        paginationControls.addEventListener('click', (e) => {
+            e.preventDefault();
+            const link = e.target.closest('[data-page]');
+            if (!link) return;
+            const li = link.closest('.page-item');
+            if (li && li.classList.contains('disabled')) return;
+            const page = Number(link.dataset.page);
+            if (page >= 1 && page !== currentPage) {
+                currentPage = page;
+                renderDemandasTable(null);
+            }
+        });
     }
 
     // --- Status Distribution Donut Chart ---
