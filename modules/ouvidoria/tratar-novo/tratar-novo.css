@@ -50,6 +50,29 @@ body {
 }
 
 /* ===================================================================
+   CORREÇÃO DE EMPILHAMENTO (DROPDOWN)
+   - Força os containers a não cortarem o menu de tags.
+   =================================================================== */
+.panel.affix-top,
+#ConteudoForm_ConteudoGeral_ConteudoFormComAjax_upTriagem {
+    overflow: visible !important;
+}
+.selectize-dropdown {
+    z-index: 9999 !important;
+}
+/* Eleva o z-index do card quando o dropdown de tags está aberto */
+#ConteudoForm_ConteudoGeral_ConteudoFormComAjax_upTriagem > .row:nth-child(odd):has(.selectize-input.dropdown-active),
+#ConteudoForm_ConteudoGeral_ConteudoFormComAjax_upTriagem > .row:nth-child(odd):has(.selectize-input.focus) {
+    position: relative;
+    z-index: 10;
+}
+#ConteudoForm_ConteudoGeral_ConteudoFormComAjax_upTriagem > .row:nth-child(odd):has(.selectize-input.dropdown-active) + .row,
+#ConteudoForm_ConteudoGeral_ConteudoFormComAjax_upTriagem > .row:nth-child(odd):has(.selectize-input.focus) + .row {
+    position: relative;
+    z-index: 10;
+}
+
+/* ===================================================================
    LÓGICA PARA UNIR OS CARDS
    =================================================================== */
 #ConteudoForm_ConteudoGeral_ConteudoFormComAjax_upTriagem > .row:nth-child(odd) {
