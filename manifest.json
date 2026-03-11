@@ -61,10 +61,14 @@
       "js": [
         "shared/js/neuron-utils.js",
         "shared/js/date-utils.js",
+        "shared/js/selectize-fix.js",
         "modules/ouvidoria/tratar-novo/tratar-novo-pagesize.js",
         "modules/ouvidoria/tratar-novo/tratar-novo-insert.js"
       ],
-      "css": ["modules/ouvidoria/tratar-novo/tratar-novo.css"]
+      "css": [
+        "shared/css/selectize-fix.css",
+        "modules/ouvidoria/tratar-novo/tratar-novo.css"
+      ]
     },
     {
       "matches": [
@@ -102,10 +106,14 @@
       "js": [
         "shared/js/date-utils.js",
         "shared/js/module-factory.js",
+        "shared/js/selectize-fix.js",
         "modules/ouvidoria/tramitar/tramitar.js",
         "modules/ouvidoria/tramitar/tramitar-pontos-focais.js"
       ],
-      "css": ["modules/ouvidoria/tramitar/tramitar.css"]
+      "css": [
+        "shared/css/selectize-fix.css",
+        "modules/ouvidoria/tramitar/tramitar.css"
+      ]
     },
     {
       "matches": [
@@ -113,8 +121,15 @@
         "https://treinafalabr.cgu.gov.br/Manifestacao/TratarManifestacao.aspx?*",
         "https://falabr-h.cgu.gov.br/Manifestacao/TratarManifestacao.aspx?*"
       ],
-      "js": ["shared/js/module-factory.js", "modules/ouvidoria/tratar/tratar.js"],
-      "css": ["modules/ouvidoria/tratar/tratar.css"]
+      "js": [
+        "shared/js/module-factory.js",
+        "shared/js/selectize-fix.js",
+        "modules/ouvidoria/tratar/tratar.js"
+      ],
+      "css": [
+        "shared/css/selectize-fix.css",
+        "modules/ouvidoria/tratar/tratar.css"
+      ]
     },
     {
       "matches": [
@@ -130,8 +145,15 @@
         "https://treinafalabr.cgu.gov.br/web/manifestacao/tratar?*",
         "https://falabr-h.cgu.gov.br/web/manifestacao/tratar?*"
       ],
-      "js": ["shared/js/date-utils.js", "modules/sic/tratar/sic-tratar-extract.js"],
-      "css": ["modules/sic/tratar/sic-tratar-style.css"]
+      "js": [
+        "shared/js/date-utils.js",
+        "shared/js/selectize-fix.js",
+        "modules/sic/tratar/sic-tratar-extract.js"
+      ],
+      "css": [
+        "shared/css/selectize-fix.css",
+        "modules/sic/tratar/sic-tratar-style.css"
+      ]
     },
     {
       "matches": [
