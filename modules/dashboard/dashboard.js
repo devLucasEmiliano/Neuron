@@ -61,6 +61,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // --- Filter State ---
+    let currentFilter = 'all'; // 'all' or 'mine'
+    let currentUser = null;
+
+    // Load saved filter preference and current user
+    if (typeof NeuronDB !== 'undefined') {
+        const savedFilter = await NeuronDB.getPreference('dashboardFilter');
+        if (savedFilter === 'mine' || savedFilter === 'all') {
+            currentFilter = savedFilter;
+        }
+        currentUser = await NeuronDB.getMetadata('currentUser');
+    }
+
+    // Setup filter toggle buttons
+    const filterGroup = document.getElementById('filterGroup');
+    if (filterGroup) {
+        // Apply saved filter state to buttons
+        filterGroup.querySelectorAll('[data-filter]').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.filter === currentFilter);
+        });
+
+        filterGroup.addEventListener('click', async (e) => {
+            const btn = e.target.closest('[data-filter]');
+            if (!btn || btn.dataset.filter === currentFilter) return;
+
+            currentFilter = btn.dataset.filter;
+            filterGroup.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            if (typeof NeuronDB !== 'undefined') {
+                await NeuronDB.setPreference('dashboardFilter', currentFilter);
+            }
+            refreshDashboard();
+        });
+    }
+
     // --- Theme Colors ---
 
     /**
@@ -96,6 +132,88 @@ document.addEventListener('DOMContentLoaded', async () => {
     let chartResponsaveis = null;
     let chartTemporal = null;
 
+    // --- Stats Computation ---
+
+    /**
+     * Compute stats locally from a filtered demandas array and concluidasSet.
+     * Mirrors NeuronDB.getStats() logic but works on any subset.
+     */
+    function computeLocalStats(demandas, concluidasSet) {
+        const total = demandas.length;
+        let prorrogadas = 0;
+        let complementadas = 0;
+        let possivelRespondida = 0;
+        let possivelobservacao = 0;
+        let concluidas = 0;
+
+        const byResponsavel = {};
+        const byPrazoRange = { atrasadas: 0, urgentes: 0, proximas: 0, normais: 0 };
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayMs = today.getTime();
+        const msPerDay = 86400000;
+
+        for (const d of demandas) {
+            // Concluidas
+            if (concluidasSet.has(d.numero)) {
+                concluidas++;
+            }
+
+            // Status flags
+            if (d.situacao && d.situacao.includes('Prorrogada')) prorrogadas++;
+            if (d.situacao && d.situacao.includes('Complementada')) complementadas++;
+            if (d.possivelRespondida) possivelRespondida++;
+            if (d.possivelobservacao) possivelobservacao++;
+
+            // Prazo range
+            if (d.prazoTimestamp) {
+                const diasRestantes = Math.ceil((d.prazoTimestamp - todayMs) / msPerDay);
+                if (diasRestantes < 0) byPrazoRange.atrasadas++;
+                else if (diasRestantes <= 2) byPrazoRange.urgentes++;
+                else if (diasRestantes <= 7) byPrazoRange.proximas++;
+                else byPrazoRange.normais++;
+            }
+
+            // Responsaveis
+            if (Array.isArray(d.responsaveis)) {
+                for (const r of d.responsaveis) {
+                    byResponsavel[r] = (byResponsavel[r] || 0) + 1;
+                }
+            }
+        }
+
+        const pendentes = total - concluidas;
+        const taxaConclusao = total > 0 ? Math.round((concluidas / total) * 100) : 0;
+        const prazosCurtos = byPrazoRange.urgentes;
+        const atrasadas = byPrazoRange.atrasadas;
+
+        // Top responsaveis
+        const topResponsaveis = Object.entries(byResponsavel)
+            .map(([name, count]) => ({ name, count }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 10);
+
+        return {
+            total, pendentes, concluidas, taxaConclusao,
+            prazosCurtos, atrasadas,
+            prorrogadas, complementadas, possivelRespondida, possivelobservacao,
+            byResponsavel, topResponsaveis, byPrazoRange,
+            demandas, concluidasSet
+        };
+    }
+
+    /**
+     * Filter demandas to only those where responsaveis includes the current user (case-insensitive)
+     */
+    function filterDemandas(demandas) {
+        if (currentFilter !== 'mine' || !currentUser) return demandas;
+        const userLower = currentUser.toLowerCase();
+        return demandas.filter(d =>
+            Array.isArray(d.responsaveis) &&
+            d.responsaveis.some(r => r.toLowerCase() === userLower)
+        );
+    }
+
     // --- Stats Cards ---
 
     /**
@@ -104,7 +222,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function refreshDashboard() {
         if (typeof NeuronDB === 'undefined') return;
 
-        const stats = await NeuronDB.getStats();
+        const fullStats = await NeuronDB.getStats();
+        const filteredDemandas = filterDemandas(fullStats.demandas || []);
+        const stats = (currentFilter === 'mine' && currentUser)
+            ? computeLocalStats(filteredDemandas, fullStats.concluidasSet || new Set())
+            : fullStats;
 
         // Update stat cards
         const el = (id) => document.getElementById(id);
