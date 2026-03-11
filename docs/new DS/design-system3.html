@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html class="w-mod-js w-mod-ix wf-inter-n5-active wf-inter-n4-active wf-inter-n7-active wf-active" data-wf-domain="dashlytemplate-showcase.webflow.io" data-wf-page="62d95badcd68f3b7c3a7ba04" data-wf-site="62d95badcd68f342bea7ba06" data-wf-status="1" style="scroll-behavior: auto;">
+<head>
+<meta charset="utf-8"/>
+<title>Dashly X — Design System v3</title>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="Webflow" name="generator"/>
+<link href="assets/dashlytemplate-showcase_8319940d6f18.css" rel="stylesheet" type="text/css"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="anonymous" href="https://fonts.gstatic.com" rel="preconnect"/>
+<script src="assets/webfont_3a3adf980c7d.js" type="text/javascript"></script>
+<link href="assets/css_3a118d244451.css" media="all" rel="stylesheet"/>
+<script type="text/javascript">WebFont.load({ google: { families: ["Inter:regular,500,700"] } });</script>
+<script type="text/javascript">!function(o,c){var n=c.documentElement,t=" w-mod-";n.className+=t+"js",("ontouchstart"in o||o.DocumentTouch&&c instanceof DocumentTouch)&&(n.className+=t+"touch")}(window,document);</script>
+<link href="assets/62d95badcd68f32579a7ba55_favic_9537332fa174.svg" rel="shortcut icon" type="image/x-icon"/>
+<style>
+  /* ============================================================ */
+  /* Design System v3 — Documentation-only styles                 */
+  /* ============================================================ */
+
+  /* Navigation */
+  .ds-nav {
+    position: sticky;
+    top: 0;
+    z-index: 10000;
+    background-color: #fff;
+    border-bottom: 1px solid #e9eaf3;
+    padding: 12px 0;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .ds-nav-inner {
+    max-width: 1268px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ds-nav-inner a {
+    display: inline-block;
+    padding: 10px 18px;
+    border: 1px solid #e9eaf3;
+    border-radius: 48px;
+    background-color: #fff;
+    box-shadow: 0 4px 10px 0 rgba(20, 20, 43, 0.04);
+    color: #0b0e2c;
+    font-size: 13px;
+    line-height: 1.143em;
+    font-weight: 500;
+    text-decoration: none;
+    text-align: center;
+    transition: border-color 300ms ease, background-color 300ms ease, color 300ms ease, transform 300ms ease;
+    font-family: 'Inter', sans-serif;
+    flex-shrink: 0;
+  }
+  .ds-nav-inner a:hover {
+    border-color: #1476ff;
+    background-color: #1476ff;
+    color: #fff;
+    transform: scale3d(1.06, 1.06, 1.01);
+  }
+  .ds-nav-brand {
+    font-weight: 700 !important;
+    border-color: #1476ff !important;
+    background-color: #1476ff !important;
+    color: #fff !important;
+    pointer-events: none;
+    font-size: 12px !important;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* Section Titles */
+  .ds-section-title {
+    padding: 80px 0 40px;
+    text-align: center;
+  }
+  .ds-section-title .color-accent-1 {
+    margin-bottom: 8px;
+  }
+  .ds-section-title p {
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* Typography Spec Table */
+  .ds-type-row {
+    display: flex;
+    align-items: baseline;
+    padding: 24px 0;
+    border-bottom: 1px solid #e9eaf3;
+    gap: 24px;
+  }
+  .ds-type-label {
+    flex: 0 0 160px;
+    font-size: 13px;
+    line-height: 1.2;
+    color: #6f7182;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+  }
+  .ds-type-preview {
+    flex: 1;
+    min-width: 0;
+  }
+  .ds-type-preview > * {
+    margin: 0 !important;
+  }
+  .ds-type-spec {
+    flex: 0 0 140px;
+    text-align: right;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #6f7182;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.02em;
+  }
+
+  /* Color Swatches */
+  .ds-swatch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 24px;
+  }
+  .ds-swatch {
+    border: 1px solid #e9eaf3;
+    border-radius: 20px;
+    overflow: hidden;
+    background-color: #fff;
+    box-shadow: 0 2px 10px 0 rgba(25, 93, 194, 0.07);
+  }
+  .ds-swatch-color {
+    height: 100px;
+  }
+  .ds-swatch-info {
+    padding: 16px;
+  }
+  .ds-swatch-info .ds-swatch-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0b0e2c;
+    margin-bottom: 4px;
+    font-family: 'Inter', sans-serif;
+  }
+  .ds-swatch-info .ds-swatch-value {
+    font-size: 12px;
+    color: #6f7182;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Component States Grid */
+  .ds-states-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .ds-state-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6f7182;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    text-align: center;
+    margin-top: 8px;
+  }
+  .ds-state-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Layout Demo */
+  .ds-layout-box {
+    background-color: rgba(20, 118, 255, 0.08);
+    border: 1px dashed rgba(20, 118, 255, 0.3);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+    font-size: 13px;
+    color: #1476ff;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Motion Gallery */
+  .ds-motion-card {
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+  }
+  .ds-motion-label {
+    font-size: 13px;
+    color: #6f7182;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Forced hover/active/disabled/focus demos */
+  .ds-force-hover {
+    background-color: #004cff !important;
+    transform: scale3d(1.06, 1.06, 1.01) !important;
+    color: #fff !important;
+  }
+  .ds-force-hover-secondary {
+    border-color: #1476ff !important;
+    background-color: #1476ff !important;
+    transform: scale3d(1.06, 1.06, 1.01) !important;
+    color: #fff !important;
+  }
+  .ds-force-active {
+    background-color: #0040cc !important;
+    transform: scale3d(0.96, 0.96, 1.01) !important;
+    color: #fff !important;
+  }
+  .ds-force-active-secondary {
+    border-color: #0040cc !important;
+    background-color: #0040cc !important;
+    transform: scale3d(0.96, 0.96, 1.01) !important;
+    color: #fff !important;
+  }
+  .ds-force-disabled {
+    opacity: 0.4 !important;
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+  }
+  .ds-force-focus-input {
+    border-color: #1476ff !important;
+    color: #0b0e2c !important;
+    box-shadow: 0 0 0 3px rgba(20, 118, 255, 0.15), 0 2px 12px 0 rgba(11, 22, 44, 0.05) !important;
+  }
+
+  /* Icon grid */
+  .ds-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+  }
+  .ds-icon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 24px 12px;
+    border: 1px solid #e9eaf3;
+    border-radius: 16px;
+    background: #fff;
+    font-family: 'Inter', sans-serif;
+  }
+  .ds-icon-item .ds-icon-preview {
+    font-size: 28px;
+    color: #0b0e2c;
+  }
+  .ds-icon-item .ds-icon-name {
+    font-size: 11px;
+    color: #6f7182;
+    text-align: center;
+  }
+  .ds-icon-item .ds-icon-small {
+    font-size: 16px;
+    color: #6f7182;
+  }
+
+  /* Subsection label */
+  .ds-sub {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #1476ff;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 16px;
+    margin-top: 48px;
+  }
+</style>
+</head>
+<body class="bg-neutral-100" style="scroll-behavior: auto;">
+
+<!-- ============================================================ -->
+<!-- DESIGN SYSTEM NAVIGATION                                     -->
+<!-- ============================================================ -->
+<nav class="ds-nav">
+  <div class="ds-nav-inner">
+    <a href="#" class="ds-nav-brand">Design System v3</a>
+    <a href="#ds-hero">Hero</a>
+    <a href="#ds-typography">Typography</a>
+    <a href="#ds-colors">Colors</a>
+    <a href="#ds-components">Components</a>
+    <a href="#ds-layout">Layout</a>
+    <a href="#ds-motion">Motion</a>
+    <a href="#ds-icons">Icons</a>
+  </div>
+</nav>
+
+<!-- ============================================================ -->
+<!-- 0) HERO — Exact Clone, Text Adapted                          -->
+<!-- ============================================================ -->
+<div class="page-wrapper" data-w-id="048def54-0c68-8a55-af18-a1794e1c18d6" style="opacity: 1;">
+
+<div class="header-wrapper border-bottom-solid w-nav" data-animation="default" data-collapse="medium" data-duration="400" data-easing="ease" data-easing2="ease" data-w-id="e90828c6-a1ed-c618-5478-321adcea7d2d" role="banner" style="opacity: 1;">
+  <div class="container-large w-container">
+    <div class="header-content-wrapper">
+      <a aria-current="page" aria-label="home" class="logo-wrapper w-nav-brand w--current" href="#">
+        <img alt="Dashly X Webflow Template - Logo" src="assets/62d95badcd68f32459a7bb70_dashl_74d395dcb5d5.svg"/>
+      </a>
+      <div class="header-right-side">
+        <div class="w-commerce-commercecartwrapper" data-node-type="commerce-cart-wrapper">
+          <a aria-label="Open empty cart" class="w-commerce-commercecartopenlink cart-button w-inline-block" data-node-type="commerce-cart-open-link" href="#" role="button">
+            <img alt="" loading="eager" src="assets/62d95badcd68f3c25ea7bb4b_shopp_91c68ce74b0c.svg"/>
+            <div class="w-commerce-commercecartopenlinkcount cart-quantity">0</div>
+          </a>
+        </div>
+      </div>
+      <nav class="header-nav-menu-wrapper homepage w-nav-menu" role="navigation">
+        <ul class="header-nav-menu-list" role="list">
+          <li class="header-nav-list-item">
+            <div class="dropdown-wrapper w-dropdown" data-delay="0" data-hover="true" style="max-width: 1268px;">
+              <div class="dropdown-toggle w-dropdown-toggle" role="button" tabindex="0">
+                <div class="dropdown-text">Pages</div>
+                <div class="line-rounded-icon dropdown-arrow" style="color: rgb(11, 14, 44);"></div>
+              </div>
+            </div>
+          </li>
+        </ul>
+        <div class="homepage-header-button-wrapper first">
+          <a class="btn-secondary w-button" href="#ds-typography">Explore tokens<span class="line-rounded-icon link-icon-right mg-left-4px"></span></a>
+        </div>
+        <div class="homepage-header-button-wrapper last">
+          <a class="btn-primary w-button" href="#ds-components"><span class="dashly-custom-icon link-icon-left"></span>Components</a>
+        </div>
+      </nav>
+      <div class="hamburger-menu-wrapper w-nav-button" role="button" tabindex="0" style="-webkit-user-select: text;">
+        <div class="hamburger-menu-bar top"></div>
+        <div class="hamburger-menu-bar bottom"></div>
+      </div>
+    </div>
+  </div>
+  <div class="w-nav-overlay" data-wf-ignore="" id="w-nav-overlay-0"></div>
+</div>
+
+<div class="homepage-top-section" id="ds-hero">
+  <div class="container-large w-container">
+    <div class="grid-2-columns _7fr---1fr _1-col-tablet">
+      <div class="inner-container _500px _100-tablet" style="opacity: 1;">
+        <h1 class="display-2 mg-bottom-12px">Dashly X Design System v3 — Living Pattern Library</h1>
+        <p class="paragraph-large">Every token, component, layout pattern, and motion behavior documented in one place — built directly from the original template source.</p>
+        <div class="buttons-row">
+          <a class="btn-primary button-row w-button" href="#ds-typography"><span class="dashly-custom-icon link-icon-left"></span>Browse tokens</a>
+          <a class="btn-secondary w-button" href="#ds-components">View components<span class="line-rounded-icon link-icon-right mg-left-4px"></span></a>
+        </div>
+      </div>
+    </div>
+    <div class="homepage-top-section-main-image-wrapper" style="opacity: 1;">
+      <img alt="Presenting Dashly X - Dashly X Webflow Template" loading="eager" sizes="(max-width: 479px) 93vw, (max-width: 767px) 95vw, (max-width: 991px) 94vw, (max-width: 1919px) 60vw, 874px" src="assets/62d95badcd68f33e79a7bb76_homep_35132f09a739.png" srcset="assets/62d95badcd68f33e79a7bb76_homep_33fe74652d3f.png 500w, assets/62d95badcd68f33e79a7bb76_homep_05a6f9902310.png 800w, assets/62d95badcd68f33e79a7bb76_homep_d640322bfe29.png 1080w, assets/62d95badcd68f33e79a7bb76_homep_77ba9ad08464.png 1820w"/>
+    </div>
+    <div class="screens-text-container" style="opacity: 1; will-change: transform; transform: translate3d(0px, 0px, 0px) scale3d(1, 1, 1) rotateX(0deg) rotateY(0deg) rotateZ(30deg) skew(0deg, 0deg); transform-style: preserve-3d;">
+      <div style="will-change: transform; transform: translate3d(0px, 0px, 0px) scale3d(1, 1, 1) rotateX(0deg) rotateY(0deg) rotateZ(-30deg) skew(0deg, 0deg); transform-style: preserve-3d;">
+        <div class="move-x-10px">
+          <div class="display-2 color-neutral-100 mg-bottom--14px">60+</div>
+          <div class="text-400 medium text-uppercase"><span class="color-neutral-100">Screens</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="homepage-top-section-bg-half"></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 1) TYPOGRAPHY                                                 -->
+<!-- ============================================================ -->
+<div class="section" id="ds-typography">
+  <div class="container-large w-container">
+
+    <div class="ds-section-title">
+      <div class="color-accent-1 mg-bottom-8px">
+        <div class="text-300 bold text-uppercase">Section 01</div>
+      </div>
+      <h2 class="mg-bottom-12px">Typography</h2>
+      <p class="paragraph-large mg-bottom-0">All type styles from the Dashly X template, rendered with original CSS classes in hierarchical order.</p>
+    </div>
+
+    <!-- Display 1 -->
+    <div class="ds-type-row">
+      <div class="ds-type-label">Display 1</div>
+      <div class="ds-type-preview">
+        <div class="display-1">Display One</div>
+      </div>
+      <div class="ds-type-spec">78px / 1.077em<br/>weight: 500</div>
+    </div>
+
+    <!-- Display 2 -->
+    <div class="ds-type-row">
+      <div class="ds-type-label">Display 2</div>
+      <div class="ds-type-preview">
+        <div class="display-2">Display Two</div>
+      </div>
+      <div class="ds-type-spec">54px / 1.222em<br/>weight: 700</div>
+    </div>
+
+    <!-- Display 3 -->
+    <div class="ds-type-row">
+      <div class="ds-type-label">Display 3</div>
+      <div class="ds-type-preview">
+        <div class="display-3">Display Three</div>
+      </div>
+      <div class="ds-type-spec">44px / 1.182em<br/>weight: 700</div>
+    </div>
+
+    <!-- Display 4 -->
+    <div class="ds-type-row">
+      <div class="ds-type-label">Display 4</div>
+      <div class="ds-type-preview">
+        <div class="display-4">Display Four</div>
+      </div>
+      <div class="ds-type-spec">22px / 1.455em<br/>weight: 700</div>
+    </div>
+
+    <div class="divider _64px"></div>
+
+    <!-- Heading H1 -->
+    <div class="ds-type-row">
+      <div class="ds-type-label">Heading 1</div>
+      <div class="ds-type-preview">
+        <h1 class="mg-bottom-0">Heading One</h1>
+      </div>
+      <div class="ds-type-spec">42px / 1.286em<br/>weight: 700</div>
+    </div>
+
+    <!-- Heading H2 -->
+    <div class="ds-type-row">
+      <div class="ds-type-label">Heading 2</div>
+      <div class="ds-type-preview">
+        <h2 class="mg-bottom-0">Heading Two</h2>
+      </div>
+      <div class="ds-type-spec">32px / 1.5em<br/>weight: 700</div>
+    </div>
+
+    <!-- Heading H3 -->
+    <div class="ds-type-row">
+      <div class="ds-type-label">Heading 3</div>
+      <div class="ds-type-preview">
+        <h3 class="mg-bottom-0">Heading Three</h3>
+      </div>
+      <div class="ds-type-spec">24px / 1.417em<br/>weight: 700</div>
+    </div>
+
+    <!-- Heading H4 -->
+    <div class="ds-type-row">
+      <div class="ds-type-label">Heading 4</div>
+      <div class="ds-type-preview">
+        <h4 class="mg-bottom-0">Heading Four</h4>
+      </div>
+      <div class="ds-type-spec">22px / 1.273em<br/>weight: 700</div>
+    </div>
+
+    <div class="divider _64px"></div>
+
+    <!-- Bold L -->
+    <div class="ds-type-row">
+      <div class="ds-type-label">Bold L</div>
+      <div class="ds-type-preview">
+        <div class="text-400 bold">The quick brown fox jumps over the lazy dog</div>
+      </div>
+      <div class="ds-type-spec">18px / 1.3em<br/>weight: 700</div>
+    </div>
+
+    <!-- Bold M -->
+    <div class="ds-type-row">
+      <div class="ds-type-label">Bold M</div>
+      <div class="ds-type-preview">
+        <div class="text-300 bold">The quick brown fox jumps over the lazy dog</div>
+      </div>
+      <div class="ds-type-spec">16px / 1.125em<br/>weight: 700</div>
+    </div>
+
+    <!-- Bold S -->
+    <div class="ds-type-row">
+      <div class="ds-type-label">Bold S</div>
+      <div class="ds-type-preview">
+        <div class="text-200 bold">The quick brown fox jumps over the lazy dog</div>
+      </div>
+      <div class="ds-type-spec">14px / 1.143em<br/>weight: 700</div>
+    </div>
+
+    <div class="divider _64px"></div>
+
+    <!-- Paragraph Large -->
+    <div class="ds-type-row">
+      <div class="ds-type-label">Paragraph Large</div>
+      <div class="ds-type-preview">
+        <p class="paragraph-large mg-bottom-0">Presenting Dashly X, the ultimate dashboard and web-app Webflow Template and UI Kit. Build your own dashboard in minutes with our amazing components.</p>
+      </div>
+      <div class="ds-type-spec">18px / 1.778em<br/>weight: 400</div>
+    </div>
+
+    <div class="divider _64px"></div>
+
+    <!-- Regular L -->
+    <div class="ds-type-row">
+      <div class="ds-type-label">Regular L</div>
+      <div class="ds-type-preview">
+        <div class="text-400 medium">The quick brown fox jumps over the lazy dog</div>
+      </div>
+      <div class="ds-type-spec">18px / 1.3em<br/>weight: 500</div>
+    </div>
+
+    <!-- Regular M -->
+    <div class="ds-type-row">
+      <div class="ds-type-label">Regular M</div>
+      <div class="ds-type-preview">
+        <div class="text-300 medium">The quick brown fox jumps over the lazy dog</div>
+      </div>
+      <div class="ds-type-spec">16px / 1.125em<br/>weight: 500</div>
+    </div>
+
+    <!-- Regular S -->
+    <div class="ds-type-row">
+      <div class="ds-type-label">Regular S</div>
+      <div class="ds-type-preview">
+        <div class="text-200 medium">The quick brown fox jumps over the lazy dog</div>
+      </div>
+      <div class="ds-type-spec">14px / 1.143em<br/>weight: 500</div>
+    </div>
+
+    <!-- Text 100 -->
+    <div class="ds-type-row">
+      <div class="ds-type-label">Text 100</div>
+      <div class="ds-type-preview">
+        <div class="text-100 medium">The quick brown fox jumps over the lazy dog</div>
+      </div>
+      <div class="ds-type-spec">12px / 1.167em<br/>weight: 500</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 2) COLORS & SURFACES                                          -->
+<!-- ============================================================ -->
+<div class="section bg-neutral-200" id="ds-colors">
+  <div class="container-large w-container">
+
+    <div class="ds-section-title">
+      <div class="color-accent-1 mg-bottom-8px">
+        <div class="text-300 bold text-uppercase">Section 02</div>
+      </div>
+      <h2 class="mg-bottom-12px">Colors &amp; Surfaces</h2>
+      <p class="paragraph-large mg-bottom-0">Backgrounds, borders, accents, status colors, and gradients used across the template.</p>
+    </div>
+
+    <!-- Brand / Accent Colors -->
+    <div class="ds-sub">Brand &amp; Accent Colors</div>
+    <div class="ds-swatch-grid mg-bottom-48px">
+      <div class="ds-swatch">
+        <div class="ds-swatch-color" style="background-color: #1476ff;"></div>
+        <div class="ds-swatch-info">
+          <div class="ds-swatch-name">Accent 1 (Primary Blue)</div>
+          <div class="ds-swatch-value">#1476FF — .color-accent-1</div>
+        </div>
+      </div>
+      <div class="ds-swatch">
+        <div class="ds-swatch-color" style="background-color: #004cff;"></div>
+        <div class="ds-swatch-info">
+          <div class="ds-swatch-name">Primary Hover</div>
+          <div class="ds-swatch-value">#004CFF — btn-primary:hover</div>
+        </div>
+      </div>
+      <div class="ds-swatch">
+        <div class="ds-swatch-color" style="background-color: #1045cc;"></div>
+        <div class="ds-swatch-info">
+          <div class="ds-swatch-name">Primary Darker</div>
+          <div class="ds-swatch-value">#1045CC — btn-circle-primary:hover</div>
+        </div>
+      </div>
+      <div class="ds-swatch">
+        <div class="ds-swatch-color" style="background-color: #4a3aff;"></div>
+        <div class="ds-swatch-info">
+          <div class="ds-swatch-name">Banner Purple</div>
+          <div class="ds-swatch-value">#4A3AFF — .bottom-banner bg</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Neutral Colors -->
+    <div class="ds-sub">Neutral Scale</div>
+    <div class="ds-swatch-grid mg-bottom-48px">
+      <div class="ds-swatch">
+        <div class="ds-swatch-color" style="background-color: #fff; border-bottom: 1px solid #e9eaf3;"></div>
+        <div class="ds-swatch-info">
+          <div class="ds-swatch-name">Neutral 100</div>
+          <div class="ds-swatch-value">#FFFFFF — .bg-neutral-100</div>
+        </div>
+      </div>
+      <div class="ds-swatch">
+        <div class="ds-swatch-color" style="background-color: #f7f9fc;"></div>
+        <div class="ds-swatch-info">
+          <div class="ds-swatch-name">Neutral 200</div>
+          <div class="ds-swatch-value">#F7F9FC — .bg-neutral-200</div>
+        </div>
+      </div>
+      <div class="ds-swatch">
+        <div class="ds-swatch-color" style="background-color: #e9eaf3;"></div>
+        <div class="ds-swatch-info">
+          <div class="ds-swatch-name">Neutral 300</div>
+          <div class="ds-swatch-value">#E9EAF3 — borders / .divider</div>
+        </div>
+      </div>
+      <div class="ds-swatch">
+        <div class="ds-swatch-color" style="background-color: #989aad;"></div>
+        <div class="ds-swatch-info">
+          <div class="ds-swatch-name">Placeholder</div>
+          <div class="ds-swatch-value">#989AAD — input placeholder</div>
+        </div>
+      </div>
+      <div class="ds-swatch">
+        <div class="ds-swatch-color" style="background-color: #6f7182;"></div>
+        <div class="ds-swatch-info">
+          <div class="ds-swatch-name">Text Muted</div>
+          <div class="ds-swatch-value">#6F7182 — secondary text</div>
+        </div>
+      </div>
+      <div class="ds-swatch">
+        <div class="ds-swatch-color" style="background-color: #0b0e2c;"></div>
+        <div class="ds-swatch-info">
+          <div class="ds-swatch-name">Text Primary</div>
+          <div class="ds-swatch-value">#0B0E2C — headings / body</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Colors -->
+    <div class="ds-sub">Status Colors</div>
+    <div class="ds-swatch-grid mg-bottom-48px">
+      <div class="ds-swatch">
+        <div class="ds-swatch-color" style="background-color: #13a570;"></div>
+        <div class="ds-swatch-info">
+          <div class="ds-swatch-name">Success / Green</div>
+          <div class="ds-swatch-value">#13A570 — bg: #EDFBEE</div>
+        </div>
+      </div>
+      <div class="ds-swatch">
+        <div class="ds-swatch-color" style="background-color: #dc2b2b;"></div>
+        <div class="ds-swatch-info">
+          <div class="ds-swatch-name">Error / Red</div>
+          <div class="ds-swatch-value">#DC2B2B — bg: #FFEFF0</div>
+        </div>
+      </div>
+      <div class="ds-swatch">
+        <div class="ds-swatch-color" style="background-color: #d5691b;"></div>
+        <div class="ds-swatch-info">
+          <div class="ds-swatch-name">Warning / Orange</div>
+          <div class="ds-swatch-value">#D5691B — bg: #FFF3E4</div>
+        </div>
+      </div>
+      <div class="ds-swatch">
+        <div class="ds-swatch-color" style="background-color: #9240fb;"></div>
+        <div class="ds-swatch-info">
+          <div class="ds-swatch-name">Info / Purple</div>
+          <div class="ds-swatch-value">#9240FB — bg: #F6F1FF</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Surfaces -->
+    <div class="ds-sub">Surfaces &amp; Containers</div>
+    <div class="grid-2-columns gap-column-28px gap-row-48px mg-bottom-48px">
+      <!-- Module Card -->
+      <div class="module" style="padding: 32px;">
+        <h4 class="mg-bottom-8px">Module / Card</h4>
+        <p class="mg-bottom-0 text-200">border: 1px solid #E9EAF3<br/>border-radius: 20px<br/>background: #FFF<br/>box-shadow: 0 2px 10px rgba(25,93,194,0.07)</p>
+      </div>
+      <!-- CTA Surface -->
+      <div class="cta-container" style="padding: 40px; display: flex; align-items: center; justify-content: center;">
+        <div>
+          <h4 class="color-neutral-100 mg-bottom-8px">CTA Surface</h4>
+          <p class="color-neutral-100 mg-bottom-0 text-200">background: #1476FF<br/>border-radius: 36px<br/>box-shadow: 0 4px 10px rgba(2,87,251,0.2)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Borders & Dividers -->
+    <div class="ds-sub">Borders &amp; Dividers</div>
+    <div class="module" style="padding: 32px;">
+      <p class="text-200 medium mg-bottom-12px">Divider — 1px solid #E9EAF3 (.divider, .bg-neutral-300)</p>
+      <div class="divider" style="margin-top: 12px; margin-bottom: 12px;"></div>
+      <p class="text-200 medium mg-bottom-12px">Header border-bottom — 1px solid #E9EAF3 (.border-bottom-solid)</p>
+      <div style="border-bottom: 1px solid #e9eaf3; margin-bottom: 12px;"></div>
+      <p class="text-200 medium mg-bottom-0">Module border — 1px solid #E9EAF3, radius 20px</p>
+    </div>
+
+    <!-- Overlay Gradient -->
+    <div class="ds-sub">Overlay Gradient</div>
+    <div class="module" style="padding: 0; overflow: hidden; height: 140px; position: relative;">
+      <div style="position: absolute; inset: 0; background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.84));"></div>
+      <div style="position: absolute; bottom: 16px; left: 24px; right: 24px;">
+        <p class="text-200 medium color-neutral-100 mg-bottom-0">linear-gradient(180deg, transparent, rgba(0,0,0,0.84)) — image overlay</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 3) UI COMPONENTS                                              -->
+<!-- ============================================================ -->
+<div class="section" id="ds-components">
+  <div class="container-large w-container">
+
+    <div class="ds-section-title">
+      <div class="color-accent-1 mg-bottom-8px">
+        <div class="text-300 bold text-uppercase">Section 03</div>
+      </div>
+      <h2 class="mg-bottom-12px">UI Components</h2>
+      <p class="paragraph-large mg-bottom-0">Buttons, inputs, badges, and cards — with all interactive states shown side by side.</p>
+    </div>
+
+    <!-- Primary Button States -->
+    <div class="ds-sub">Primary Button — .btn-primary</div>
+    <div class="ds-states-row">
+      <div class="ds-state-item">
+        <a class="btn-primary w-button" href="#">Default</a>
+        <div class="ds-state-label">Default</div>
+      </div>
+      <div class="ds-state-item">
+        <a class="btn-primary w-button ds-force-hover" href="#">Hover</a>
+        <div class="ds-state-label">Hover</div>
+      </div>
+      <div class="ds-state-item">
+        <a class="btn-primary w-button ds-force-active" href="#">Active</a>
+        <div class="ds-state-label">Active</div>
+      </div>
+      <div class="ds-state-item">
+        <a class="btn-primary w-button ds-force-disabled" href="#">Disabled</a>
+        <div class="ds-state-label">Disabled</div>
+      </div>
+    </div>
+
+    <!-- Primary Button Sizes -->
+    <div class="ds-sub">Primary Button Sizes</div>
+    <div class="ds-states-row">
+      <div class="ds-state-item">
+        <a class="btn-primary small w-button" href="#">Small</a>
+        <div class="ds-state-label">Small</div>
+      </div>
+      <div class="ds-state-item">
+        <a class="btn-primary w-button" href="#">Default</a>
+        <div class="ds-state-label">Default</div>
+      </div>
+      <div class="ds-state-item">
+        <a class="btn-primary large w-button" href="#">Large</a>
+        <div class="ds-state-label">Large</div>
+      </div>
+    </div>
+
+    <!-- Primary Button with Icons -->
+    <div class="ds-sub">Primary Button with Icons</div>
+    <div class="ds-states-row">
+      <div class="ds-state-item">
+        <a class="btn-primary w-button" href="#"><span class="dashly-custom-icon link-icon-left"></span>Left icon</a>
+        <div class="ds-state-label">Icon Left</div>
+      </div>
+      <div class="ds-state-item">
+        <a class="btn-primary w-button" href="#">Right icon<span class="line-rounded-icon link-icon-right mg-left-4px"></span></a>
+        <div class="ds-state-label">Icon Right</div>
+      </div>
+    </div>
+
+    <!-- Primary White Variant -->
+    <div class="ds-sub">Primary Button — White Variant</div>
+    <div style="background-color: #1476ff; border-radius: 20px; padding: 32px;">
+      <div class="ds-states-row" style="margin-bottom: 0;">
+        <div class="ds-state-item">
+          <a class="btn-primary white w-button" href="#">White Default</a>
+          <div class="ds-state-label" style="color: rgba(255,255,255,0.7);">Default</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider _64px"></div>
+
+    <!-- Secondary Button States -->
+    <div class="ds-sub">Secondary Button — .btn-secondary</div>
+    <div class="ds-states-row">
+      <div class="ds-state-item">
+        <a class="btn-secondary w-button" href="#">Default</a>
+        <div class="ds-state-label">Default</div>
+      </div>
+      <div class="ds-state-item">
+        <a class="btn-secondary w-button ds-force-hover-secondary" href="#">Hover</a>
+        <div class="ds-state-label">Hover</div>
+      </div>
+      <div class="ds-state-item">
+        <a class="btn-secondary w-button ds-force-active-secondary" href="#">Active</a>
+        <div class="ds-state-label">Active</div>
+      </div>
+      <div class="ds-state-item">
+        <a class="btn-secondary w-button ds-force-disabled" href="#">Disabled</a>
+        <div class="ds-state-label">Disabled</div>
+      </div>
+    </div>
+
+    <!-- Secondary Button Sizes -->
+    <div class="ds-sub">Secondary Button Sizes</div>
+    <div class="ds-states-row">
+      <div class="ds-state-item">
+        <a class="btn-secondary small w-button" href="#">Small</a>
+        <div class="ds-state-label">Small</div>
+      </div>
+      <div class="ds-state-item">
+        <a class="btn-secondary w-button" href="#">Default</a>
+        <div class="ds-state-label">Default</div>
+      </div>
+    </div>
+
+    <!-- Secondary with Icons -->
+    <div class="ds-sub">Secondary Button with Icons</div>
+    <div class="ds-states-row">
+      <div class="ds-state-item">
+        <a class="btn-secondary w-button" href="#">Browse screens<span class="line-rounded-icon link-icon-right mg-left-4px"></span></a>
+        <div class="ds-state-label">Icon Right</div>
+      </div>
+      <div class="ds-state-item">
+        <a class="btn-secondary w-button" href="#"><span class="dashly-custom-icon link-icon-left"></span>Back to top</a>
+        <div class="ds-state-label">Icon Left</div>
+      </div>
+    </div>
+
+    <!-- Secondary White Variant -->
+    <div class="ds-sub">Secondary Button — White Variant</div>
+    <div style="background-color: #1476ff; border-radius: 20px; padding: 32px;">
+      <div class="ds-states-row" style="margin-bottom: 0;">
+        <div class="ds-state-item">
+          <a class="btn-secondary white w-button" href="#">White Default</a>
+          <div class="ds-state-label" style="color: rgba(255,255,255,0.7);">Default</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider _64px"></div>
+
+    <!-- Circle Buttons -->
+    <div class="ds-sub">Circle Buttons — .btn-circle-primary / .btn-circle-secondary</div>
+    <div class="ds-states-row">
+      <div class="ds-state-item">
+        <a class="btn-circle-primary small w-inline-block" href="#"><div class="line-rounded-icon link-icon-right"></div></a>
+        <div class="ds-state-label">Primary SM</div>
+      </div>
+      <div class="ds-state-item">
+        <a class="btn-circle-primary w-inline-block" href="#"><div class="line-rounded-icon link-icon-right"></div></a>
+        <div class="ds-state-label">Primary MD</div>
+      </div>
+      <div class="ds-state-item">
+        <a class="btn-circle-secondary small w-inline-block" href="#"><div class="line-rounded-icon link-icon-right"></div></a>
+        <div class="ds-state-label">Secondary SM</div>
+      </div>
+      <div class="ds-state-item">
+        <a class="btn-circle-secondary w-inline-block" href="#"><div class="line-rounded-icon link-icon-right"></div></a>
+        <div class="ds-state-label">Secondary MD</div>
+      </div>
+    </div>
+
+    <div class="divider _64px"></div>
+
+    <!-- Tab Buttons -->
+    <div class="ds-sub">Tab Buttons — .btn-secondary.homepage-pages-tab-button</div>
+    <div class="ds-states-row">
+      <div class="ds-state-item">
+        <a class="btn-secondary homepage-pages-tab-button w-inline-block w-tab-link w--current" href="#">
+          <div class="dashly-custom-icon"></div>
+          <div>Active Tab</div>
+        </a>
+        <div class="ds-state-label">Active (w--current)</div>
+      </div>
+      <div class="ds-state-item">
+        <a class="btn-secondary homepage-pages-tab-button w-inline-block w-tab-link" href="#">
+          <div class="dashly-custom-icon"></div>
+          <div>Inactive Tab</div>
+        </a>
+        <div class="ds-state-label">Inactive</div>
+      </div>
+    </div>
+
+    <div class="divider _64px"></div>
+
+    <!-- Inputs -->
+    <div class="ds-sub">Input — .input</div>
+    <div class="grid-2-columns gap-column-28px mg-bottom-32px">
+      <div>
+        <div class="ds-state-label" style="text-align: left; margin-bottom: 8px;">Default</div>
+        <input class="input w-input" placeholder="Enter your email..." type="email"/>
+      </div>
+      <div>
+        <div class="ds-state-label" style="text-align: left; margin-bottom: 8px;">Focus</div>
+        <input class="input w-input ds-force-focus-input" placeholder="Focused input" type="text" value="john@example.com"/>
+      </div>
+    </div>
+    <div class="grid-2-columns gap-column-28px mg-bottom-32px">
+      <div>
+        <div class="ds-state-label" style="text-align: left; margin-bottom: 8px;">Small Input</div>
+        <input class="input small w-input" placeholder="Small variant..." type="text"/>
+      </div>
+      <div>
+        <div class="ds-state-label" style="text-align: left; margin-bottom: 8px;">Large Input</div>
+        <input class="input large w-input" placeholder="Search anything..." type="text"/>
+      </div>
+    </div>
+
+    <!-- Text Area -->
+    <div class="ds-sub">Text Area — .text-area</div>
+    <div class="grid-2-columns gap-column-28px mg-bottom-32px">
+      <div>
+        <div class="ds-state-label" style="text-align: left; margin-bottom: 8px;">Default</div>
+        <textarea class="text-area w-input" placeholder="Type your message..."></textarea>
+      </div>
+    </div>
+
+    <div class="divider _64px"></div>
+
+    <!-- Badges -->
+    <div class="ds-sub">Badges — .badge-primary / .badge-secondary</div>
+    <div class="ds-states-row">
+      <div class="ds-state-item">
+        <div class="badge-primary">Primary</div>
+        <div class="ds-state-label">Primary</div>
+      </div>
+      <div class="ds-state-item">
+        <div class="badge-primary light">Light</div>
+        <div class="ds-state-label">Primary Light</div>
+      </div>
+      <div class="ds-state-item">
+        <div class="badge-secondary">
+          <div class="flex align-center">
+            <div>Default</div>
+          </div>
+        </div>
+        <div class="ds-state-label">Secondary</div>
+      </div>
+      <div class="ds-state-item">
+        <div class="badge-secondary blue">
+          <div class="flex align-center">
+            <div>Blue</div>
+          </div>
+        </div>
+        <div class="ds-state-label">Blue</div>
+      </div>
+      <div class="ds-state-item">
+        <div class="badge-secondary green">
+          <div class="flex align-center">
+            <div>Green</div>
+          </div>
+        </div>
+        <div class="ds-state-label">Green</div>
+      </div>
+      <div class="ds-state-item">
+        <div class="badge-secondary orange">
+          <div class="flex align-center">
+            <div>Orange</div>
+          </div>
+        </div>
+        <div class="ds-state-label">Orange</div>
+      </div>
+      <div class="ds-state-item">
+        <div class="badge-secondary purple">
+          <div class="flex align-center">
+            <div>Purple</div>
+          </div>
+        </div>
+        <div class="ds-state-label">Purple</div>
+      </div>
+      <div class="ds-state-item">
+        <div class="badge-secondary red">
+          <div class="flex align-center">
+            <div>Red</div>
+          </div>
+        </div>
+        <div class="ds-state-label">Red</div>
+      </div>
+    </div>
+
+    <!-- Badge with icon -->
+    <div class="ds-sub">Badge with Icon</div>
+    <div class="ds-states-row">
+      <div class="ds-state-item">
+        <div class="badge-secondary figma-file-badge">
+          <div class="flex align-center">
+            <img alt="Figma" class="mg-right-12px" loading="eager" src="assets/62d95badcd68f37de3a7bb64_figma_ae7b9ad686fb.svg"/>
+            <div>Figma File Included</div>
+          </div>
+        </div>
+        <div class="ds-state-label">With Icon</div>
+      </div>
+    </div>
+
+    <div class="divider _64px"></div>
+
+    <!-- Banner Button -->
+    <div class="ds-sub">Banner Button — .bottom-banner-button</div>
+    <div style="background-color: #4a3aff; border-radius: 20px; padding: 32px;">
+      <div class="ds-states-row" style="margin-bottom: 0;">
+        <div class="ds-state-item">
+          <a class="bottom-banner-button w-button" href="#">Buy Now</a>
+          <div class="ds-state-label" style="color: rgba(255,255,255,0.7);">Default</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider _64px"></div>
+
+    <!-- Cards -->
+    <div class="ds-sub">Cards / Modules</div>
+    <div class="grid-2-columns gap-column-28px gap-row-48px">
+      <!-- Page Preview Card -->
+      <a class="text-decoration-none color-transition-none w-inline-block" href="#">
+        <div class="module homepage-pages-image-container">
+          <div class="homepage-pages-image-wrapper">
+            <img alt="" class="homepage-pages-image" loading="eager" sizes="(max-width: 479px) 83vw, (max-width: 767px) 86vw, (max-width: 1439px) 40vw, 530px" src="assets/62d95badcd68f3df7ba7bb79_dashb_15a7480e9317.png" srcset="assets/62d95badcd68f3df7ba7bb79_dashb_a63a0dd7101b.png 500w, assets/62d95badcd68f3df7ba7bb79_dashb_9d2eeab9c5d3.png 800w, assets/62d95badcd68f3df7ba7bb79_dashb_b692000ff6a8.png 1080w, assets/62d95badcd68f3df7ba7bb79_dashb_bc01f9aa02dd.png 1584w"/>
+          </div>
+        </div>
+        <h4 class="text-center mg-bottom-0">Page Preview Card</h4>
+      </a>
+      <!-- Feature Stats Module -->
+      <div class="module homepage-features" style="padding: 32px;">
+        <img alt="60+ Screens" loading="eager" src="assets/62d95badcd68f317cca7bb4e_scree_3fe8fc9b2ff5.svg"/>
+        <div>
+          <div class="heading-h1-size">60+</div>
+          <div class="text-400 medium">Screens</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider _64px"></div>
+
+    <!-- Success / Error States -->
+    <div class="ds-sub">Feedback Messages</div>
+    <div class="grid-2-columns gap-column-28px gap-row-48px">
+      <div>
+        <div class="ds-state-label" style="text-align: left; margin-bottom: 8px;">Success</div>
+        <div class="success-message w-form-done" style="display: block;">
+          <div>Thank you! Your submission has been received.</div>
+        </div>
+      </div>
+      <div>
+        <div class="ds-state-label" style="text-align: left; margin-bottom: 8px;">Error</div>
+        <div class="error-message w-form-fail" style="display: block;">
+          <div>Oops! Something went wrong while submitting the form.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 4) LAYOUT & SPACING                                           -->
+<!-- ============================================================ -->
+<div class="section bg-neutral-200" id="ds-layout">
+  <div class="container-large w-container">
+
+    <div class="ds-section-title">
+      <div class="color-accent-1 mg-bottom-8px">
+        <div class="text-300 bold text-uppercase">Section 04</div>
+      </div>
+      <h2 class="mg-bottom-12px">Layout &amp; Spacing</h2>
+      <p class="paragraph-large mg-bottom-0">Containers, grids, section paddings, and real layout patterns from the reference.</p>
+    </div>
+
+    <!-- Container -->
+    <div class="ds-sub">Container — .container-large (max-width: 1268px)</div>
+    <div class="module" style="padding: 24px;">
+      <div class="ds-layout-box">
+        container-large — max-width: 1268px, padding: 0 24px
+      </div>
+    </div>
+
+    <!-- Grid 2-col -->
+    <div class="ds-sub">Grid — .grid-2-columns (equal 1fr 1fr)</div>
+    <div class="grid-2-columns gap-column-28px">
+      <div class="ds-layout-box">Column 1</div>
+      <div class="ds-layout-box">Column 2</div>
+    </div>
+
+    <!-- Grid 7fr-1fr -->
+    <div class="ds-sub">Grid — .grid-2-columns._7fr---1fr (Hero pattern)</div>
+    <div class="grid-2-columns _7fr---1fr _1-col-tablet">
+      <div class="ds-layout-box">Content (7fr) — text, heading, buttons</div>
+      <div class="ds-layout-box" style="min-height: 120px;">Aside (1fr)</div>
+    </div>
+
+    <!-- Inner Container Widths -->
+    <div class="ds-sub">Inner Container Widths</div>
+    <div class="module" style="padding: 32px;">
+      <div class="ds-type-row" style="padding: 12px 0;">
+        <div class="ds-type-label">.inner-container._360px</div>
+        <div class="ds-type-preview"><div style="height: 4px; width: 36px; background: #1476ff; border-radius: 2px;"></div></div>
+        <div class="ds-type-spec">max-width: 360px</div>
+      </div>
+      <div class="ds-type-row" style="padding: 12px 0;">
+        <div class="ds-type-label">.inner-container._500px</div>
+        <div class="ds-type-preview"><div style="height: 4px; width: 50px; background: #1476ff; border-radius: 2px;"></div></div>
+        <div class="ds-type-spec">max-width: 500px</div>
+      </div>
+      <div class="ds-type-row" style="padding: 12px 0;">
+        <div class="ds-type-label">.inner-container._544px</div>
+        <div class="ds-type-preview"><div style="height: 4px; width: 55px; background: #1476ff; border-radius: 2px;"></div></div>
+        <div class="ds-type-spec">max-width: 544px</div>
+      </div>
+      <div class="ds-type-row" style="padding: 12px 0; border-bottom: none;">
+        <div class="ds-type-label">.inner-container._552px</div>
+        <div class="ds-type-preview"><div style="height: 4px; width: 56px; background: #1476ff; border-radius: 2px;"></div></div>
+        <div class="ds-type-spec">max-width: 552px</div>
+      </div>
+    </div>
+
+    <!-- Section Spacing -->
+    <div class="ds-sub">Section Paddings</div>
+    <div class="module" style="padding: 32px;">
+      <div class="ds-type-row" style="border-bottom: none; padding-bottom: 0;">
+        <div class="ds-type-label">.section</div>
+        <div class="ds-type-preview">
+          <div class="text-300 medium">padding-top: 180px / padding-bottom: 180px</div>
+        </div>
+      </div>
+      <div class="ds-type-row">
+        <div class="ds-type-label">.homepage-top-section</div>
+        <div class="ds-type-preview">
+          <div class="text-300 medium">padding-top: 280px / padding-bottom: 280px</div>
+        </div>
+      </div>
+      <div class="ds-type-row">
+        <div class="ds-type-label">.header-wrapper</div>
+        <div class="ds-type-preview">
+          <div class="text-300 medium">padding-top: 32px / padding-bottom: 32px</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spacing Scale -->
+    <div class="ds-sub">Margin Utilities (mg-bottom-*)</div>
+    <div class="module" style="padding: 32px;">
+      <div class="ds-type-row" style="padding: 12px 0;">
+        <div class="ds-type-label">.mg-bottom-0</div>
+        <div class="ds-type-preview"><div style="height: 4px; width: 0; background: #1476ff; border-radius: 2px;"></div></div>
+        <div class="ds-type-spec">0px</div>
+      </div>
+      <div class="ds-type-row" style="padding: 12px 0;">
+        <div class="ds-type-label">.mg-bottom-8px</div>
+        <div class="ds-type-preview"><div style="height: 4px; width: 8px; background: #1476ff; border-radius: 2px;"></div></div>
+        <div class="ds-type-spec">8px</div>
+      </div>
+      <div class="ds-type-row" style="padding: 12px 0;">
+        <div class="ds-type-label">.mg-bottom-12px</div>
+        <div class="ds-type-preview"><div style="height: 4px; width: 12px; background: #1476ff; border-radius: 2px;"></div></div>
+        <div class="ds-type-spec">12px</div>
+      </div>
+      <div class="ds-type-row" style="padding: 12px 0;">
+        <div class="ds-type-label">.mg-bottom-24px</div>
+        <div class="ds-type-preview"><div style="height: 4px; width: 24px; background: #1476ff; border-radius: 2px;"></div></div>
+        <div class="ds-type-spec">24px</div>
+      </div>
+      <div class="ds-type-row" style="padding: 12px 0;">
+        <div class="ds-type-label">.mg-bottom-32px</div>
+        <div class="ds-type-preview"><div style="height: 4px; width: 32px; background: #1476ff; border-radius: 2px;"></div></div>
+        <div class="ds-type-spec">32px</div>
+      </div>
+      <div class="ds-type-row" style="padding: 12px 0; border-bottom: none;">
+        <div class="ds-type-label">.mg-bottom-48px</div>
+        <div class="ds-type-preview"><div style="height: 4px; width: 48px; background: #1476ff; border-radius: 2px;"></div></div>
+        <div class="ds-type-spec">48px</div>
+      </div>
+    </div>
+
+    <!-- Real Layout: Feature Split -->
+    <div class="ds-sub">Real Pattern — Feature Image Left (.module.features-image-left)</div>
+    <div class="module features-image-left">
+      <img alt="Over 100 Sections - Dashly X Webflow Template" class="fit-cover hidden-on-mbl" loading="eager" sizes="(max-width: 767px) 100vw, (max-width: 991px) 47vw, (max-width: 1439px) 56vw, 718.8125px" src="assets/62d95badcd68f342dea7bb72_layou_fbc6f54e9e68.png" srcset="assets/62d95badcd68f342dea7bb72_layou_6879d3fc32b4.png 500w, assets/62d95badcd68f342dea7bb72_layou_7a8418ea6255.png 800w, assets/62d95badcd68f342dea7bb72_layou_019fc8c0bfd9.png 1458w"/>
+      <div class="features-text-right-container">
+        <div class="color-accent-1 mg-bottom-8px">
+          <div class="text-300 bold text-uppercase">Layouts</div>
+        </div>
+        <h3 class="heading-h2-size mg-bottom-8px">Feature image left, text right</h3>
+        <p class="mg-bottom-24px">Grid: 1.44fr 1fr. Image on left, text content on right with heading, paragraph, and CTA button.</p>
+        <a class="btn-primary w-button" href="#">View pages<span class="line-rounded-icon link-icon-right mg-left-4px"></span></a>
+      </div>
+    </div>
+
+    <!-- Real Layout: Feature Image Right -->
+    <div class="ds-sub">Real Pattern — Feature Image Right (.module.features-image-right)</div>
+    <div class="module features-image-right">
+      <div class="features-text-left-section">
+        <div class="badge-secondary figma-file-badge mg-bottom-32px">
+          <div class="flex align-center">
+            <img alt="Figma - Dashly X Webflow Template" class="mg-right-12px" loading="eager" src="assets/62d95badcd68f37de3a7bb64_figma_ae7b9ad686fb.svg"/>
+            <div>Figma File Included</div>
+          </div>
+        </div>
+        <h3 class="heading-h2-size mg-bottom-8px">Customize the design using our Figma file</h3>
+        <p class="mg-bottom-24px">Grid: 1fr 1.22fr. Text on left with badge, heading, paragraph, and CTA. Image on right.</p>
+        <a class="btn-primary w-button" href="#"><span class="dashly-custom-icon link-icon-left"></span>Request Figma File</a>
+      </div>
+      <img alt="Customize The Design - Dashly X Webflow Template" class="preview-section-image-left" loading="eager" sizes="(max-width: 479px) 84vw, (max-width: 767px) 85vw, (max-width: 991px) 47vw, (max-width: 1439px) 52vw, 669.3515625px" src="assets/62d95badcd68f32be3a7bb71_figma_687a98d27a49.png" srcset="assets/62d95badcd68f32be3a7bb71_figma_30346e5b5bf0.png 500w, assets/62d95badcd68f32be3a7bb71_figma_69debd2c6abc.png 800w, assets/62d95badcd68f32be3a7bb71_figma_ef51dcf9a75c.png 1080w, assets/62d95badcd68f32be3a7bb71_figma_e61d53f2ef10.png 1360w"/>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 5) MOTION & INTERACTION                                       -->
+<!-- ============================================================ -->
+<div class="section" id="ds-motion">
+  <div class="container-large w-container">
+
+    <div class="ds-section-title">
+      <div class="color-accent-1 mg-bottom-8px">
+        <div class="text-300 bold text-uppercase">Section 05</div>
+      </div>
+      <h2 class="mg-bottom-12px">Motion &amp; Interaction</h2>
+      <p class="paragraph-large mg-bottom-0">All transition behaviors and hover states present in the template.</p>
+    </div>
+
+    <!-- Button Hover Transitions -->
+    <div class="ds-sub">Button Hover — scale3d(1.06, 1.06, 1.01) + color shift</div>
+    <div class="grid-2-columns gap-column-28px gap-row-48px mg-bottom-48px">
+      <div class="module ds-motion-card">
+        <a class="btn-primary w-button" href="#">Hover me — Primary</a>
+        <div class="ds-motion-label">
+          transform: scale3d(1.06, 1.06, 1.01)<br/>
+          background: #1476FF &rarr; #004CFF<br/>
+          transition: 300ms ease
+        </div>
+      </div>
+      <div class="module ds-motion-card">
+        <a class="btn-secondary w-button" href="#">Hover me — Secondary</a>
+        <div class="ds-motion-label">
+          transform: scale3d(1.06, 1.06, 1.01)<br/>
+          border/bg: &rarr; #1476FF, color: &rarr; #FFF<br/>
+          transition: 300ms ease
+        </div>
+      </div>
+    </div>
+
+    <!-- Circle Button Hover -->
+    <div class="ds-sub">Circle Button Hover — scale3d(1.1, 1.1, 1.01)</div>
+    <div class="grid-2-columns gap-column-28px gap-row-48px mg-bottom-48px">
+      <div class="module ds-motion-card">
+        <a class="btn-circle-primary w-inline-block" href="#"><div class="line-rounded-icon link-icon-right"></div></a>
+        <div class="ds-motion-label">
+          transform: scale3d(1.1, 1.1, 1.01)<br/>
+          background: #1476FF &rarr; #1045CC<br/>
+          transition: 300ms ease
+        </div>
+      </div>
+      <div class="module ds-motion-card">
+        <a class="btn-circle-secondary w-inline-block" href="#"><div class="line-rounded-icon link-icon-right"></div></a>
+        <div class="ds-motion-label">
+          transform: scale3d(1.1, 1.1, 1.01)<br/>
+          border/bg: &rarr; #1476FF, color: &rarr; #FFF<br/>
+          transition: 300ms ease
+        </div>
+      </div>
+    </div>
+
+    <!-- Logo Hover -->
+    <div class="ds-sub">Logo Hover — scale3d(1.06, 1.06, 1.01)</div>
+    <div class="module ds-motion-card mg-bottom-48px">
+      <a aria-label="home" class="logo-wrapper w-nav-brand" href="#" style="margin-right: 0;">
+        <img alt="Dashly X" src="assets/62d95badcd68f32459a7bb70_dashl_74d395dcb5d5.svg"/>
+      </a>
+      <div class="ds-motion-label">
+        transition: transform 300ms ease<br/>
+        .logo-wrapper:hover &rarr; scale3d(1.06, 1.06, 1.01)
+      </div>
+    </div>
+
+    <!-- Banner Button Hover -->
+    <div class="ds-sub">Banner Button Hover — scale3d(0.94, 0.94, 1.01)</div>
+    <div style="background-color: #4a3aff; border-radius: 20px; padding: 32px;">
+      <div class="module ds-motion-card" style="background: transparent; border: none; box-shadow: none;">
+        <a class="bottom-banner-button w-button" href="#">Hover me</a>
+        <div class="ds-motion-label" style="color: rgba(255,255,255,0.7);">
+          transform: scale3d(0.94, 0.94, 1.01)<br/>
+          color: #170F49 &rarr; #4A3AFF<br/>
+          transition: 300ms ease
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Focus -->
+    <div class="ds-sub">Input Focus Transition</div>
+    <div class="module ds-motion-card mg-bottom-48px">
+      <input class="input w-input" placeholder="Click to focus..." type="text" style="max-width: 400px;"/>
+      <div class="ds-motion-label">
+        border-color: #E9EAF3 &rarr; #1476FF<br/>
+        transition: box-shadow 300ms ease, color 300ms ease, border-color 300ms ease
+      </div>
+    </div>
+
+    <!-- Dropdown Animation -->
+    <div class="ds-sub">Dropdown — opacity + translateY</div>
+    <div class="module ds-motion-card">
+      <div class="ds-motion-label">
+        Dropdown menu animates from opacity: 0 + translateY(10px)<br/>
+        to opacity: 1 + translateY(0)<br/>
+        via Webflow IX2 interactions (data-w-id driven)
+      </div>
+    </div>
+
+    <!-- Scroll Fade-In -->
+    <div class="ds-sub">Scroll Reveal — Opacity Fade-in</div>
+    <div class="module ds-motion-card">
+      <div class="ds-motion-label">
+        Elements use Webflow IX2 scroll triggers<br/>
+        opacity: 0 &rarr; 1 on scroll into viewport<br/>
+        Controlled via data-w-id attributes and Webflow JS
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 6) ICONS                                                      -->
+<!-- ============================================================ -->
+<div class="section bg-neutral-200" id="ds-icons">
+  <div class="container-large w-container">
+
+    <div class="ds-section-title">
+      <div class="color-accent-1 mg-bottom-8px">
+        <div class="text-300 bold text-uppercase">Section 06</div>
+      </div>
+      <h2 class="mg-bottom-12px">Icons</h2>
+      <p class="paragraph-large mg-bottom-0">Icon font families used across the template, with size variants.</p>
+    </div>
+
+    <!-- Line Rounded Icons -->
+    <div class="ds-sub">Line Rounded Icons — font-family: 'Line Rounded Icons'</div>
+    <div class="ds-icon-grid mg-bottom-48px">
+      <div class="ds-icon-item">
+        <div class="ds-icon-preview line-rounded-icon"></div>
+        <div class="ds-icon-name">Dropdown Arrow</div>
+        <div class="ds-icon-small line-rounded-icon"></div>
+      </div>
+      <div class="ds-icon-item">
+        <div class="ds-icon-preview line-rounded-icon link-icon-right" style="font-size: 28px;"></div>
+        <div class="ds-icon-name">Arrow Right</div>
+        <div class="ds-icon-small line-rounded-icon link-icon-right" style="font-size: 16px;"></div>
+      </div>
+      <div class="ds-icon-item">
+        <div class="ds-icon-preview" style="font-family: 'Line Rounded Icons', sans-serif; font-size: 28px;"></div>
+        <div class="ds-icon-name">Settings Gear</div>
+        <div class="ds-icon-small" style="font-family: 'Line Rounded Icons', sans-serif; font-size: 16px; color: #6f7182;"></div>
+      </div>
+    </div>
+
+    <!-- Dashly Custom Icons -->
+    <div class="ds-sub">Dashly Custom Icons — font-family: 'Dashboardly Custom Icons'</div>
+    <div class="ds-icon-grid mg-bottom-48px">
+      <div class="ds-icon-item">
+        <div class="ds-icon-preview dashly-custom-icon" style="font-size: 28px;"></div>
+        <div class="ds-icon-name">Dashboard</div>
+        <div class="ds-icon-small dashly-custom-icon" style="font-size: 16px; color: #6f7182;"></div>
+      </div>
+      <div class="ds-icon-item">
+        <div class="ds-icon-preview dashly-custom-icon" style="font-size: 28px;"></div>
+        <div class="ds-icon-name">Features</div>
+        <div class="ds-icon-small dashly-custom-icon" style="font-size: 16px; color: #6f7182;"></div>
+      </div>
+      <div class="ds-icon-item">
+        <div class="ds-icon-preview dashly-custom-icon" style="font-size: 28px;"></div>
+        <div class="ds-icon-name">Users</div>
+        <div class="ds-icon-small dashly-custom-icon" style="font-size: 16px; color: #6f7182;"></div>
+      </div>
+      <div class="ds-icon-item">
+        <div class="ds-icon-preview dashly-custom-icon" style="font-size: 28px;"></div>
+        <div class="ds-icon-name">Pricing</div>
+        <div class="ds-icon-small dashly-custom-icon" style="font-size: 16px; color: #6f7182;"></div>
+      </div>
+      <div class="ds-icon-item">
+        <div class="ds-icon-preview dashly-custom-icon" style="font-size: 28px;"></div>
+        <div class="ds-icon-name">Integrations</div>
+        <div class="ds-icon-small dashly-custom-icon" style="font-size: 16px; color: #6f7182;"></div>
+      </div>
+      <div class="ds-icon-item">
+        <div class="ds-icon-preview dashly-custom-icon" style="font-size: 28px;"></div>
+        <div class="ds-icon-name">Utility</div>
+        <div class="ds-icon-small dashly-custom-icon" style="font-size: 16px; color: #6f7182;"></div>
+      </div>
+      <div class="ds-icon-item">
+        <div class="ds-icon-preview dashly-custom-icon link-icon-left" style="font-size: 28px;"></div>
+        <div class="ds-icon-name">Buy / Cart</div>
+        <div class="ds-icon-small dashly-custom-icon link-icon-left" style="font-size: 16px; color: #6f7182;"></div>
+      </div>
+    </div>
+
+    <!-- SVG Icons -->
+    <div class="ds-sub">SVG Icons</div>
+    <div class="ds-icon-grid mg-bottom-48px">
+      <div class="ds-icon-item">
+        <img alt="Cart" loading="eager" src="assets/62d95badcd68f3c25ea7bb4b_shopp_91c68ce74b0c.svg" style="width: 28px; height: 28px;"/>
+        <div class="ds-icon-name">Shopping Cart</div>
+      </div>
+      <div class="ds-icon-item">
+        <img alt="Check" loading="eager" src="assets/62d95badcd68f3ccb3a7ba36_check_830971aa24a9.svg" style="width: 28px; height: 28px;"/>
+        <div class="ds-icon-name">Checkmark</div>
+      </div>
+      <div class="ds-icon-item">
+        <img alt="Help" loading="eager" src="assets/62d95badcd68f358e0a7bb45_help-_514e75a29139.svg" style="width: 28px; height: 28px;"/>
+        <div class="ds-icon-name">Help</div>
+      </div>
+      <div class="ds-icon-item">
+        <img alt="Figma" loading="eager" src="assets/62d95badcd68f37de3a7bb64_figma_ae7b9ad686fb.svg" style="width: 28px; height: 28px;"/>
+        <div class="ds-icon-name">Figma</div>
+      </div>
+      <div class="ds-icon-item">
+        <img alt="Screens" loading="eager" src="assets/62d95badcd68f317cca7bb4e_scree_3fe8fc9b2ff5.svg" style="width: 28px; height: 28px;"/>
+        <div class="ds-icon-name">Screens</div>
+      </div>
+      <div class="ds-icon-item">
+        <img alt="Sections" loading="eager" src="assets/62d95badcd68f33d2fa7bb62_secti_c39b97e96110.svg" style="width: 28px; height: 28px;"/>
+        <div class="ds-icon-name">Sections</div>
+      </div>
+      <div class="ds-icon-item">
+        <img alt="Components" loading="eager" src="assets/62d95badcd68f38234a7bb63_compo_c8df5de7a26c.svg" style="width: 28px; height: 28px;"/>
+        <div class="ds-icon-name">Components</div>
+      </div>
+    </div>
+
+    <!-- Icon Font Families Reference -->
+    <div class="ds-sub">Icon Font Families Reference</div>
+    <div class="module" style="padding: 32px;">
+      <div class="ds-type-row">
+        <div class="ds-type-label">Line Rounded Icons</div>
+        <div class="ds-type-preview">
+          <div class="text-200 medium">.line-rounded-icon — used for arrows, nav icons, dropdown indicators</div>
+        </div>
+      </div>
+      <div class="ds-type-row">
+        <div class="ds-type-label">Dashboardly Custom</div>
+        <div class="ds-type-preview">
+          <div class="text-200 medium">.dashly-custom-icon — used for nav tabs, buy buttons, feature icons</div>
+        </div>
+      </div>
+      <div class="ds-type-row">
+        <div class="ds-type-label">Social Icons Font</div>
+        <div class="ds-type-preview">
+          <div class="text-200 medium">font-family: 'Social Icons Font' — social media glyphs</div>
+        </div>
+      </div>
+      <div class="ds-type-row">
+        <div class="ds-type-label">Filled Icons</div>
+        <div class="ds-type-preview">
+          <div class="text-200 medium">font-family: 'Filled Icons' — solid icon variants</div>
+        </div>
+      </div>
+      <div class="ds-type-row" style="border-bottom: none;">
+        <div class="ds-type-label">Line Square Icons</div>
+        <div class="ds-type-preview">
+          <div class="text-200 medium">font-family: 'Line Square Icons' — outline icon variants</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="homepage-footer-section">
+  <div class="container-large w-container" style="opacity: 1;">
+    <div class="text-center">Dashly X Design System v3 — Built from the original <a href="index.html">Dashly X Webflow Template</a></div>
+  </div>
+</div>
+
+</div><!-- end .page-wrapper -->
+
+<script src="assets/jquery-3_a4c70730ce76.js" type="text/javascript"></script>
+<script src="assets/webflow_ac4a529638f5.js" type="text/javascript"></script>
+</body>
+</html>
