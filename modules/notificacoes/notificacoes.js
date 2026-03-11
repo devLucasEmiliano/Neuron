@@ -602,10 +602,22 @@
         }
     });
 
+    async function captureCurrentUser() {
+        const username = getUsuarioLogado();
+        if (username) {
+            try {
+                await NeuronDB.setMetadata('currentUser', username);
+            } catch (error) {
+                console.error(`Neuron (${SCRIPT_ID}): Error saving currentUser:`, error);
+            }
+        }
+    }
+
     async function init() {
         if (document.readyState === 'loading') {
             await new Promise(resolve => window.addEventListener('DOMContentLoaded', resolve, { once: true }));
         }
+        await captureCurrentUser();
         await verificarEstadoAtualEAgir();
     }
     init();
