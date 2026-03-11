@@ -1,32 +1,210 @@
 # Ralph Progress Log
-Started: Wed Mar 11 17:37:05 -03 2026
+Started: Wed Mar 11 18:42:54 -03 2026
 ---
 
 ## Codebase Patterns
-- This is a Chrome Extension (manifest v3) — no package.json, no npm scripts, no traditional build/lint/typecheck
-- Shared CSS/JS goes in `shared/css/` and `shared/js/`, loaded via `manifest.json` content_scripts
-- CSS variables are defined in `:root` in `tratar-novo.css` and `sic-tratar-style.css` (e.g., `--cor-card`, `--raio-borda`)
-- Neuron theme variables (e.g., `--neuron-bg-primary`) may also be available at runtime
-- Module-specific CSS should NOT duplicate rules that exist in shared CSS files
-- Selectize dropdowns use classes: `.selectize-dropdown`, `.selectize-control`, `.selectize-input`
-- ASP.NET UpdatePanel can recreate DOM elements — use MutationObserver for resilience
-- Quality check = valid JSON (manifest.json) + valid JS syntax (no build step)
+- This is a Chrome Extension with plain JS (no TypeScript, no build system, no package.json)
+- Theme management is handled by ThemeManager class in shared/js/theme-manager.js
+- Options page uses sidebar navigation pattern with lazy section initialization (setupSidebarNavigation)
+- The options page loads dashboard.js and dashboard.css alongside options.js
+- ThemeManager.cycle() cycles through light → dark → system themes
+- NeuronDB and NeuronSync are the data layer; config is stored via chrome.storage
+- CSS uses Bootstrap 5 with custom Neuron theme classes (text-neuron-primary, btn-neuron-primary, etc.)
+- Dedicated dashboard page at modules/dashboard/ is separate from options embedded dashboard at modules/options/dashboard.js
+- New extension pages should load scripts in order: bootstrap.bundle → chart.min → neuron-db → neuron-sync → neuron-utils → theme-manager → page.js
+- NeuronSync only handles config/preference changes; for demandas/concluidas data changes, use chrome.storage.onChanged directly
+- refreshDashboard() in dashboard.js is the central refresh function — extend it for charts, tables, filters
+- getThemeColors() in dashboard.js returns all chart colors; extend it when adding new chart types
+- Chart instances (chartStatus, chartPrazos, etc.) are module-scoped; on theme change, destroy+recreate them
+- computeLocalStats(demandas, concluidasSet) mirrors NeuronDB.getStats() for filtered subsets — use it when filtering is needed
+- Filter state: currentFilter ('all'|'mine') and currentUser are module-scoped in dashboard.js; persisted via NeuronDB preferences
+- Use NeuronUtils.escapeHtml (window.NeuronUtils.escapeHtml) for XSS-safe HTML rendering — already loaded on all extension pages
+- renderDemandasTable(stats) renders the full table from stats.demandas — extend for pagination
+- Search/sort state (searchQuery, sortColumn, sortDirection) is module-scoped; renderDemandasTable(null) re-renders with lastStats
+- searchDemandas() and sortDemandas() are composable pipeline functions: search filters first, then sort applies
+- Pagination state (currentPage, itemsPerPage) is module-scoped; renderPagination() renders Bootstrap pagination controls
+- Pagination resets to page 1 on search, filter, or items-per-page change; itemsPerPage persists via NeuronDB preference 'dashboardItemsPerPage'
+- Demanda objects have an `href` field with the full Fala.BR URL (may be null); use it for linking to the demand page
+- For row action buttons, use event delegation on the table since tbody content is re-rendered frequently
+
+## 2026-03-11 - US-001
+- Removed 'Habilitar tema personalizado' toggle (themeEnabledToggle) from options.html
+- Removed associated JS: updateThemeEnabledUI function, themeEnabledToggle event listener, neuron-theme-enabled-change listener
+- Header theme toggle button (themeToggle) preserved and works normally via ThemeManager.cycle()
+- Files changed: modules/options/options.html, modules/options/options.js
+- **Learnings for future iterations:**
+  - The options page has a card in General section with masterEnableOptions as the sole toggle now
+  - CSS rule for .theme-toggle-disabled still exists in options.css but is harmless (unused)
+  - No build system or tests to run - quality checks are visual/manual
+  - Branch created from developing: ralph/dashboard-avancado
 ---
 
-## 2026-03-11 - US-001 through US-006 (Assessment)
-- All 6 user stories were already implemented across 3 prior commits:
-  - 718cffd: Created `shared/css/selectize-fix.css` (max-height, scroll, z-index, visual styling) → covers US-001, US-002, US-004
-  - 4969c53: Created `shared/js/selectize-fix.js` (dropup positioning, MutationObserver) → covers US-003, US-006
-  - 1a8a459: Integrated shared files in `manifest.json`, removed duplicate rules from module CSS → covers US-005
-- Files involved:
-  - `shared/css/selectize-fix.css` — all CSS fixes
-  - `shared/js/selectize-fix.js` — adaptive dropup JS
-  - `manifest.json` — content_scripts entries for 4 page groups
-  - `modules/ouvidoria/tratar-novo/tratar-novo.css` — no selectize rules remain (duplicates removed)
-  - `modules/sic/tratar/sic-tratar-style.css` — no selectize rules remain
-- Created `prd.json` and marked all stories as `passes: true`
+## 2026-03-11 - US-002
+- Created modules/dashboard/ folder with dashboard.html, dashboard.js, dashboard.css
+- dashboard.html: Full HTML5 page with Bootstrap 5, Bootstrap Icons, Chart.js, shared JS, and own assets
+- Layout: header with "Neuron Dashboard" + Options link + theme toggle, #stats-cards section, #charts-section (2x2 grid with 4 chart placeholders), #table-section for demandas table
+- dashboard.js: Initializes NeuronDB on DOMContentLoaded, calls ThemeManager.init(), sets up theme toggle with cycle()
+- dashboard.css: Layout styles for header (sticky), stat cards, chart cards, table section, dark mode, responsive breakpoints
+- Registered modules/dashboard/* in manifest.json web_accessible_resources
+- Files changed: modules/dashboard/dashboard.html, modules/dashboard/dashboard.js, modules/dashboard/dashboard.css, manifest.json
 - **Learnings for future iterations:**
-  - No package.json or lint/test tooling exists — "typecheck/lint passes" means valid syntax only
-  - The manifest.json loads selectize-fix.css and selectize-fix.js on 4 different page URL patterns
-  - Browser testing not available in this environment — manual verification recommended for US-004
+  - Dashboard page is at modules/dashboard/dashboard.html, relative paths to vendor/shared use ../../
+  - The dedicated dashboard has 4 chart canvases: chart-status, chart-prazos, chart-responsaveis, chart-temporal
+  - Options page already has its own dashboard.js/dashboard.css in modules/options/ - the dedicated dashboard is separate
+  - Script load order: bootstrap.bundle → chart.min → neuron-db → neuron-sync → neuron-utils → theme-manager → dashboard.js
+  - No typecheck needed - plain JS project; validate with node --check for syntax
+---
+
+## 2026-03-11 - US-003
+- Added 6 Bootstrap metric cards to #stats-cards section in dashboard.html
+- Cards: Total de Demandas (primary), Pendentes (warning), Prazos Curtos ≤2 dias (danger), Atrasadas (danger), Concluidas (success), Taxa de Conclusao (info)
+- Each card has a Bootstrap Icon and stat-value/stat-label layout using col-xl-2 col-md-4 col-sm-6 grid
+- Implemented refreshDashboard() in dashboard.js that calls NeuronDB.getStats() and updates all card values
+- Added chrome.storage.onChanged listener for neuron_demandas and neuron_concluidas to auto-refresh
+- Files changed: modules/dashboard/dashboard.html, modules/dashboard/dashboard.js
+- **Learnings for future iterations:**
+  - NeuronDB.getStats() returns: total, pendentes, concluidas, taxaConclusao, prazosCurtos, atrasadas, prorrogadas, complementadas, possivelRespondida, possivelobservacao, byResponsavel, topResponsaveis, byPrazoRange, demandas, concluidasSet
+  - NeuronSync only watches neuron_config and neuron_preferences; for neuron_demandas/neuron_concluidas changes, use chrome.storage.onChanged directly
+  - refreshDashboard() is the central function for updating all dashboard data; future stories should extend it
+  - CSS classes for stat cards (.stat-card, .stat-icon, .stat-value, .stat-label) are already defined in dashboard.css from US-002
+---
+
+## 2026-03-11 - US-004
+- Added donut chart (Chart.js doughnut) for status distribution: Prorrogadas, Complementadas, Possível Respondida, Com Observação, Normal
+- Added horizontal bar chart (Chart.js bar with indexAxis: 'y') for deadline distribution: Atrasadas, Urgentes, Próximas, Normais
+- Created getThemeColors() helper returning light/dark-aware colors for all chart elements
+- Charts created as module-scoped variables (chartStatus, chartPrazos) for update/destroy lifecycle
+- Charts update on refreshDashboard() — existing instances get data/color updates, new instances are created if null
+- Theme change listener destroys and recreates charts to fully apply new colors (border, grid, text)
+- Files changed: modules/dashboard/dashboard.js
+- **Learnings for future iterations:**
+  - Chart instances must be stored as variables accessible across functions (chartStatus, chartPrazos) for update and destroy
+  - For theme changes, destroy+recreate charts rather than just updating colors — borderColor and grid need full reset
+  - getThemeColors() is the central source for all chart colors — extend it for new chart types (US-005, US-006)
+  - "Normal" status count is computed as total minus all other status categories
+  - Chart.js options: responsive:true + maintainAspectRatio:false + container height in CSS gives proper responsive charts
+---
+
+## 2026-03-11 - US-005
+- Added vertical bar chart (Chart.js) for Top 10 Responsáveis in #charts-section using canvas id chart-responsaveis
+- Chart reads data from stats.topResponsaveis array, sliced to top 10 entries
+- Tooltip shows full name (title) and exact count on hover
+- Uses theme-aware purple color (responsaveis key in getThemeColors())
+- Chart instance stored as module-scoped chartResponsaveis, destroyed+recreated on theme change
+- Chart updates via updateResponsaveisChart(stats) called from refreshDashboard()
+- Files changed: modules/dashboard/dashboard.js
+- **Learnings for future iterations:**
+  - stats.topResponsaveis is an array of {name, count} already sorted by count descending
+  - Pattern for adding new charts: add color to getThemeColors(), add module-scoped variable, add updateXxxChart function, call from refreshDashboard(), add destroy in theme change handler
+  - X-axis labels can be long names; maxRotation/minRotation help with readability
+---
+
+## 2026-03-11 - US-006
+- Added line chart (Chart.js) in #charts-section using canvas id chart-temporal showing demands per month for last 12 months
+- Two lines: "Registradas" (all demandas by cadastroTimestamp) and "Concluídas" (demandas in concluidasSet by cadastroTimestamp)
+- X-axis shows MMM/YYYY format with Portuguese month abbreviations, Y-axis shows count
+- Added temporalRegistradas/temporalConcluidas colors to getThemeColors()
+- Module-scoped chartTemporal variable; destroyed+recreated on theme change
+- Tooltip shows exact values with interaction mode 'index' (shows both lines at once)
+- Files changed: modules/dashboard/dashboard.js
+- **Learnings for future iterations:**
+  - concluidasSet only tells WHICH demandas are concluded (by numero), not WHEN — group concluded demandas by their cadastroTimestamp (registration date)
+  - For temporal grouping, build month buckets first then iterate demandas once — avoids sorting
+  - Portuguese month abbreviations: Jan, Fev, Mar, Abr, Mai, Jun, Jul, Ago, Set, Out, Nov, Dez
+  - Chart.js line chart with fill:true and alpha color (hex + '33') creates nice area effect
+---
+
+## 2026-03-11 - US-007
+- Added captureCurrentUser() function in notificacoes.js that reads ConteudoForm_labelUsuario and stores via NeuronDB.setMetadata('currentUser', username)
+- Runs once on page load in init(), before feature activation, so it works regardless of notification feature being enabled/disabled
+- Only stores if element exists and has non-empty text (getUsuarioLogado() returns null otherwise)
+- Files changed: modules/notificacoes/notificacoes.js
+- **Learnings for future iterations:**
+  - notificacoes.js runs at document_idle on ALL Fala.BR pages — good place for cross-cutting concerns
+  - getUsuarioLogado() is already defined in notificacoes.js; reuse it rather than duplicating DOM access
+  - NeuronDB.setMetadata/getMetadata uses neuron_metadata storage key with in-memory cache
+  - captureCurrentUser runs before verificarEstadoAtualEAgir so metadata is available even if notifications are disabled
+---
+
+## 2026-03-11 - US-008
+- Added Bootstrap button group toggle in dashboard header: "Todas as Demandas" / "Minhas Demandas"
+- Reads currentUser from NeuronDB.getMetadata('currentUser') and saved preference from NeuronDB.getPreference('dashboardFilter')
+- When "Minhas Demandas" selected, filters demandas by responsaveis array (case-insensitive match)
+- Created computeLocalStats() function that mirrors NeuronDB.getStats() logic for filtered data subsets
+- Created filterDemandas() helper for the case-insensitive responsaveis matching
+- Filter preference persists via NeuronDB.setPreference('dashboardFilter', 'mine'|'all')
+- Saved preference applied on page load; buttons sync to saved state
+- All stat cards, all 4 charts update when filter changes via refreshDashboard()
+- Files changed: modules/dashboard/dashboard.html, modules/dashboard/dashboard.js
+- **Learnings for future iterations:**
+  - computeLocalStats() replicates NeuronDB.getStats() logic for filtered subsets — future features that need filtered stats should use it
+  - Filter state (currentFilter, currentUser) is module-scoped; toggle handler uses event delegation on filterGroup
+  - The table section (US-009) should also respect the filter — refreshDashboard() already provides filtered stats.demandas
+  - NeuronDB.getPreference/setPreference uses neuron_preferences storage key
+---
+
+## 2026-03-11 - US-009
+- Added Bootstrap table inside #table-section with columns: Numero (NUP), Data Cadastro, Prazo, Dias Restantes, Situacao, Responsaveis
+- Table populated from filtered demandas array (respects Minhas/Todas filter from US-008)
+- Dias Restantes column shows colored Bootstrap badge: bg-danger for < 0 days, bg-warning text-dark for 0-2 days, bg-success for > 2 days
+- Table rows have urgency-based background: table-danger for overdue, table-warning for urgent, no extra class for normal
+- Responsaveis column shows names joined by comma
+- Table updates via renderDemandasTable(stats) called from refreshDashboard()
+- Uses NeuronDB.calcularDiasRestantes(demanda.prazo) for computing days remaining
+- Uses NeuronUtils.escapeHtml for XSS-safe rendering
+- Files changed: modules/dashboard/dashboard.html, modules/dashboard/dashboard.js, modules/dashboard/dashboard.css
+- **Learnings for future iterations:**
+  - NeuronUtils.escapeHtml is available globally via window.NeuronUtils — no need to define custom escapeHtml
+  - NeuronDB.calcularDiasRestantes(prazo) takes a date string and returns number of days (negative = overdue)
+  - Table tbody id is 'demandas-tbody'; empty message element is 'demandas-empty'
+  - renderDemandasTable receives the full stats object (with .demandas and .concluidasSet)
+  - Future stories (US-011 pagination, US-012 actions) will extend the table
+---
+
+## 2026-03-11 - US-010
+- Added search input above the demandas table with real-time case-insensitive filtering (numero, situacao, responsaveis)
+- Made 4 column headers (Numero, Data Cadastro, Prazo, Dias Restantes) clickable for sorting with arrow indicators
+- Clicking a header sorts ascending; clicking again sorts descending; inactive columns show bi-arrow-down-up icon
+- Search and sort compose: search filters first, then sort applies to filtered results
+- renderDemandasTable(null) re-renders from lastStats cache — used by search/sort handlers without re-fetching data
+- Sort uses timestamps (cadastroTimestamp, prazoTimestamp) for date columns, numeric for Dias Restantes, string for Numero
+- Files changed: modules/dashboard/dashboard.html, modules/dashboard/dashboard.js, modules/dashboard/dashboard.css
+- **Learnings for future iterations:**
+  - lastStats caches the most recent stats object so search/sort can re-render without refreshDashboard()
+  - renderDemandasTable(null) re-renders with cached stats; renderDemandasTable(stats) updates the cache
+  - searchDemandas() and sortDemandas() are standalone pipeline functions — composable with future pagination
+  - Sort indicators update via updateSortIndicators() called at end of renderDemandasTable
+  - Sortable headers have class .sortable-header with data-sort attribute matching field names
+---
+
+## 2026-03-11 - US-011
+- Added Bootstrap pagination controls below the demandas table: First, Previous, page numbers, Next, Last buttons
+- Added items-per-page select dropdown with options 10, 25, 50, 100
+- Shows "Mostrando X a Y de Z demandas" info text
+- Pagination resets to page 1 when search query or filter (Minhas/Todas) changes
+- Items per page preference persists via NeuronDB.setPreference('dashboardItemsPerPage', value)
+- On page load, reads saved items per page preference (defaults to 25)
+- Pagination footer hides when no results
+- Files changed: modules/dashboard/dashboard.html, modules/dashboard/dashboard.js, modules/dashboard/dashboard.css
+- **Learnings for future iterations:**
+  - renderPagination(totalFiltered, totalPages) is separate from renderDemandasTable — can be reused
+  - Pagination click handler uses event delegation on #pagination-controls with data-page attributes
+  - Page window shows up to 5 page numbers centered around current page
+  - The pagination footer element id is 'pagination-footer'; hidden when no results
+  - items-per-page select id is 'items-per-page'; pagination nav id is 'pagination-controls'
+---
+
+## 2026-03-11 - US-012
+- Added 'Ações' column to the demandas table as the last column
+- Each row has 'Abrir no Fala.BR' button (bi-box-arrow-up-right) that opens d.href in a new tab (disabled if no href)
+- Each row has 'Copiar NUP' button (bi-clipboard) that copies d.numero to clipboard via navigator.clipboard.writeText()
+- Copy feedback: icon changes to bi-clipboard-check and title to 'Copiado!' for 2 seconds, then reverts
+- Buttons use btn-sm btn-outline-secondary classes; compact sizing via CSS
+- Copy click handler uses event delegation on #demandas-table for efficiency
+- Files changed: modules/dashboard/dashboard.html, modules/dashboard/dashboard.js, modules/dashboard/dashboard.css
+- **Learnings for future iterations:**
+  - Demanda objects stored in NeuronDB have an `href` field containing the full Fala.BR URL (e.g., https://falabr.cgu.gov.br/Manifestacao/...)
+  - The href is constructed during extraction in tratar-novo-extract.js from the `navigateurl` attribute; it may be null if the attribute was missing
+  - Event delegation on the table is the right pattern for row action buttons since tbody is re-rendered on every refresh/search/sort/pagination
+  - navigator.clipboard.writeText() is available in Chrome extension pages
 ---
