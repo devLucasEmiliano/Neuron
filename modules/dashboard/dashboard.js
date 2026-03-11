@@ -53,6 +53,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 chartResponsaveis.destroy();
                 chartResponsaveis = null;
             }
+            if (chartTemporal) {
+                chartTemporal.destroy();
+                chartTemporal = null;
+            }
             refreshDashboard();
         });
     }
@@ -80,6 +84,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             normais: isDark ? '#81c784' : '#198754',
             // Responsaveis bar color
             responsaveis: isDark ? '#7c4dff' : '#6f42c1',
+            // Temporal line colors
+            temporalRegistradas: isDark ? '#4fc3f7' : '#0d6efd',
+            temporalConcluidas: isDark ? '#81c784' : '#198754',
         };
     }
 
@@ -87,6 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let chartStatus = null;
     let chartPrazos = null;
     let chartResponsaveis = null;
+    let chartTemporal = null;
 
     // --- Stats Cards ---
 
@@ -111,6 +119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateStatusChart(stats);
         updatePrazosChart(stats);
         updateResponsaveisChart(stats);
+        updateTemporalChart(stats);
     }
 
     // --- Status Distribution Donut Chart ---
@@ -340,6 +349,150 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
         });
+    }
+
+    // --- Temporal Line Chart (Demands per Month) ---
+
+    function updateTemporalChart(stats) {
+        const ctx = document.getElementById('chart-temporal');
+        if (!ctx) return;
+
+        const colors = getThemeColors();
+        const demandas = stats.demandas || [];
+        const concluidasSet = stats.concluidasSet || new Set();
+
+        // Build last 12 months (including current)
+        const now = new Date();
+        const months = [];
+        for (let i = 11; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            months.push({ year: d.getFullYear(), month: d.getMonth(), label: formatMonth(d) });
+        }
+
+        // Count demandas registered per month and concluded per month
+        const registeredCounts = new Array(12).fill(0);
+        const concludedCounts = new Array(12).fill(0);
+
+        for (const demanda of demandas) {
+            if (!demanda.cadastroTimestamp) continue;
+            const date = new Date(demanda.cadastroTimestamp);
+            const year = date.getFullYear();
+            const month = date.getMonth();
+
+            for (let i = 0; i < months.length; i++) {
+                if (months[i].year === year && months[i].month === month) {
+                    registeredCounts[i]++;
+                    if (concluidasSet.has(demanda.numero)) {
+                        concludedCounts[i]++;
+                    }
+                    break;
+                }
+            }
+        }
+
+        const labels = months.map(m => m.label);
+
+        if (chartTemporal) {
+            chartTemporal.data.labels = labels;
+            chartTemporal.data.datasets[0].data = registeredCounts;
+            chartTemporal.data.datasets[1].data = concludedCounts;
+            chartTemporal.data.datasets[0].borderColor = colors.temporalRegistradas;
+            chartTemporal.data.datasets[0].backgroundColor = colors.temporalRegistradas + '33';
+            chartTemporal.data.datasets[1].borderColor = colors.temporalConcluidas;
+            chartTemporal.data.datasets[1].backgroundColor = colors.temporalConcluidas + '33';
+            chartTemporal.options.scales.x.ticks.color = colors.textColor;
+            chartTemporal.options.scales.x.grid.color = colors.gridColor;
+            chartTemporal.options.scales.y.ticks.color = colors.textColor;
+            chartTemporal.options.scales.y.grid.color = colors.gridColor;
+            chartTemporal.options.plugins.legend.labels.color = colors.textColor;
+            chartTemporal.update();
+            return;
+        }
+
+        chartTemporal = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Registradas',
+                        data: registeredCounts,
+                        borderColor: colors.temporalRegistradas,
+                        backgroundColor: colors.temporalRegistradas + '33',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    },
+                    {
+                        label: 'Concluídas',
+                        data: concludedCounts,
+                        borderColor: colors.temporalConcluidas,
+                        backgroundColor: colors.temporalConcluidas + '33',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: colors.textColor,
+                            usePointStyle: true,
+                            pointStyleWidth: 10
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y + ' demandas';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: colors.textColor,
+                            maxRotation: 45,
+                            minRotation: 25
+                        },
+                        grid: {
+                            color: colors.gridColor
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: colors.textColor,
+                            precision: 0
+                        },
+                        grid: {
+                            color: colors.gridColor
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Format a Date object as MMM/YYYY (e.g., Mar/2026)
+     */
+    function formatMonth(date) {
+        const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        return monthNames[date.getMonth()] + '/' + date.getFullYear();
     }
 
     // Initial load
