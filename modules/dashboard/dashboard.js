@@ -438,6 +438,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             const responsaveis = Array.isArray(d.responsaveis) ? d.responsaveis.join(', ') : '';
 
             const esc = window.NeuronUtils ? window.NeuronUtils.escapeHtml : (s) => s;
+
+            // Action buttons
+            const openBtnDisabled = d.href ? '' : ' disabled';
+            const openHref = d.href ? esc(d.href) : '#';
+            const actionsHtml =
+                '<div class="d-flex gap-1 justify-content-center">' +
+                '<a href="' + openHref + '" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary" title="Abrir no Fala.BR"' + openBtnDisabled + '>' +
+                '<i class="bi bi-box-arrow-up-right"></i></a>' +
+                '<button type="button" class="btn btn-sm btn-outline-secondary btn-copy-nup" data-numero="' + esc(d.numero || '') + '" title="Copiar NUP">' +
+                '<i class="bi bi-clipboard"></i></button>' +
+                '</div>';
+
             rows.push(
                 '<tr class="' + rowClass + '">' +
                 '<td>' + esc(d.numero || '') + '</td>' +
@@ -446,6 +458,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 '<td>' + badgeHtml + '</td>' +
                 '<td>' + esc(d.situacao || '') + '</td>' +
                 '<td>' + esc(responsaveis) + '</td>' +
+                '<td class="text-center">' + actionsHtml + '</td>' +
                 '</tr>'
             );
         }
@@ -919,6 +932,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     function formatMonth(date) {
         const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
         return monthNames[date.getMonth()] + '/' + date.getFullYear();
+    }
+
+    // --- Copy NUP Click Handler (event delegation on table) ---
+    const demandasTable = document.getElementById('demandas-table');
+    if (demandasTable) {
+        demandasTable.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.btn-copy-nup');
+            if (!btn) return;
+            const numero = btn.dataset.numero;
+            if (!numero) return;
+
+            try {
+                await navigator.clipboard.writeText(numero);
+                const icon = btn.querySelector('i');
+                if (icon) {
+                    icon.className = 'bi bi-clipboard-check';
+                }
+                btn.title = 'Copiado!';
+                setTimeout(() => {
+                    if (icon) {
+                        icon.className = 'bi bi-clipboard';
+                    }
+                    btn.title = 'Copiar NUP';
+                }, 2000);
+            } catch (err) {
+                // Fallback for environments where clipboard API is not available
+                console.warn('Clipboard API failed:', err);
+            }
+        });
     }
 
     // Initial load
