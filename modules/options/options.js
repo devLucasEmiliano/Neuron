@@ -8,8 +8,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Theme toggle setup
     const themeToggle = document.getElementById('themeToggle');
     const themeIcon = document.getElementById('themeIcon');
-    const themeEnabledToggle = document.getElementById('themeEnabledToggle');
-
     async function updateThemeIcon() {
         const preference = await ThemeManager.getPreference();
         if (themeIcon) {
@@ -18,27 +16,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (themeToggle) {
             themeToggle.title = ThemeManager.getLabel(preference);
         }
-    }
-
-    function updateThemeEnabledUI(enabled) {
-        if (themeEnabledToggle) {
-            themeEnabledToggle.checked = enabled;
-        }
-        if (themeToggle) {
-            themeToggle.disabled = !enabled;
-            if (enabled) {
-                themeToggle.classList.remove('theme-toggle-disabled');
-            } else {
-                themeToggle.classList.add('theme-toggle-disabled');
-            }
-        }
-    }
-
-    if (themeEnabledToggle) {
-        themeEnabledToggle.addEventListener('change', async () => {
-            await ThemeManager.setEnabled(themeEnabledToggle.checked);
-            updateThemeEnabledUI(themeEnabledToggle.checked);
-        });
     }
 
     if (themeToggle) {
@@ -50,13 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.addEventListener('neuron-theme-change', updateThemeIcon);
 
-    // Listen for theme enabled changes (from sync or other contexts)
-    document.addEventListener('neuron-theme-enabled-change', (e) => {
-        updateThemeEnabledUI(e.detail.enabled);
-    });
-
     await updateThemeIcon();
-    updateThemeEnabledUI(ThemeManager._enabled);
 
     const ui = {
         masterEnable: document.getElementById('masterEnableOptions'),
