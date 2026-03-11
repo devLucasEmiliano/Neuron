@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function updateGlobalUIEnableState() {
         const enabled = ui.masterEnable.checked;
         document.querySelectorAll('.options-section input, .options-section select, .options-section textarea, .options-section button').forEach(field => {
-            if (field.id !== 'masterEnableOptions' && field.id !== 'refreshDashboard') {
+            if (field.id !== 'masterEnableOptions') {
                 field.disabled = !enabled;
             }
         });
@@ -761,11 +761,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Initialize section on first show
             if (!sectionsInitialized.has(sectionName)) {
                 switch (sectionName) {
-                    case 'dashboard':
-                        if (typeof NeuronDashboard !== 'undefined') {
-                            NeuronDashboard.init();
-                        }
-                        break;
                     case 'prazos':
                         setupHolidaysTab();
                         break;
