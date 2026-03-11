@@ -39,7 +39,72 @@
         <!-- Stats Cards -->
         <section id="stats-cards" class="mb-4">
             <div class="row g-3">
-                <!-- Cards will be populated by JS in future stories -->
+                <div class="col-xl-2 col-md-4 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-primary bg-opacity-10">
+                            <i class="bi bi-folder2-open text-primary"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="stat-total">0</div>
+                            <div class="stat-label">Total de Demandas</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-2 col-md-4 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-warning bg-opacity-10">
+                            <i class="bi bi-hourglass-split text-warning"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="stat-pendentes">0</div>
+                            <div class="stat-label">Pendentes</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-2 col-md-4 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-danger bg-opacity-10">
+                            <i class="bi bi-alarm text-danger"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="stat-prazos-curtos">0</div>
+                            <div class="stat-label">Prazos Curtos ≤2 dias</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-2 col-md-4 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-danger bg-opacity-10">
+                            <i class="bi bi-exclamation-triangle text-danger"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="stat-atrasadas">0</div>
+                            <div class="stat-label">Atrasadas</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-2 col-md-4 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-success bg-opacity-10">
+                            <i class="bi bi-check-circle text-success"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="stat-concluidas">0</div>
+                            <div class="stat-label">Concluidas</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-2 col-md-4 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-info bg-opacity-10">
+                            <i class="bi bi-percent text-info"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="stat-taxa">0%</div>
+                            <div class="stat-label">Taxa de Conclusao</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
