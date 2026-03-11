@@ -1,0 +1,32 @@
+# Ralph Progress Log
+Started: Wed Mar 11 17:37:05 -03 2026
+---
+
+## Codebase Patterns
+- This is a Chrome Extension (manifest v3) — no package.json, no npm scripts, no traditional build/lint/typecheck
+- Shared CSS/JS goes in `shared/css/` and `shared/js/`, loaded via `manifest.json` content_scripts
+- CSS variables are defined in `:root` in `tratar-novo.css` and `sic-tratar-style.css` (e.g., `--cor-card`, `--raio-borda`)
+- Neuron theme variables (e.g., `--neuron-bg-primary`) may also be available at runtime
+- Module-specific CSS should NOT duplicate rules that exist in shared CSS files
+- Selectize dropdowns use classes: `.selectize-dropdown`, `.selectize-control`, `.selectize-input`
+- ASP.NET UpdatePanel can recreate DOM elements — use MutationObserver for resilience
+- Quality check = valid JSON (manifest.json) + valid JS syntax (no build step)
+---
+
+## 2026-03-11 - US-001 through US-006 (Assessment)
+- All 6 user stories were already implemented across 3 prior commits:
+  - 718cffd: Created `shared/css/selectize-fix.css` (max-height, scroll, z-index, visual styling) → covers US-001, US-002, US-004
+  - 4969c53: Created `shared/js/selectize-fix.js` (dropup positioning, MutationObserver) → covers US-003, US-006
+  - 1a8a459: Integrated shared files in `manifest.json`, removed duplicate rules from module CSS → covers US-005
+- Files involved:
+  - `shared/css/selectize-fix.css` — all CSS fixes
+  - `shared/js/selectize-fix.js` — adaptive dropup JS
+  - `manifest.json` — content_scripts entries for 4 page groups
+  - `modules/ouvidoria/tratar-novo/tratar-novo.css` — no selectize rules remain (duplicates removed)
+  - `modules/sic/tratar/sic-tratar-style.css` — no selectize rules remain
+- Created `prd.json` and marked all stories as `passes: true`
+- **Learnings for future iterations:**
+  - No package.json or lint/test tooling exists — "typecheck/lint passes" means valid syntax only
+  - The manifest.json loads selectize-fix.css and selectize-fix.js on 4 different page URL patterns
+  - Browser testing not available in this environment — manual verification recommended for US-004
+---
