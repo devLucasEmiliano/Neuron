@@ -1,0 +1,100 @@
+{
+  "title": "Correção de Sobreposição do Dropdown de Tags — Selectize Global",
+  "branchName": "developing",
+  "description": "O dropdown do Selectize apresenta problema de sobreposição visual em diversas páginas do sistema Fala.BR. A solução deve ser global e adaptativa.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Limitar altura do dropdown com scroll interno",
+      "description": "Como usuário, quero que o dropdown de tags tenha uma altura máxima controlada com scroll interno para que ele não invada o conteúdo de outros elementos da página.",
+      "priority": 1,
+      "passes": true,
+      "acceptanceCriteria": [
+        "O dropdown .selectize-dropdown possui max-height definido (~6-8 itens visíveis)",
+        "Quando a lista excede o max-height, aparece scroll vertical (overflow-y: auto)",
+        "O scroll é estilizado de forma discreta (scrollbar fina, cores consistentes)",
+        "A regra CSS é global, aplicando-se a todos os .selectize-dropdown do sistema",
+        "O dropdown não ultrapassa os limites visuais razoáveis do container",
+        "Typecheck/lint passa"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "Criar stacking context adequado para o dropdown",
+      "description": "Como usuário, quero que quando o dropdown estiver aberto, ele fique visualmente acima de todo o conteúdo da página de forma clara.",
+      "priority": 2,
+      "passes": true,
+      "acceptanceCriteria": [
+        "O container do Selectize cria um stacking context adequado quando ativo",
+        "O z-index do dropdown é superior ao z-index dos cards em hover (z-index: 10)",
+        "O dropdown aparece acima de texto, linha de corpo do card, e cards adjacentes",
+        "Não há conflito de z-index com modais, tooltips, menus de navegação",
+        "A solução funciona no CSS compartilhado",
+        "Typecheck/lint passa"
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "Comportamento adaptativo (dropdown/dropup)",
+      "description": "Como usuário, quero que o dropdown abra para cima automaticamente quando não há espaço suficiente abaixo.",
+      "priority": 3,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Existe um script JS que detecta a posição do dropdown na viewport ao abrir",
+        "Se o espaço abaixo for insuficiente, ele abre para cima (dropup)",
+        "Se o espaço abaixo for suficiente, o comportamento padrão é mantido",
+        "A classe CSS .selectize-dropdown--dropup é aplicada/removida dinamicamente",
+        "O posicionamento é recalculado em eventos de scroll e resize",
+        "O script é genérico para qualquer instância do Selectize",
+        "Typecheck/lint passa"
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "Estilização visual do dropdown aberto",
+      "description": "Como usuário, quero que o dropdown de tags tenha uma aparência visual clara e polida que indique inequivocamente que é um elemento sobreposto temporário.",
+      "priority": 4,
+      "passes": true,
+      "acceptanceCriteria": [
+        "O dropdown possui box-shadow que cria efeito de elevação",
+        "O dropdown possui border definida e border-radius consistente com o tema (--raio-borda)",
+        "O fundo do dropdown é opaco (background-color sólido)",
+        "Os itens possuem padding e hover state claros",
+        "Aparência consistente com o design system existente (variáveis CSS do :root)",
+        "Estilização aplicada globalmente para todos os dropdowns Selectize",
+        "Typecheck/lint passa",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "US-005",
+      "title": "Aplicar correções no CSS compartilhado",
+      "description": "Como desenvolvedor, preciso que as correções de CSS para o Selectize estejam em um local centralizado para evitar duplicação.",
+      "priority": 5,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Existe um arquivo CSS compartilhado (shared/css/selectize-fix.css) com todas as correções globais",
+        "As regras duplicadas de .selectize-dropdown são removidas dos CSS específicos de módulo",
+        "O CSS compartilhado é importado/injetado nos módulos que utilizam Selectize",
+        "O mecanismo de injeção segue o padrão existente do projeto (manifest.json)",
+        "Não há regressão visual nas páginas existentes",
+        "Typecheck/lint passa"
+      ]
+    },
+    {
+      "id": "US-006",
+      "title": "Integrar script adaptativo no fluxo de módulos",
+      "description": "Como desenvolvedor, preciso que o script de comportamento adaptativo (dropup) seja integrado ao sistema de módulos existente.",
+      "priority": 6,
+      "passes": true,
+      "acceptanceCriteria": [
+        "O script JS está em shared/js/selectize-fix.js",
+        "O script é inicializado automaticamente ao detectar instâncias do Selectize (MutationObserver)",
+        "O script funciona com instâncias de Selectize criadas dinamicamente (ASP.NET UpdatePanel)",
+        "O script não interfere com a funcionalidade existente do Selectize",
+        "O script segue os padrões de código do projeto",
+        "Typecheck/lint passa"
+      ]
+    }
+  ]
+}
