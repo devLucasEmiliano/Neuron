@@ -175,8 +175,26 @@
                     <i class="bi bi-table me-2"></i>
                     <span class="fw-semibold">Demandas</span>
                 </div>
-                <div class="card-body">
-                    <p class="text-body-secondary mb-0">Tabela de demandas sera carregada aqui.</p>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0" id="demandas-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Numero</th>
+                                    <th>Data Cadastro</th>
+                                    <th>Prazo</th>
+                                    <th>Dias Restantes</th>
+                                    <th>Situacao</th>
+                                    <th>Responsaveis</th>
+                                </tr>
+                            </thead>
+                            <tbody id="demandas-tbody">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center text-body-secondary py-3" id="demandas-empty">
+                        Nenhuma demanda encontrada.
+                    </div>
                 </div>
             </div>
         </section>
