@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuron Dashboard</title>
+    <link rel="stylesheet" href="../../vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../vendor/bootstrap/icons/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../../shared/css/theme.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header border-bottom">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center justify-content-between py-2">
+                <div class="d-flex align-items-center">
+                    <img src="../../images/icons/neuronon128.png" alt="Neuron" width="40" height="40" class="me-3">
+                    <div>
+                        <h1 class="h5 mb-0 text-neuron-primary fw-bold">Neuron Dashboard</h1>
+                        <p class="text-body-secondary mb-0 small d-none d-sm-block">Painel de Controle</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="../options/options.html" class="btn btn-outline-secondary btn-sm" title="Configuracoes">
+                        <i class="bi bi-gear me-1"></i>
+                        <span class="d-none d-sm-inline">Configuracoes</span>
+                    </a>
+                    <button type="button" class="btn btn-outline-secondary btn-theme-toggle" id="themeToggle" title="Alternar tema">
+                        <i class="bi bi-moon-fill" id="themeIcon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container-fluid py-4">
+        <!-- Stats Cards -->
+        <section id="stats-cards" class="mb-4">
+            <div class="row g-3">
+                <!-- Cards will be populated by JS in future stories -->
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section id="charts-section" class="mb-4">
+            <div class="row g-3">
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <i class="bi bi-pie-chart me-2"></i>
+                            Distribuicao por Status
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chart-status"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <i class="bi bi-bar-chart-line me-2"></i>
+                            Distribuicao de Prazos
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chart-prazos"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <i class="bi bi-people me-2"></i>
+                            Top 10 Responsaveis
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chart-responsaveis"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <i class="bi bi-graph-up me-2"></i>
+                            Demandas por Mes
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chart-temporal"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Demandas Table -->
+        <section id="table-section">
+            <div class="card">
+                <div class="card-header d-flex align-items-center">
+                    <i class="bi bi-table me-2"></i>
+                    <span class="fw-semibold">Demandas</span>
+                </div>
+                <div class="card-body">
+                    <p class="text-body-secondary mb-0">Tabela de demandas sera carregada aqui.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Scripts -->
+    <script src="../../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../../vendor/chart.min.js"></script>
+    <script src="../../shared/js/neuron-db.js"></script>
+    <script src="../../shared/js/neuron-sync.js"></script>
+    <script src="../../shared/js/neuron-utils.js"></script>
+    <script src="../../shared/js/theme-manager.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

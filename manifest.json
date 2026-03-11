@@ -174,7 +174,8 @@
         "shared/js/*",
         "shared/css/*",
         "modules/loading/loading.html",
-        "modules/options/options.html"
+        "modules/options/options.html",
+        "modules/dashboard/*"
       ],
       "matches": [
         "https://falabr.cgu.gov.br/*",

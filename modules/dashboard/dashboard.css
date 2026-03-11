@@ -1,0 +1,155 @@
+/* Neuron Dashboard - Dedicated Page Styles */
+
+/* ========================================
+   Header
+   ======================================== */
+
+.dashboard-header {
+    background-color: var(--bs-body-bg);
+    padding: 0.5rem 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+/* ========================================
+   Stats Cards
+   ======================================== */
+
+#stats-cards .stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background-color: var(--bs-body-bg);
+    border-radius: var(--bs-border-radius-lg);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: 100%;
+}
+
+#stats-cards .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--neuron-shadow, 0 4px 12px rgba(0, 0, 0, 0.1));
+}
+
+#stats-cards .stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+#stats-cards .stat-icon i {
+    font-size: 1.5rem;
+}
+
+#stats-cards .stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--bs-body-color);
+}
+
+#stats-cards .stat-label {
+    font-size: 0.8rem;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ========================================
+   Chart Cards
+   ======================================== */
+
+.chart-card {
+    background-color: var(--bs-body-bg);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 1.25rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    height: 100%;
+}
+
+.chart-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--bs-border-color);
+    color: var(--bs-body-color);
+    font-weight: 600;
+}
+
+.chart-title i {
+    color: var(--neuron-primary, var(--bs-primary, #0d6efd));
+}
+
+.chart-container {
+    position: relative;
+    height: 280px;
+    width: 100%;
+}
+
+.chart-container canvas {
+    max-width: 100%;
+}
+
+/* ========================================
+   Table Section
+   ======================================== */
+
+#table-section .card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* ========================================
+   Dark Mode
+   ======================================== */
+
+[data-bs-theme="dark"] .dashboard-header {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+[data-bs-theme="dark"] #stats-cards .stat-card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+[data-bs-theme="dark"] #stats-cards .stat-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .chart-card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+[data-bs-theme="dark"] #table-section .card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ========================================
+   Responsive
+   ======================================== */
+
+@media (max-width: 991.98px) {
+    .chart-container {
+        height: 250px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .chart-container {
+        height: 220px;
+    }
+
+    .chart-card {
+        padding: 1rem;
+    }
+
+    .chart-title {
+        font-size: 0.85rem;
+    }
+}
