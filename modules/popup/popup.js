@@ -303,6 +303,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         versionLabel.textContent = 'v' + (manifest.version_name || manifest.version);
     }
 
+    // ========== Dashboard Button ==========
+
+    const openDashboardBtn = document.getElementById('openDashboard');
+    if (openDashboardBtn) {
+        openDashboardBtn.addEventListener('click', () => {
+            chrome.tabs.create({ url: chrome.runtime.getURL('modules/dashboard/dashboard.html') });
+        });
+    }
+
     // ========== Initialize ==========
 
     await inicializarControlos();

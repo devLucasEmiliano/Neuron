@@ -150,10 +150,16 @@
         <!-- Footer -->
         <footer class="bg-body-secondary border-top p-3">
             <div class="d-flex justify-content-between align-items-center">
-                <a href="../options/options.html" target="_blank"
-                   class="btn btn-link btn-sm text-decoration-none p-0">
-                    <i class="bi bi-gear me-1"></i>Opcoes Avancadas
-                </a>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="../options/options.html" target="_blank"
+                       class="btn btn-link btn-sm text-decoration-none p-0">
+                        <i class="bi bi-gear me-1"></i>Opcoes
+                    </a>
+                    <button type="button" class="btn btn-link btn-sm text-decoration-none p-0"
+                            id="openDashboard">
+                        <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                    </button>
+                </div>
                 <span class="version-label" id="versionLabel"></span>
                 <div class="d-flex align-items-center gap-2">
                     <button type="button" class="btn btn-sm btn-outline-secondary btn-theme-toggle"
