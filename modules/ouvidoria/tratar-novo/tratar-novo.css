@@ -50,18 +50,6 @@ body {
 }
 
 /* ===================================================================
-   NOVO: CORREÇÃO DE EMPILHAMENTO (DROPDOWN)
-   - Força os containers a não cortarem o menu de tags.
-   =================================================================== */
-.panel.affix-top,
-#ConteudoForm_ConteudoGeral_ConteudoFormComAjax_upTriagem {
-    overflow: visible !important;
-}
-.selectize-dropdown {
-    z-index: 9999 !important; /* Coloca o dropdown na camada mais alta */
-}
-
-/* ===================================================================
    LÓGICA PARA UNIR OS CARDS
    =================================================================== */
 #ConteudoForm_ConteudoGeral_ConteudoFormComAjax_upTriagem > .row:nth-child(odd) {
