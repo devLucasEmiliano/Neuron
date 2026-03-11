@@ -39,4 +39,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.addEventListener('neuron-theme-change', updateThemeIcon);
         updateThemeIcon();
     }
+
+    // --- Stats Cards ---
+
+    /**
+     * Refresh all dashboard data (stats cards, charts, table)
+     */
+    async function refreshDashboard() {
+        if (typeof NeuronDB === 'undefined') return;
+
+        const stats = await NeuronDB.getStats();
+
+        // Update stat cards
+        const el = (id) => document.getElementById(id);
+        el('stat-total').textContent = stats.total;
+        el('stat-pendentes').textContent = stats.pendentes;
+        el('stat-prazos-curtos').textContent = stats.prazosCurtos;
+        el('stat-atrasadas').textContent = stats.atrasadas;
+        el('stat-concluidas').textContent = stats.concluidas;
+        el('stat-taxa').textContent = stats.taxaConclusao + '%';
+    }
+
+    // Initial load
+    await refreshDashboard();
+
+    // Listen for data changes to refresh dashboard
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
+        chrome.storage.onChanged.addListener((changes, areaName) => {
+            if (areaName !== 'local') return;
+            if (changes.neuron_demandas || changes.neuron_concluidas) {
+                refreshDashboard();
+            }
+        });
+    }
 });
