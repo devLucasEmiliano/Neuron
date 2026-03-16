@@ -4,7 +4,7 @@
  */
 
 // Import NeuronDB and NeuronSync
-importScripts('shared/js/neuron-db.js', 'shared/js/neuron-sync.js');
+importScripts('shared/js/neuron-site.js', 'shared/js/neuron-db.js', 'shared/js/neuron-sync.js');
 
 // Ensure proper extension initialization
 chrome.runtime.onInstalled.addListener(async () => {
