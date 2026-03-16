@@ -209,6 +209,9 @@
     }
 
     async function init() {
+        // Initialize NeuronDB with site context from current URL
+        await NeuronDB.init(NeuronSite.getFromUrl(window.location.href));
+
         carregarVersaoManifest();
 
         if (isNewStylePage()) {
