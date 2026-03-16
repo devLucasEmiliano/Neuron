@@ -1,8 +1,46 @@
 /* Neuron Theme System - CSS Custom Properties */
 
-/* Transition duration for theme changes */
+/* ========== Inter Font ========== */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../../vendor/fonts/inter/Inter-Regular.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('../../vendor/fonts/inter/Inter-Medium.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../../vendor/fonts/inter/Inter-Bold.woff2') format('woff2');
+}
+
+/* ========== Global Design Tokens ========== */
 :root {
     --neuron-transition-duration: 0.3s;
+    --neuron-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --neuron-primary-darker: #1045CC;
+    --neuron-radius-card: 20px;
+    --neuron-radius-pill: 48px;
+    --neuron-radius-icon: 16px;
+    --neuron-radius-input: 12px;
+    --neuron-shadow-card: 0 2px 10px rgba(25, 93, 194, 0.07);
+    --neuron-shadow-input: 0 2px 12px rgba(11, 22, 44, 0.05);
+    --neuron-shadow-input-focus: 0 0 0 3px rgba(20, 118, 255, 0.15), 0 2px 12px rgba(11, 22, 44, 0.05);
+}
+
+body {
+    font-family: var(--neuron-font-family);
 }
 
 /* Apply smooth transitions when theme changes */
@@ -18,95 +56,127 @@
 :root,
 [data-bs-theme="light"] {
     /* Brand Colors */
-    --neuron-primary: #0278bc;
-    --neuron-primary-hover: #025a8e;
-    --neuron-primary-light: #e8f4fa;
-    --neuron-primary-rgb: 2, 120, 188;
+    --neuron-primary: #1476FF;
+    --neuron-primary-hover: #004CFF;
+    --neuron-primary-light: rgba(20, 118, 255, 0.08);
+    --neuron-primary-rgb: 20, 118, 255;
 
-    --neuron-accent: #ffd401;
-    --neuron-accent-hover: #f0c300;
-    --neuron-accent-light: #fff9e0;
-    --neuron-accent-rgb: 255, 212, 1;
+    --neuron-accent: #4A3AFF;
+    --neuron-accent-hover: #3A2ACC;
+    --neuron-accent-light: #F6F1FF;
+    --neuron-accent-rgb: 74, 58, 255;
 
     /* Status Colors */
-    --neuron-success: #198754;
-    --neuron-success-light: #d1e7dd;
-    --neuron-warning: #ffc107;
-    --neuron-warning-light: #fff3cd;
-    --neuron-danger: #dc3545;
-    --neuron-danger-light: #f8d7da;
-    --neuron-info: #0dcaf0;
-    --neuron-info-light: #cff4fc;
+    --neuron-success: #13A570;
+    --neuron-success-light: #EDFBEE;
+    --neuron-warning: #D5691B;
+    --neuron-warning-light: #FFF3E4;
+    --neuron-danger: #DC2B2B;
+    --neuron-danger-light: #FFEFF0;
+    --neuron-info: #9240FB;
+    --neuron-info-light: #F6F1FF;
 
     /* Surface Colors */
-    --neuron-bg-primary: #ffffff;
-    --neuron-bg-secondary: #f8f9fa;
-    --neuron-bg-tertiary: #e9ecef;
+    --neuron-bg-primary: #FFFFFF;
+    --neuron-bg-secondary: #F7F9FC;
+    --neuron-bg-tertiary: #E9EAF3;
 
     /* Text Colors */
-    --neuron-text-primary: #212529;
-    --neuron-text-secondary: #6c757d;
-    --neuron-text-muted: #adb5bd;
+    --neuron-text-primary: #0B0E2C;
+    --neuron-text-secondary: #6F7182;
+    --neuron-text-muted: #989AAD;
 
     /* Border Colors */
-    --neuron-border-color: #dee2e6;
-    --neuron-border-light: #f1f3f5;
+    --neuron-border-color: #E9EAF3;
+    --neuron-border-light: #F7F9FC;
 
     /* Shadows */
-    --neuron-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --neuron-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    --neuron-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+    --neuron-shadow-sm: 0 2px 10px rgba(25, 93, 194, 0.07);
+    --neuron-shadow: 0 4px 10px rgba(20, 20, 43, 0.04);
+    --neuron-shadow-lg: 0 4px 10px rgba(2, 87, 251, 0.2);
 
-    /* Override Bootstrap primary */
+    /* Override Bootstrap */
     --bs-primary: var(--neuron-primary);
     --bs-primary-rgb: var(--neuron-primary-rgb);
+    --bs-success: var(--neuron-success);
+    --bs-success-rgb: 19, 165, 112;
+    --bs-warning: var(--neuron-warning);
+    --bs-warning-rgb: 213, 105, 27;
+    --bs-danger: var(--neuron-danger);
+    --bs-danger-rgb: 220, 43, 43;
+    --bs-info: var(--neuron-info);
+    --bs-info-rgb: 146, 64, 251;
+    --bs-body-font-family: var(--neuron-font-family);
+    --bs-border-color: var(--neuron-border-color);
+    --bs-border-radius: var(--neuron-radius-input);
+    --bs-border-radius-lg: var(--neuron-radius-card);
+    --bs-body-color: var(--neuron-text-primary);
+    --bs-secondary-color: var(--neuron-text-secondary);
+    --bs-table-warning-bg: var(--neuron-warning-light);
+    --bs-table-danger-bg: var(--neuron-danger-light);
 }
 
 /* ========== Dark Theme ========== */
 [data-bs-theme="dark"] {
     /* Brand Colors - Adjusted for dark mode accessibility */
-    --neuron-primary: #3a9fd5;
-    --neuron-primary-hover: #5eb5e3;
-    --neuron-primary-light: #1a3a4d;
-    --neuron-primary-rgb: 58, 159, 213;
+    --neuron-primary: #5A96FF;
+    --neuron-primary-hover: #7AAFFF;
+    --neuron-primary-light: rgba(90, 150, 255, 0.12);
+    --neuron-primary-rgb: 90, 150, 255;
 
-    --neuron-accent: #ffe566;
-    --neuron-accent-hover: #ffed99;
-    --neuron-accent-light: #3d3a1f;
-    --neuron-accent-rgb: 255, 229, 102;
+    --neuron-accent: #7A6EFF;
+    --neuron-accent-hover: #9A90FF;
+    --neuron-accent-light: #1E1A3D;
+    --neuron-accent-rgb: 122, 110, 255;
 
     /* Status Colors - Adjusted for dark mode */
-    --neuron-success: #75b798;
-    --neuron-success-light: #1a3d2e;
-    --neuron-warning: #ffda6a;
-    --neuron-warning-light: #3d3a1f;
-    --neuron-danger: #ea868f;
-    --neuron-danger-light: #3d1f24;
-    --neuron-info: #6edff6;
-    --neuron-info-light: #1a3d42;
+    --neuron-success: #4FD99A;
+    --neuron-success-light: #0F2A1E;
+    --neuron-warning: #E8974F;
+    --neuron-warning-light: #2A1F10;
+    --neuron-danger: #E85A5A;
+    --neuron-danger-light: #2A1418;
+    --neuron-info: #B070FF;
+    --neuron-info-light: #1E1438;
 
-    /* Surface Colors */
-    --neuron-bg-primary: #1a1d21;
-    --neuron-bg-secondary: #212529;
-    --neuron-bg-tertiary: #2b3035;
+    /* Surface Colors - DS neutral navy scale */
+    --neuron-bg-primary: #0B0E2C;
+    --neuron-bg-secondary: #141730;
+    --neuron-bg-tertiary: #1E2145;
 
     /* Text Colors */
-    --neuron-text-primary: #e9ecef;
-    --neuron-text-secondary: #adb5bd;
-    --neuron-text-muted: #6c757d;
+    --neuron-text-primary: #E9EAF3;
+    --neuron-text-secondary: #989AAD;
+    --neuron-text-muted: #6F7182;
 
     /* Border Colors */
-    --neuron-border-color: #495057;
-    --neuron-border-light: #343a40;
+    --neuron-border-color: #303350;
+    --neuron-border-light: #1E2145;
 
-    /* Shadows - More subtle in dark mode */
-    --neuron-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-    --neuron-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    --neuron-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+    /* Shadows */
+    --neuron-shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.3);
+    --neuron-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --neuron-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
 
-    /* Override Bootstrap primary */
+    /* Override Bootstrap */
     --bs-primary: var(--neuron-primary);
     --bs-primary-rgb: var(--neuron-primary-rgb);
+    --bs-success: var(--neuron-success);
+    --bs-success-rgb: 79, 217, 154;
+    --bs-warning: var(--neuron-warning);
+    --bs-warning-rgb: 232, 151, 79;
+    --bs-danger: var(--neuron-danger);
+    --bs-danger-rgb: 232, 90, 90;
+    --bs-info: var(--neuron-info);
+    --bs-info-rgb: 176, 112, 255;
+    --bs-body-font-family: var(--neuron-font-family);
+    --bs-border-color: var(--neuron-border-color);
+    --bs-border-radius: var(--neuron-radius-input);
+    --bs-border-radius-lg: var(--neuron-radius-card);
+    --bs-body-color: var(--neuron-text-primary);
+    --bs-secondary-color: var(--neuron-text-secondary);
+    --bs-table-warning-bg: var(--neuron-warning-light);
+    --bs-table-danger-bg: var(--neuron-danger-light);
 }
 
 /* ========== Custom Button Styles ========== */
@@ -121,19 +191,29 @@
     --bs-btn-active-color: #fff;
     --bs-btn-active-bg: var(--neuron-primary-hover);
     --bs-btn-active-border-color: var(--neuron-primary-hover);
+    transition: all 300ms ease;
+}
+
+.btn-neuron-primary:active {
+    transform: scale3d(0.96, 0.96, 1.01);
 }
 
 .btn-neuron-accent {
-    --bs-btn-color: #333;
+    --bs-btn-color: #fff;
     --bs-btn-bg: var(--neuron-accent);
     --bs-btn-border-color: var(--neuron-accent);
-    --bs-btn-hover-color: #333;
+    --bs-btn-hover-color: #fff;
     --bs-btn-hover-bg: var(--neuron-accent-hover);
     --bs-btn-hover-border-color: var(--neuron-accent-hover);
     --bs-btn-focus-shadow-rgb: var(--neuron-accent-rgb);
-    --bs-btn-active-color: #333;
+    --bs-btn-active-color: #fff;
     --bs-btn-active-bg: var(--neuron-accent-hover);
     --bs-btn-active-border-color: var(--neuron-accent-hover);
+    transition: all 300ms ease;
+}
+
+.btn-neuron-accent:active {
+    transform: scale3d(0.96, 0.96, 1.01);
 }
 
 .btn-outline-neuron-primary {
@@ -146,6 +226,11 @@
     --bs-btn-active-color: #fff;
     --bs-btn-active-bg: var(--neuron-primary);
     --bs-btn-active-border-color: var(--neuron-primary);
+    transition: all 300ms ease;
+}
+
+.btn-outline-neuron-primary:active {
+    transform: scale3d(0.96, 0.96, 1.01);
 }
 
 /* ========== Form Controls Customization ========== */
@@ -162,7 +247,12 @@
 .form-control:focus,
 .form-select:focus {
     border-color: var(--neuron-primary);
-    box-shadow: 0 0 0 0.25rem rgba(var(--neuron-primary-rgb), 0.25);
+    box-shadow: var(--neuron-shadow-input-focus);
+}
+
+.form-control,
+.form-select {
+    border-radius: var(--neuron-radius-input);
 }
 
 /* ========== Nav Tabs Customization ========== */
@@ -180,7 +270,8 @@
 /* ========== Card Customization ========== */
 .card {
     border-color: var(--neuron-border-color);
-    box-shadow: var(--neuron-shadow-sm);
+    border-radius: var(--neuron-radius-card);
+    box-shadow: var(--neuron-shadow-card);
 }
 
 .card-header {
@@ -207,7 +298,7 @@
 }
 
 .alert-neuron-accent {
-    color: #664d03;
+    color: #4A3AFF;
     background-color: var(--neuron-accent-light);
     border-color: var(--neuron-accent);
 }
@@ -220,7 +311,7 @@
 
 .badge-neuron-accent {
     background-color: var(--neuron-accent);
-    color: #333;
+    color: #fff;
 }
 
 /* ========== Utility Classes ========== */

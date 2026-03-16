@@ -187,6 +187,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
+    // --- Chart instances ---
+    let chartStatus = null;
+    let chartPrazos = null;
+    let chartResponsaveis = null;
+    let chartTemporal = null;
+
     // --- Theme Colors ---
 
     /**
@@ -195,32 +201,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     function getThemeColors() {
         const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
         return {
-            textColor: isDark ? '#dee2e6' : '#495057',
-            gridColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+            textColor: isDark ? '#E9EAF3' : '#0B0E2C',
+            gridColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)',
             // Status donut colors
-            prorrogadas: isDark ? '#ffc107' : '#ffc107',
-            complementadas: isDark ? '#0dcaf0' : '#0d6efd',
-            possivelRespondida: isDark ? '#20c997' : '#198754',
-            comObservacao: isDark ? '#fd7e14' : '#fd7e14',
-            normal: isDark ? '#6c757d' : '#adb5bd',
+            prorrogadas: isDark ? '#E8974F' : '#D5691B',
+            complementadas: isDark ? '#5A96FF' : '#1476FF',
+            possivelRespondida: isDark ? '#4FD99A' : '#13A570',
+            comObservacao: isDark ? '#B070FF' : '#9240FB',
+            normal: isDark ? '#6F7182' : '#989AAD',
             // Prazo bar colors
-            atrasadas: isDark ? '#f06292' : '#dc3545',
-            urgentes: isDark ? '#ffb74d' : '#ffc107',
-            proximas: isDark ? '#4fc3f7' : '#0d6efd',
-            normais: isDark ? '#81c784' : '#198754',
+            atrasadas: isDark ? '#E85A5A' : '#DC2B2B',
+            urgentes: isDark ? '#E8974F' : '#D5691B',
+            proximas: isDark ? '#5A96FF' : '#1476FF',
+            normais: isDark ? '#4FD99A' : '#13A570',
             // Responsaveis bar color
-            responsaveis: isDark ? '#7c4dff' : '#6f42c1',
+            responsaveis: isDark ? '#B070FF' : '#9240FB',
             // Temporal line colors
-            temporalRegistradas: isDark ? '#4fc3f7' : '#0d6efd',
-            temporalConcluidas: isDark ? '#81c784' : '#198754',
+            temporalRegistradas: isDark ? '#5A96FF' : '#1476FF',
+            temporalConcluidas: isDark ? '#4FD99A' : '#13A570',
         };
     }
-
-    // --- Chart instances ---
-    let chartStatus = null;
-    let chartPrazos = null;
-    let chartResponsaveis = null;
-    let chartTemporal = null;
 
     // --- Stats Computation ---
 

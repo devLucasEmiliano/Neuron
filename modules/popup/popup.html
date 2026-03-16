@@ -42,15 +42,6 @@
                 </div>
             </div>
 
-            <!-- Site Selector -->
-            <div class="site-selector mb-3" id="site-selector">
-                <div class="site-selector-group">
-                    <button type="button" class="site-btn" data-site="producao">PROD</button>
-                    <button type="button" class="site-btn" data-site="treinamento">TREINA</button>
-                    <button type="button" class="site-btn" data-site="homologacao">HOMOLOG</button>
-                </div>
-            </div>
-
             <!-- Items Per Page Card -->
             <div class="card shadow-sm mb-2" id="items-per-page-card">
                 <div class="card-body d-flex justify-content-between align-items-center py-3">
@@ -89,19 +80,6 @@
                         </label>
                         <input type="number" class="form-control form-control-sm setting-input"
                                id="dangerCountThreshold" min="1" max="100" value="5">
-                    </div>
-                </div>
-
-                <!-- Filter Default -->
-                <div class="card shadow-sm card-compact mb-2">
-                    <div class="card-body setting-row">
-                        <label for="filterDefault" class="setting-label">
-                            Filtro padrao ativo
-                        </label>
-                        <div class="form-check form-switch mb-0">
-                            <input class="form-check-input" type="checkbox"
-                                   role="switch" id="filterDefault">
-                        </div>
                     </div>
                 </div>
 
@@ -164,10 +142,6 @@
                        class="btn btn-link btn-sm text-decoration-none p-0">
                         <i class="bi bi-gear me-1"></i>Opcoes
                     </a>
-                    <button type="button" class="btn btn-link btn-sm text-decoration-none p-0"
-                            id="openDashboard">
-                        <i class="bi bi-speedometer2 me-1"></i>Dashboard
-                    </button>
                 </div>
                 <span class="version-label" id="versionLabel"></span>
                 <div class="d-flex align-items-center gap-2">

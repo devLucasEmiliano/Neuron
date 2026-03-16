@@ -611,6 +611,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         // --- DELEGAÇÃO DE EVENTOS PARA TODA A LISTA ---
+        // Prevent accordion toggle when clicking group name input
+        listEl.addEventListener('click', e => {
+            if (e.target.matches('.focal-point-group-name')) {
+                e.stopPropagation();
+            }
+        });
+
         listEl.addEventListener('click', e => {
             const target = e.target;
             const btn = target.closest('.remove-btn') || target.closest('.add-point-btn');
@@ -709,7 +716,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <h2 class="accordion-header" id="${headerId}">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}">
                         <div class="d-flex align-items-center justify-content-between w-100 me-3">
-                            <input type="text" class="form-control form-control-sm focal-point-group-name me-3" value="${escapeHtml(groupName)}" data-original-name="${escapeHtml(groupName)}" style="max-width: 250px;" onclick="event.stopPropagation();">
+                            <input type="text" class="form-control form-control-sm focal-point-group-name me-3" value="${escapeHtml(groupName)}" data-original-name="${escapeHtml(groupName)}" style="max-width: 250px;">
                             <span class="badge bg-secondary">${points.length} pontos</span>
                         </div>
                     </button>
@@ -761,6 +768,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Initialize section on first show
             if (!sectionsInitialized.has(sectionName)) {
                 switch (sectionName) {
+                    case 'dashboard':
+                        if (typeof NeuronDashboard !== 'undefined') {
+                            NeuronDashboard.init();
+                        }
+                        break;
                     case 'prazos':
                         setupHolidaysTab();
                         break;
