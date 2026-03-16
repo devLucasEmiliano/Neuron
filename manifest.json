@@ -34,7 +34,7 @@
         "https://treinafalabr.cgu.gov.br/*",
         "https://falabr-h.cgu.gov.br/*"
       ],
-      "js": ["shared/js/neuron-db.js", "shared/js/neuron-sync.js", "modules/loading/loading.js"],
+      "js": ["shared/js/neuron-site.js", "shared/js/neuron-db.js", "shared/js/neuron-sync.js", "modules/loading/loading.js"],
       "css": ["modules/loading/loading.css"],
       "run_at": "document_start"
     },
