@@ -480,7 +480,26 @@ var NeuronDB = NeuronDB || (function () {
     }
 
     /**
-     * Get the current site alias
+     * Switch to a different site context and reload cache from storage
+     * @param {string} newSiteAlias - The site alias to switch to ('producao', 'treinamento', 'homologacao')
+     */
+    async function switchSite(newSiteAlias) {
+        if (!newSiteAlias) return;
+        initialized = false;
+        siteAlias = newSiteAlias;
+        await init(newSiteAlias);
+    }
+
+    /**
+     * Get the current site alias (public API)
+     * @returns {string} The current site alias
+     */
+    function getCurrentSite() {
+        return siteAlias;
+    }
+
+    /**
+     * Get the current site alias (internal, used by NeuronSync)
      */
     function _getCurrentSiteAlias() {
         return siteAlias;
@@ -528,6 +547,10 @@ var NeuronDB = NeuronDB || (function () {
         getStats,
         isNotificacaoRelevante,
         getNotificationCount,
+
+        // Site management
+        switchSite,
+        getCurrentSite,
 
         // Internal - used by NeuronSync for cache coherence
         _updateCache,
