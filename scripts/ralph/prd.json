@@ -1,237 +1,158 @@
 {
-  "project": "Neuron Extension",
-  "branchName": "ralph/dashboard-avancado",
-  "description": "Dashboard Avançado - Página dedicada com métricas completas, gráficos, filtro por usuário e tabela de demandas",
+  "project": "Neuron",
+  "branchName": "ralph/storage-por-site",
+  "description": "Storage Separado por Site - Isolar dados de demandas, concluídas e metadata por ambiente Fala.BR (produção, treinamento, homologação), mantendo config e preferências globais",
   "userStories": [
     {
       "id": "US-001",
-      "title": "Remover toggle 'Habilitar tema personalizado' do Options",
-      "description": "As a developer, I need to remove the 'Habilitar tema personalizado' toggle from the General settings section in options.html to simplify the interface, while keeping the light/dark/system theme toggle in the header working normally.",
+      "title": "Mapeamento de site ativo via URL",
+      "description": "As a developer, I need a utility that identifies the active Fala.BR site from a URL, so the entire system knows which environment the data belongs to.",
       "acceptanceCriteria": [
-        "Remove the 'Habilitar tema personalizado' toggle switch (id: themeEnabledToggle) and its label/container from options.html",
-        "Remove the associated JS event listener and logic for themeEnabledToggle in options.js",
-        "The theme toggle button in the header (id: themeToggle) still works to switch between light/dark themes",
-        "ThemeManager and all theme CSS remain intact and functional",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
+        "Create file shared/js/neuron-site.js with a NeuronSite IIFE (same pattern as NeuronDB)",
+        "NeuronSite.SITES constant maps aliases to domains: { producao: 'falabr.cgu.gov.br', treinamento: 'treinafalabr.cgu.gov.br', homologacao: 'falabr-h.cgu.gov.br' }",
+        "NeuronSite.getFromUrl(url) parses the hostname and returns the alias string ('producao', 'treinamento', or 'homologacao'), or null if unknown",
+        "NeuronSite.getDomain(alias) returns the full domain string for a given alias, or null if unknown",
+        "NeuronSite.getLabel(alias) returns short display labels: { producao: 'PROD', treinamento: 'TREINA', homologacao: 'HOMOLOG' }",
+        "Register neuron-site.js in manifest.json in ALL content_scripts blocks that include neuron-db.js — it must load BEFORE neuron-db.js",
+        "Also add neuron-site.js to the background.js importScripts call",
+        "Typecheck passes"
       ],
       "priority": 1,
       "passes": true,
-      "notes": ""
+      "notes": "This is the foundation utility used by all other stories. Check manifest.json for all content_scripts entries that reference shared/js/neuron-db.js and add shared/js/neuron-site.js before it in each js array. Also add it to web_accessible_resources if neuron-db.js is listed there."
     },
     {
       "id": "US-002",
-      "title": "Criar página scaffold do Dashboard dedicado",
-      "description": "As a user, I want a dedicated dashboard page (separate from Options) so I have more space to visualize my demand data.",
+      "title": "Chaves de storage com prefixo por site no NeuronDB",
+      "description": "As a developer, I need storage keys for demandas, concluidas, and metadata to be prefixed with the site alias, so each environment has isolated data.",
       "acceptanceCriteria": [
-        "Create folder modules/dashboard/ with three files: dashboard.html, dashboard.js, dashboard.css",
-        "dashboard.html has a full HTML5 page that loads Bootstrap 5 CSS/JS, Bootstrap Icons, Chart.js, neuron-db.js, neuron-sync.js, theme-manager.js, neuron-utils.js, and its own dashboard.js/dashboard.css",
-        "HTML layout includes: header with title 'Neuron Dashboard' and navigation links (link to Options page), a section with id='stats-cards' for metric cards, a section with id='charts-section' for charts (2x2 grid placeholders), and a section with id='table-section' for the demandas table",
-        "dashboard.js initializes NeuronDB on DOMContentLoaded and calls ThemeManager to apply the saved theme",
-        "dashboard.css includes basic layout styles for the grid sections (responsive Bootstrap grid)",
-        "Register modules/dashboard/ folder in manifest.json under web_accessible_resources alongside existing entries",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
+        "In neuron-db.js, the KEY_DEMANDAS, KEY_CONCLUIDAS, and KEY_METADATA constants are replaced with a function or getter that builds keys dynamically based on the active site alias (e.g., 'neuron_producao_demandas')",
+        "KEY_CONFIG ('neuron_config') and KEY_PREFERENCES ('neuron_preferences') remain unchanged (global, no prefix)",
+        "NeuronDB.init() accepts an optional siteAlias parameter — when provided, it sets the active site and builds per-site keys",
+        "When siteAlias is not provided to init(), it defaults to 'producao'",
+        "The in-memory cache loads data from the per-site keys for demandas/concluidas/metadata, and from global keys for config/preferences",
+        "All existing NeuronDB methods (saveDemanda, getAllDemandas, markConcluida, getMetadata, etc.) continue to work transparently using the per-site keys",
+        "The 'initialized' flag is reset when switching sites so init() re-reads from storage",
+        "Typecheck passes"
       ],
       "priority": 2,
       "passes": true,
-      "notes": "This is the foundational scaffold. All subsequent dashboard stories add components into the sections created here."
+      "notes": "Core change to shared/js/neuron-db.js. Store the current siteAlias in a module-level variable. Build key names like `neuron_${siteAlias}_demandas`. The init() internal calls (await init()) in each method should not override the site — only the first explicit call sets it."
     },
     {
       "id": "US-003",
-      "title": "Cards de métricas principais no Dashboard",
-      "description": "As a user, I want to see key metric cards at the top of the dashboard showing total demands, pending, short deadlines, overdue, completed, and completion rate at a glance.",
+      "title": "NeuronSync com suporte a chaves por site",
+      "description": "As a developer, I need NeuronSync to maintain cache coherence for per-site prefixed storage keys, so changes in one context are reflected across all others.",
       "acceptanceCriteria": [
-        "Add 6 Bootstrap cards inside #stats-cards section: Total de Demandas (primary), Pendentes (warning), Prazos Curtos ≤2 dias (danger), Atrasadas/vencidas (danger), Concluídas (success), Taxa de Conclusão % (info)",
-        "Each card shows a Bootstrap Icon and a large number",
-        "Cards use Bootstrap grid: col-xl-2 col-md-4 col-sm-6 for responsive layout",
-        "dashboard.js calls NeuronDB.getStats() to populate all card values",
-        "Add a refreshDashboard() function in dashboard.js that re-fetches stats and updates all cards",
-        "Register NeuronSync listener for neuron_demandas and neuron_concluidas changes to call refreshDashboard()",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
+        "NeuronSync's chrome.storage.onChanged listener detects changes to keys matching the pattern neuron_{alias}_{type} (e.g., neuron_producao_demandas)",
+        "When a per-site key changes, NeuronSync calls NeuronDB._updateCache only if the changed key belongs to the currently active site in NeuronDB",
+        "Add NeuronDB.getCurrentSiteAlias() or similar method so NeuronSync can check the active site",
+        "Config and preference listeners continue working unchanged (global keys, no prefix)",
+        "Typecheck passes"
       ],
       "priority": 3,
       "passes": true,
-      "notes": "Uses NeuronDB.getStats() which already computes total, pendentes, prazosCurtos, atrasadas, concluidas, taxaConclusao."
+      "notes": "Modify shared/js/neuron-sync.js. The listener in ensureListener() needs to check if a changed key matches the current site before updating cache. Use NeuronDB._getCurrentSiteAlias() or expose it via the public API."
     },
     {
       "id": "US-004",
-      "title": "Gráficos de distribuição de status e prazos",
-      "description": "As a user, I want to see a donut chart of demand status distribution and a horizontal bar chart of deadline distribution to quickly understand the composition of demands.",
+      "title": "Inicialização do NeuronDB com contexto de site nos content scripts",
+      "description": "As a content script, I need to initialize NeuronDB with the correct site detected from the page URL, so data is read/written to the correct namespace.",
       "acceptanceCriteria": [
-        "Add a donut chart (Chart.js) in #charts-section showing status distribution: Prorrogadas, Complementadas, Possível Respondida, Com Observação, Normal",
-        "Add a horizontal bar chart (Chart.js) in #charts-section showing deadline distribution: Atrasadas (< 0 days), Urgentes (0-2 days), Próximas (3-7 days), Normais (> 7 days)",
-        "Both charts read data from the stats object returned by NeuronDB.getStats()",
-        "Create a getThemeColors() helper function in dashboard.js that returns appropriate colors based on current theme (data-bs-theme attribute)",
-        "Charts resize responsively with the window (responsive: true, maintainAspectRatio: false in Chart.js options)",
-        "Charts update when refreshDashboard() is called",
-        "Listen for neuron-theme-change event to redraw charts with updated colors",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
+        "In modules/ouvidoria/tratar-novo/tratar-novo-insert.js, change NeuronDB.init() to NeuronDB.init(NeuronSite.getFromUrl(window.location.href))",
+        "In modules/loading/loading.js, if it calls NeuronDB.init(), update it similarly",
+        "In any other content script file that explicitly calls NeuronDB.init(), update to pass the site alias",
+        "Search all 17 files that reference NeuronDB for explicit init() calls and update them all",
+        "Data saved while on treinafalabr.cgu.gov.br is stored under neuron_treinamento_* keys",
+        "Data saved while on falabr.cgu.gov.br is stored under neuron_producao_* keys",
+        "Typecheck passes"
       ],
       "priority": 4,
       "passes": true,
-      "notes": "Stats object already has prorrogadas, complementadas, possivelRespondida, possivelobservacao, and byPrazoRange fields."
+      "notes": "Search for 'NeuronDB.init()' across all files. Most NeuronDB methods call init() internally, but only the first explicit init() sets the site. Files to check: tratar-novo-insert.js, loading.js, popup.js, dashboard.js, options.js, notificacoes.js, module-factory.js. For popup/dashboard/options (extension pages, not content scripts), use 'producao' as default for now — US-007/US-008 will add the site selector later."
     },
     {
       "id": "US-005",
-      "title": "Gráfico de Top 10 Responsáveis",
-      "description": "As a user, I want to see a vertical bar chart showing the top 10 responsible parties by demand count to understand workload distribution.",
+      "title": "Correção do href hardcoded na extração de demandas",
+      "description": "As a user, I want extracted demand links to point to the correct domain of the site I'm browsing, so I'm not redirected to production when I'm on training.",
       "acceptanceCriteria": [
-        "Add a vertical bar chart (Chart.js) in #charts-section showing top 10 responsáveis by demand count",
-        "Chart reads data from stats.topResponsaveis array (already computed by NeuronDB.getStats())",
-        "Tooltip on hover shows full name and exact count",
-        "Chart uses theme-aware colors from getThemeColors()",
-        "Chart updates when refreshDashboard() is called",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
+        "In modules/ouvidoria/tratar-novo/tratar-novo-extract.js line 57, replace the hardcoded 'https://falabr.cgu.gov.br' with window.location.origin",
+        "Demands extracted on treinafalabr.cgu.gov.br have href starting with https://treinafalabr.cgu.gov.br",
+        "Demands extracted on falabr-h.cgu.gov.br have href starting with https://falabr-h.cgu.gov.br",
+        "Demands extracted on falabr.cgu.gov.br continue to have href starting with https://falabr.cgu.gov.br",
+        "Typecheck passes"
       ],
       "priority": 5,
       "passes": true,
-      "notes": "NeuronDB.getStats() already returns topResponsaveis as array of {name, count}."
+      "notes": "Simple one-line change in tratar-novo-extract.js. Change: href: urlRelativo ? `https://falabr.cgu.gov.br${urlRelativo}` : null → href: urlRelativo ? `${window.location.origin}${urlRelativo}` : null"
     },
     {
       "id": "US-006",
-      "title": "Gráfico temporal de demandas por mês",
-      "description": "As a user, I want to see a line chart showing demands registered per month over the last 12 months to identify trends.",
+      "title": "Descarte de dados antigos na atualização da extensão",
+      "description": "As a developer, I need to clean up old-format storage data (without site prefix) when the extension is updated, to avoid orphaned or mixed data.",
       "acceptanceCriteria": [
-        "Add a line chart (Chart.js) in #charts-section showing demands registered per month for the last 12 months",
-        "X-axis shows months in MMM/YYYY format, Y-axis shows count",
-        "Group demands by month using the cadastroTimestamp field from each demanda",
-        "Add a second line showing demands completed (concluídas) per month using the concluidas set",
-        "Tooltip shows exact values on hover",
-        "Chart uses theme-aware colors and updates on theme change",
-        "Chart updates when refreshDashboard() is called",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
+        "In background.js onInstalled listener, check if reason is 'install' or 'update'",
+        "Check if old-format keys exist: 'neuron_demandas', 'neuron_concluidas', 'neuron_metadata'",
+        "If they exist, remove them using chrome.storage.local.remove(['neuron_demandas', 'neuron_concluidas', 'neuron_metadata'])",
+        "Do NOT remove neuron_config or neuron_preferences (these are still global)",
+        "Set a flag 'neuron_storage_v2' in chrome.storage.local so this cleanup only runs once",
+        "Log a console message when cleanup is performed",
+        "Typecheck passes"
       ],
       "priority": 6,
       "passes": true,
-      "notes": "Must compute monthly aggregation from demandas array and concluidas set. Use cadastroTimestamp (already computed by NeuronDB) for grouping."
+      "notes": "Modify background.js. Add cleanup logic inside the existing chrome.runtime.onInstalled listener after the config initialization. Check for the v2 flag first to avoid re-running."
     },
     {
       "id": "US-007",
-      "title": "Capturar nome do usuário logado via content script",
-      "description": "As a developer, I need to capture the logged-in user's name from the Fala.BR page and store it in NeuronDB so the dashboard can filter demands by user.",
+      "title": "NeuronDB.switchSite para troca de contexto",
+      "description": "As a popup/dashboard, I need to query data from any site (not just the active one), to show data from the site chosen by the user.",
       "acceptanceCriteria": [
-        "In an existing content script that runs on Fala.BR pages, read the text content of element with id 'ConteudoForm_labelUsuario'",
-        "Store the captured username in NeuronDB metadata with key 'currentUser' using NeuronDB.setMetadata('currentUser', username)",
-        "Only update if the element exists and has non-empty text content",
-        "The capture runs once on page load (document_idle)",
+        "Add NeuronDB.switchSite(siteAlias) method that changes the active site and reloads the cache from storage",
+        "switchSite resets the 'initialized' flag and calls init(siteAlias) internally",
+        "Add NeuronDB.getCurrentSite() method that returns the current site alias string",
+        "After switchSite, all read/write operations (getAllDemandas, saveDemanda, etc.) use the new site's keys",
+        "Config and preferences remain global regardless of which site is active",
         "Typecheck passes"
       ],
       "priority": 7,
       "passes": true,
-      "notes": "This is a small change to an existing content script. The stored value will be used by the dashboard filter in US-008."
+      "notes": "Modify shared/js/neuron-db.js. switchSite should set initialized=false, update the siteAlias variable, then call init(). Expose getCurrentSite in the public API return object."
     },
     {
       "id": "US-008",
-      "title": "Filtro 'Minhas Demandas' vs 'Todas as Demandas' no Dashboard",
-      "description": "As a user, I want to toggle between seeing only my demands and all demands so I can focus on what's relevant to me.",
+      "title": "Seletor de site no Popup",
+      "description": "As a user, I want to see which site's data the popup is showing and switch to another site, to compare demands between environments.",
       "acceptanceCriteria": [
-        "Add a Bootstrap button group toggle in the dashboard header area with two options: 'Minhas Demandas' and 'Todas as Demandas'",
-        "Read the current user name from NeuronDB.getMetadata('currentUser')",
-        "When 'Minhas Demandas' is selected, filter demandas to only those where responsaveis array includes the current user (case-insensitive comparison)",
-        "When 'Todas as Demandas' is selected, show all demandas without filtering",
-        "The filter selection persists via NeuronDB.setPreference('dashboardFilter', 'mine'|'all')",
-        "On page load, read saved preference and apply the filter",
-        "All stat cards, all 4 charts, and the demandas table (if it exists) update when the filter changes",
-        "Refactor refreshDashboard() to accept an optional filtered demandas array, or apply the filter before computing stats",
+        "Add a segmented control (3 buttons side by side) in the popup header with labels PROD, TREINA, HOMOLOG",
+        "On popup open, detect the active tab's URL using chrome.tabs.query({active: true, currentWindow: true}) and auto-select the matching site",
+        "If the active tab is not a Fala.BR site, default to PROD",
+        "Clicking a different site button calls NeuronDB.switchSite() and refreshes all popup data (counters, notifications)",
+        "Color coding: PROD=blue (#2563eb), TREINA=orange (#ea580c), HOMOLOG=green (#16a34a) — active button gets the color, inactive buttons are gray",
+        "The segmented control is placed below the master switch and above the notification settings",
         "Typecheck passes",
         "Verify in browser using dev-browser skill"
       ],
       "priority": 8,
       "passes": true,
-      "notes": "Depends on US-007 for the currentUser metadata. The filter must affect getStats()-equivalent calculations locally in dashboard.js since NeuronDB.getStats() doesn't support filtering."
+      "notes": "Modify modules/popup/popup.html and modules/popup/popup.js. Use chrome.tabs.query to detect the active URL, then NeuronSite.getFromUrl() to get the alias. Style the segmented control to match the existing popup design. Ensure NeuronSite is available — check that popup.html loads neuron-site.js."
     },
     {
       "id": "US-009",
-      "title": "Tabela de demandas com colunas e cores de urgência",
-      "description": "As a user, I want to see a complete table of all demands with urgency-based row coloring so I can quickly identify what needs attention.",
+      "title": "Seletor de site no Dashboard",
+      "description": "As a user, I want to switch between sites on the Dashboard to view statistics for each environment separately.",
       "acceptanceCriteria": [
-        "Add a Bootstrap table inside #table-section with columns: Número (NUP), Data Cadastro, Prazo, Dias Restantes, Situação, Responsáveis",
-        "Populate the table from the filtered demandas array (respecting the Minhas/Todas filter from US-008)",
-        "Dias Restantes column shows a colored Bootstrap badge: badge bg-danger for < 0 days, badge bg-warning text-dark for 0-2 days, badge bg-success for > 2 days",
-        "Table rows have colored background based on urgency: table-danger class for overdue (< 0 days), table-warning class for urgent (0-2 days), no extra class for normal (> 2 days)",
-        "Responsáveis column shows names joined by comma",
-        "Table updates when refreshDashboard() is called",
+        "Add a segmented control in the Dashboard header (same visual pattern as popup: PROD, TREINA, HOMOLOG)",
+        "On dashboard open, detect the site from the opener tab or default to PROD",
+        "Clicking a different site button calls NeuronDB.switchSite() and refreshes all charts, demand table, and counters",
+        "Color coding matches the popup: PROD=blue, TREINA=orange, HOMOLOG=green",
+        "The segmented control is placed in the dashboard header area, near the title",
         "Typecheck passes",
         "Verify in browser using dev-browser skill"
       ],
       "priority": 9,
       "passes": true,
-      "notes": "Use NeuronDB.calcularDiasRestantes(demanda.prazo) for computing days remaining."
-    },
-    {
-      "id": "US-010",
-      "title": "Busca e ordenação na tabela de demandas",
-      "description": "As a user, I want to search and sort the demands table so I can quickly find specific demands.",
-      "acceptanceCriteria": [
-        "Add a search input field above the table with placeholder 'Buscar por número, situação ou responsável...'",
-        "Search filters table rows in real-time as the user types (case-insensitive match against numero, situacao, and responsaveis fields)",
-        "Each sortable column header (Número, Data Cadastro, Prazo, Dias Restantes) shows a clickable sort indicator",
-        "Clicking a column header sorts the table ascending; clicking again sorts descending",
-        "Active sort column shows arrow indicator (↑ for asc, ↓ for desc) using Bootstrap Icons bi-arrow-up / bi-arrow-down",
-        "Sort and search work together (search filters first, then sort applies to filtered results)",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 10,
-      "passes": true,
-      "notes": "Sort by timestamps for date columns (prazoTimestamp, cadastroTimestamp), by numeric value for Dias Restantes."
-    },
-    {
-      "id": "US-011",
-      "title": "Paginação da tabela de demandas",
-      "description": "As a user, I want pagination on the demands table to navigate large datasets efficiently.",
-      "acceptanceCriteria": [
-        "Add pagination controls below the table with Bootstrap pagination component: First, Previous, page numbers, Next, Last buttons",
-        "Add a select dropdown for items per page with options: 10, 25, 50, 100",
-        "Show text 'Mostrando X a Y de Z demandas' next to the pagination",
-        "Pagination resets to page 1 when the search query or filter (Minhas/Todas) changes",
-        "Items per page preference persists via NeuronDB.setPreference('dashboardItemsPerPage', value)",
-        "On page load, read saved items per page preference (default to 25)",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 11,
-      "passes": true,
-      "notes": ""
-    },
-    {
-      "id": "US-012",
-      "title": "Ações rápidas na tabela (Abrir no Fala.BR e Copiar NUP)",
-      "description": "As a user, I want quick action buttons on each table row to open the demand in Fala.BR or copy the NUP number.",
-      "acceptanceCriteria": [
-        "Add an 'Ações' column to the table as the last column",
-        "Each row has an 'Abrir no Fala.BR' icon button (bi-box-arrow-up-right) that opens the demand page in a new tab",
-        "The URL is constructed using the correct Fala.BR environment base URL from manifest.json host_permissions (default to production: falabr.cgu.gov.br)",
-        "Each row has a 'Copiar NUP' icon button (bi-clipboard) that copies the demand numero to clipboard using navigator.clipboard.writeText()",
-        "After copying, show a brief visual feedback: change icon to bi-clipboard-check and/or show a Bootstrap tooltip 'Copiado!' for 2 seconds",
-        "Buttons are compact using btn-sm btn-outline-secondary classes",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 12,
-      "passes": true,
-      "notes": "For the Fala.BR URL, check the current environment or default to production."
-    },
-    {
-      "id": "US-013",
-      "title": "Navegação: acesso ao Dashboard via Popup e Options",
-      "description": "As a user, I want to easily access the dashboard from the extension popup and the Options page, and navigate back to Options from the dashboard.",
-      "acceptanceCriteria": [
-        "Add a 'Dashboard' button in the popup (modules/popup/popup.html) that opens modules/dashboard/dashboard.html in a new tab using chrome.tabs.create()",
-        "Add a navigation link/button in the Options page header that opens the Dashboard page",
-        "The Dashboard page header already has a link to Options (added in US-002) - verify it works",
-        "Simplify or replace the existing 'Dashboard' tab content in Options with a card/link that says 'Abrir Dashboard completo' and opens the dedicated dashboard page",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 13,
-      "passes": false,
-      "notes": "This touches popup.html, options.html, and verifies dashboard.html navigation. Keep the Options dashboard tab but replace its content with a redirect to the full dashboard."
+      "notes": "Modify modules/dashboard/dashboard.html and modules/dashboard/dashboard.js. The dashboard is opened as an options page or new tab. It may not have a direct reference to the active Fala.BR tab, so default to 'producao' or check via chrome.tabs.query. Ensure neuron-site.js is loaded in dashboard.html. Reuse the same segmented control CSS from the popup story."
     }
   ]
 }
