@@ -12,7 +12,7 @@ Thumbs.db
 # Claude Code - Runtime state (don't commit)
 .claude/data/init/state.json
 .claude/data/init/changelog.json
-
+docs/
 # Backup files
 *.backup
 
