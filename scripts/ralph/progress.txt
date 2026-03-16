@@ -1,210 +1,133 @@
-# Ralph Progress Log
-Started: Wed Mar 11 18:42:54 -03 2026
----
+# Ralph Progress: Storage Separado por Site
+# Branch: ralph/storage-por-site
+# Started: 2026-03-16
 
 ## Codebase Patterns
-- This is a Chrome Extension with plain JS (no TypeScript, no build system, no package.json)
-- Theme management is handled by ThemeManager class in shared/js/theme-manager.js
-- Options page uses sidebar navigation pattern with lazy section initialization (setupSidebarNavigation)
-- The options page loads dashboard.js and dashboard.css alongside options.js
-- ThemeManager.cycle() cycles through light → dark → system themes
-- NeuronDB and NeuronSync are the data layer; config is stored via chrome.storage
-- CSS uses Bootstrap 5 with custom Neuron theme classes (text-neuron-primary, btn-neuron-primary, etc.)
-- Dedicated dashboard page at modules/dashboard/ is separate from options embedded dashboard at modules/options/dashboard.js
-- New extension pages should load scripts in order: bootstrap.bundle → chart.min → neuron-db → neuron-sync → neuron-utils → theme-manager → page.js
-- NeuronSync only handles config/preference changes; for demandas/concluidas data changes, use chrome.storage.onChanged directly
-- refreshDashboard() in dashboard.js is the central refresh function — extend it for charts, tables, filters
-- getThemeColors() in dashboard.js returns all chart colors; extend it when adding new chart types
-- Chart instances (chartStatus, chartPrazos, etc.) are module-scoped; on theme change, destroy+recreate them
-- computeLocalStats(demandas, concluidasSet) mirrors NeuronDB.getStats() for filtered subsets — use it when filtering is needed
-- Filter state: currentFilter ('all'|'mine') and currentUser are module-scoped in dashboard.js; persisted via NeuronDB preferences
-- Use NeuronUtils.escapeHtml (window.NeuronUtils.escapeHtml) for XSS-safe HTML rendering — already loaded on all extension pages
-- renderDemandasTable(stats) renders the full table from stats.demandas — extend for pagination
-- Search/sort state (searchQuery, sortColumn, sortDirection) is module-scoped; renderDemandasTable(null) re-renders with lastStats
-- searchDemandas() and sortDemandas() are composable pipeline functions: search filters first, then sort applies
-- Pagination state (currentPage, itemsPerPage) is module-scoped; renderPagination() renders Bootstrap pagination controls
-- Pagination resets to page 1 on search, filter, or items-per-page change; itemsPerPage persists via NeuronDB preference 'dashboardItemsPerPage'
-- Demanda objects have an `href` field with the full Fala.BR URL (may be null); use it for linking to the demand page
-- For row action buttons, use event delegation on the table since tbody content is re-rendered frequently
+- NeuronDB and other shared modules use IIFE pattern: `var X = X || (function() { ... })();` with `module.exports` for Node compatibility
+- manifest.json content_scripts: only the first block (document_start) includes neuron-db.js and neuron-sync.js — neuron-site.js must be in that same block, loaded BEFORE neuron-db.js
+- web_accessible_resources uses `shared/js/*` wildcard, so new files in shared/js/ are automatically accessible
+- No build tools, TypeScript, or package.json — plain vanilla JS Chrome extension (Manifest V3)
+- background.js uses importScripts() for shared modules
+- NeuronDB cache uses semantic property names (cache.demandas, cache.config) — NOT storage key names
+- Per-site storage keys are built dynamically: `neuron_${siteAlias}_demandas`, `neuron_${siteAlias}_concluidas`, `neuron_${siteAlias}_metadata`
+- NeuronDB._getCurrentSiteAlias() returns the active site alias string
+- NeuronSync filters per-site storage key changes using regex; only updates cache for the active site
+- loading.js (document_start) is the first content script to run — NeuronDB.init() with site alias here sets context for all subsequent content scripts
+- Extension pages (popup, dashboard, options, background) default to 'producao' for NeuronDB.init() — site switching comes via US-007/US-008
+- NeuronDB.switchSite(alias) resets cache and reloads from storage — must be awaited before reading data
+- NeuronDB.getCurrentSite() returns the active site alias (public API); _getCurrentSiteAlias() is for NeuronSync internal use
+- Extension pages (popup, dashboard, options) must explicitly add neuron-site.js in their HTML script tags — it's only auto-loaded in content_scripts via manifest.json
+- Site selector segmented control CSS uses `.site-btn.active[data-site="X"]` pattern — reusable across popup and dashboard
 
-## 2026-03-11 - US-001
-- Removed 'Habilitar tema personalizado' toggle (themeEnabledToggle) from options.html
-- Removed associated JS: updateThemeEnabledUI function, themeEnabledToggle event listener, neuron-theme-enabled-change listener
-- Header theme toggle button (themeToggle) preserved and works normally via ThemeManager.cycle()
-- Files changed: modules/options/options.html, modules/options/options.js
-- **Learnings for future iterations:**
-  - The options page has a card in General section with masterEnableOptions as the sole toggle now
-  - CSS rule for .theme-toggle-disabled still exists in options.css but is harmless (unused)
-  - No build system or tests to run - quality checks are visual/manual
-  - Branch created from developing: ralph/dashboard-avancado
 ---
 
-## 2026-03-11 - US-002
-- Created modules/dashboard/ folder with dashboard.html, dashboard.js, dashboard.css
-- dashboard.html: Full HTML5 page with Bootstrap 5, Bootstrap Icons, Chart.js, shared JS, and own assets
-- Layout: header with "Neuron Dashboard" + Options link + theme toggle, #stats-cards section, #charts-section (2x2 grid with 4 chart placeholders), #table-section for demandas table
-- dashboard.js: Initializes NeuronDB on DOMContentLoaded, calls ThemeManager.init(), sets up theme toggle with cycle()
-- dashboard.css: Layout styles for header (sticky), stat cards, chart cards, table section, dark mode, responsive breakpoints
-- Registered modules/dashboard/* in manifest.json web_accessible_resources
-- Files changed: modules/dashboard/dashboard.html, modules/dashboard/dashboard.js, modules/dashboard/dashboard.css, manifest.json
+## 2026-03-16 - US-001
+- Created shared/js/neuron-site.js with NeuronSite IIFE: SITES constant, getFromUrl(), getDomain(), getLabel()
+- Registered neuron-site.js in manifest.json content_scripts (first block, before neuron-db.js)
+- Added neuron-site.js to background.js importScripts
 - **Learnings for future iterations:**
-  - Dashboard page is at modules/dashboard/dashboard.html, relative paths to vendor/shared use ../../
-  - The dedicated dashboard has 4 chart canvases: chart-status, chart-prazos, chart-responsaveis, chart-temporal
-  - Options page already has its own dashboard.js/dashboard.css in modules/options/ - the dedicated dashboard is separate
-  - Script load order: bootstrap.bundle → chart.min → neuron-db → neuron-sync → neuron-utils → theme-manager → dashboard.js
-  - No typecheck needed - plain JS project; validate with node --check for syntax
+  - The manifest already had neuron-site.js in the first content_scripts block (from prior branch work) — always check current state before editing
+  - Only one content_scripts block includes neuron-db.js (the document_start block) — that's the only one needing neuron-site.js
+  - web_accessible_resources already covers shared/js/* so no changes needed there
 ---
 
-## 2026-03-11 - US-003
-- Added 6 Bootstrap metric cards to #stats-cards section in dashboard.html
-- Cards: Total de Demandas (primary), Pendentes (warning), Prazos Curtos ≤2 dias (danger), Atrasadas (danger), Concluidas (success), Taxa de Conclusao (info)
-- Each card has a Bootstrap Icon and stat-value/stat-label layout using col-xl-2 col-md-4 col-sm-6 grid
-- Implemented refreshDashboard() in dashboard.js that calls NeuronDB.getStats() and updates all card values
-- Added chrome.storage.onChanged listener for neuron_demandas and neuron_concluidas to auto-refresh
-- Files changed: modules/dashboard/dashboard.html, modules/dashboard/dashboard.js
+## 2026-03-16 - US-002
+- Replaced static KEY_DEMANDAS, KEY_CONCLUIDAS, KEY_METADATA constants with dynamic key builder functions: keyDemandas(), keyConcluidas(), keyMetadata() that build keys like `neuron_${siteAlias}_demandas`
+- KEY_CONFIG and KEY_PREFERENCES remain global (unchanged)
+- init() now accepts optional siteAlias parameter; defaults to 'producao'; resets initialized flag when site changes
+- Cache changed from using storage key names as property names to semantic names (cache.demandas, cache.concluidas, etc.)
+- _updateCache() updated to map storage keys to cache properties
+- Added _getCurrentSiteAlias() method exposed in public API (needed by NeuronSync in US-003)
+- Files changed: shared/js/neuron-db.js
 - **Learnings for future iterations:**
-  - NeuronDB.getStats() returns: total, pendentes, concluidas, taxaConclusao, prazosCurtos, atrasadas, prorrogadas, complementadas, possivelRespondida, possivelobservacao, byResponsavel, topResponsaveis, byPrazoRange, demandas, concluidasSet
-  - NeuronSync only watches neuron_config and neuron_preferences; for neuron_demandas/neuron_concluidas changes, use chrome.storage.onChanged directly
-  - refreshDashboard() is the central function for updating all dashboard data; future stories should extend it
-  - CSS classes for stat cards (.stat-card, .stat-icon, .stat-value, .stat-label) are already defined in dashboard.css from US-002
+  - The cache object properties changed from `cache['neuron_demandas']` to `cache.demandas` — this affects _updateCache which NeuronSync calls with storage key names, so _updateCache must map storage keys to cache properties
+  - Internal `await init()` calls (with no args) must NOT override the site — the init() logic handles this by only changing siteAlias when newSiteAlias is explicitly provided
+  - NeuronSync already passes storage key strings to _updateCache, so the mapping approach maintains backward compatibility
 ---
 
-## 2026-03-11 - US-004
-- Added donut chart (Chart.js doughnut) for status distribution: Prorrogadas, Complementadas, Possível Respondida, Com Observação, Normal
-- Added horizontal bar chart (Chart.js bar with indexAxis: 'y') for deadline distribution: Atrasadas, Urgentes, Próximas, Normais
-- Created getThemeColors() helper returning light/dark-aware colors for all chart elements
-- Charts created as module-scoped variables (chartStatus, chartPrazos) for update/destroy lifecycle
-- Charts update on refreshDashboard() — existing instances get data/color updates, new instances are created if null
-- Theme change listener destroys and recreates charts to fully apply new colors (border, grid, text)
-- Files changed: modules/dashboard/dashboard.js
+## 2026-03-16 - US-003
+- Modified NeuronSync's chrome.storage.onChanged listener to filter per-site keys by the active site alias
+- Per-site keys (neuron_{alias}_{type}) are only forwarded to NeuronDB._updateCache if the alias matches NeuronDB._getCurrentSiteAlias()
+- Global keys (config, preferences) continue to always update the cache
+- Files changed: shared/js/neuron-sync.js
 - **Learnings for future iterations:**
-  - Chart instances must be stored as variables accessible across functions (chartStatus, chartPrazos) for update and destroy
-  - For theme changes, destroy+recreate charts rather than just updating colors — borderColor and grid need full reset
-  - getThemeColors() is the central source for all chart colors — extend it for new chart types (US-005, US-006)
-  - "Normal" status count is computed as total minus all other status categories
-  - Chart.js options: responsive:true + maintainAspectRatio:false + container height in CSS gives proper responsive charts
+  - NeuronSync uses a regex `/^neuron_(producao|treinamento|homologacao)_(demandas|concluidas|metadata)$/` to identify per-site keys — if new sites or data types are added, this regex must be updated
+  - NeuronDB._getCurrentSiteAlias() was already exposed in US-002, no additional public API method needed
+  - Config and preference change callbacks in NeuronSync are completely separate from the cache update logic — they use their own KEY_CONFIG/KEY_PREFERENCES constants
 ---
 
-## 2026-03-11 - US-005
-- Added vertical bar chart (Chart.js) for Top 10 Responsáveis in #charts-section using canvas id chart-responsaveis
-- Chart reads data from stats.topResponsaveis array, sliced to top 10 entries
-- Tooltip shows full name (title) and exact count on hover
-- Uses theme-aware purple color (responsaveis key in getThemeColors())
-- Chart instance stored as module-scoped chartResponsaveis, destroyed+recreated on theme change
-- Chart updates via updateResponsaveisChart(stats) called from refreshDashboard()
-- Files changed: modules/dashboard/dashboard.js
+## 2026-03-16 - US-005
+- Replaced hardcoded `https://falabr.cgu.gov.br` with `window.location.origin` in tratar-novo-extract.js line 57
+- Demands extracted on any Fala.BR environment now have hrefs pointing to the correct domain
+- Files changed: modules/ouvidoria/tratar-novo/tratar-novo-extract.js
 - **Learnings for future iterations:**
-  - stats.topResponsaveis is an array of {name, count} already sorted by count descending
-  - Pattern for adding new charts: add color to getThemeColors(), add module-scoped variable, add updateXxxChart function, call from refreshDashboard(), add destroy in theme change handler
-  - X-axis labels can be long names; maxRotation/minRotation help with readability
+  - This was the only hardcoded domain in application code — all other references to falabr.cgu.gov.br are in manifest.json URL patterns (which are correct, as they define which sites the extension runs on)
+  - `window.location.origin` is available in content scripts and returns the full scheme+host (e.g., `https://treinafalabr.cgu.gov.br`)
 ---
 
-## 2026-03-11 - US-006
-- Added line chart (Chart.js) in #charts-section using canvas id chart-temporal showing demands per month for last 12 months
-- Two lines: "Registradas" (all demandas by cadastroTimestamp) and "Concluídas" (demandas in concluidasSet by cadastroTimestamp)
-- X-axis shows MMM/YYYY format with Portuguese month abbreviations, Y-axis shows count
-- Added temporalRegistradas/temporalConcluidas colors to getThemeColors()
-- Module-scoped chartTemporal variable; destroyed+recreated on theme change
-- Tooltip shows exact values with interaction mode 'index' (shows both lines at once)
-- Files changed: modules/dashboard/dashboard.js
+## 2026-03-16 - US-004
+- Updated content scripts to initialize NeuronDB with site context from current URL
+- `loading.js`: Added explicit `NeuronDB.init(NeuronSite.getFromUrl(window.location.href))` at start of init() — this is the first content script to run (document_start), so it sets the site context for all subsequent NeuronDB usage
+- `notificacoes.js`: Changed existing `NeuronDB.init()` to `NeuronDB.init(NeuronSite.getFromUrl(window.location.href))`
+- Extension pages (`dashboard.js`, `background.js`) left with default `NeuronDB.init()` (defaults to 'producao') — US-007/US-008 will add site selectors
+- Files changed: modules/loading/loading.js, modules/notificacoes/notificacoes.js
 - **Learnings for future iterations:**
-  - concluidasSet only tells WHICH demandas are concluded (by numero), not WHEN — group concluded demandas by their cadastroTimestamp (registration date)
-  - For temporal grouping, build month buckets first then iterate demandas once — avoids sorting
-  - Portuguese month abbreviations: Jan, Fev, Mar, Abr, Mai, Jun, Jul, Ago, Set, Out, Nov, Dez
-  - Chart.js line chart with fill:true and alpha color (hex + '33') creates nice area effect
+  - `tratar-novo-insert.js` does NOT call NeuronDB.init() explicitly — it only uses getConfig() which triggers internal init(). The PRD acceptance criteria mentioned it but the call doesn't exist in the code.
+  - loading.js is the first content script (document_start block) — initializing NeuronDB with site here ensures all subsequent content scripts (document_idle, etc.) inherit the correct site context
+  - Only 2 content script files had NeuronDB.init() calls or needed them; other content scripts rely on internal init() via NeuronDB methods
+  - Extension pages (popup, dashboard, options, background) should default to 'producao' and get site switching via US-007/US-008
 ---
 
-## 2026-03-11 - US-007
-- Added captureCurrentUser() function in notificacoes.js that reads ConteudoForm_labelUsuario and stores via NeuronDB.setMetadata('currentUser', username)
-- Runs once on page load in init(), before feature activation, so it works regardless of notification feature being enabled/disabled
-- Only stores if element exists and has non-empty text (getUsuarioLogado() returns null otherwise)
-- Files changed: modules/notificacoes/notificacoes.js
+## 2026-03-16 - US-006
+- Added old-format storage key cleanup in background.js onInstalled listener
+- On install/update, checks for 'neuron_storage_v2' flag; if absent, removes old keys ('neuron_demandas', 'neuron_concluidas', 'neuron_metadata') and sets the v2 flag
+- neuron_config and neuron_preferences are NOT removed (they remain global)
+- Files changed: background.js
 - **Learnings for future iterations:**
-  - notificacoes.js runs at document_idle on ALL Fala.BR pages — good place for cross-cutting concerns
-  - getUsuarioLogado() is already defined in notificacoes.js; reuse it rather than duplicating DOM access
-  - NeuronDB.setMetadata/getMetadata uses neuron_metadata storage key with in-memory cache
-  - captureCurrentUser runs before verificarEstadoAtualEAgir so metadata is available even if notifications are disabled
+  - The onInstalled listener callback receives a `details` object with `details.reason` — changed the arrow function signature from `()` to `(details)`
+  - chrome.storage.local.get() returns an object where missing keys are simply absent (not undefined-valued), so checking `oldData[key] !== undefined` works correctly
+  - The cleanup only runs once thanks to the 'neuron_storage_v2' flag — safe for subsequent extension updates
 ---
 
-## 2026-03-11 - US-008
-- Added Bootstrap button group toggle in dashboard header: "Todas as Demandas" / "Minhas Demandas"
-- Reads currentUser from NeuronDB.getMetadata('currentUser') and saved preference from NeuronDB.getPreference('dashboardFilter')
-- When "Minhas Demandas" selected, filters demandas by responsaveis array (case-insensitive match)
-- Created computeLocalStats() function that mirrors NeuronDB.getStats() logic for filtered data subsets
-- Created filterDemandas() helper for the case-insensitive responsaveis matching
-- Filter preference persists via NeuronDB.setPreference('dashboardFilter', 'mine'|'all')
-- Saved preference applied on page load; buttons sync to saved state
-- All stat cards, all 4 charts update when filter changes via refreshDashboard()
-- Files changed: modules/dashboard/dashboard.html, modules/dashboard/dashboard.js
+## 2026-03-16 - US-007
+- Added NeuronDB.switchSite(siteAlias) method that resets initialized flag, updates siteAlias, and calls init() to reload cache from storage
+- Added NeuronDB.getCurrentSite() public method that returns the current site alias string
+- Both methods exposed in the public API return object
+- Config and preferences remain global regardless of site switching
+- Files changed: shared/js/neuron-db.js
 - **Learnings for future iterations:**
-  - computeLocalStats() replicates NeuronDB.getStats() logic for filtered subsets — future features that need filtered stats should use it
-  - Filter state (currentFilter, currentUser) is module-scoped; toggle handler uses event delegation on filterGroup
-  - The table section (US-009) should also respect the filter — refreshDashboard() already provides filtered stats.demandas
-  - NeuronDB.getPreference/setPreference uses neuron_preferences storage key
+  - switchSite explicitly sets initialized=false before calling init() — this is necessary because init() only resets initialized when the alias actually changes, and we want to force a reload even if switching to the same site
+  - getCurrentSite() is the public API; _getCurrentSiteAlias() remains for NeuronSync internal use — both return the same value but the naming convention distinguishes public from internal API
+  - The switchSite method is async because it calls init() which reads from chrome.storage — callers must await it before reading data
 ---
 
-## 2026-03-11 - US-009
-- Added Bootstrap table inside #table-section with columns: Numero (NUP), Data Cadastro, Prazo, Dias Restantes, Situacao, Responsaveis
-- Table populated from filtered demandas array (respects Minhas/Todas filter from US-008)
-- Dias Restantes column shows colored Bootstrap badge: bg-danger for < 0 days, bg-warning text-dark for 0-2 days, bg-success for > 2 days
-- Table rows have urgency-based background: table-danger for overdue, table-warning for urgent, no extra class for normal
-- Responsaveis column shows names joined by comma
-- Table updates via renderDemandasTable(stats) called from refreshDashboard()
-- Uses NeuronDB.calcularDiasRestantes(demanda.prazo) for computing days remaining
-- Uses NeuronUtils.escapeHtml for XSS-safe rendering
+## 2026-03-16 - US-008
+- Added segmented control (PROD / TREINA / HOMOLOG) in popup between master switch and items-per-page card
+- On popup open, detects active tab URL via chrome.tabs.query and auto-selects matching site; defaults to PROD if not a Fala.BR site
+- Clicking a site button calls NeuronDB.switchSite() and refreshes all popup controls from config
+- Color coding: PROD=blue (#2563eb), TREINA=orange (#ea580c), HOMOLOG=green (#16a34a)
+- Added neuron-site.js script to popup.html
+- Extracted atualizarUIFromConfig() to avoid duplicated UI update code (used by init, site switch, and NeuronSync handler)
+- Files changed: modules/popup/popup.html, modules/popup/popup.js, modules/popup/popup.css
+- **Learnings for future iterations:**
+  - popup.html did NOT have neuron-site.js loaded — extension pages must explicitly include it in their script tags
+  - Config (neuron_config) is global, not per-site — switching sites doesn't change config data, but the popup still reloads it for consistency
+  - The segmented control CSS uses data-site attribute selectors for color coding, making it easy to reuse in dashboard (US-009)
+  - selectSite(alias, reload) pattern: reload=false for initial load (uses init()), reload=true for switching (uses switchSite()) — this avoids double initialization
+---
+
+
+## 2026-03-16 - US-009
+- Added segmented control (PROD / TREINA / HOMOLOG) in dashboard header, next to the filter group
+- On dashboard open, detects active tab URL via chrome.tabs.query and auto-selects matching site; defaults to PROD if not a Fala.BR site
+- Clicking a different site button calls NeuronDB.switchSite() and refreshes all charts, demand table, and counters
+- Color coding matches popup: PROD=blue (#2563eb), TREINA=orange (#ea580c), HOMOLOG=green (#16a34a)
+- Added neuron-site.js script to dashboard.html
+- Updated chrome.storage.onChanged listener to use per-site keys instead of old global keys
 - Files changed: modules/dashboard/dashboard.html, modules/dashboard/dashboard.js, modules/dashboard/dashboard.css
 - **Learnings for future iterations:**
-  - NeuronUtils.escapeHtml is available globally via window.NeuronUtils — no need to define custom escapeHtml
-  - NeuronDB.calcularDiasRestantes(prazo) takes a date string and returns number of days (negative = overdue)
-  - Table tbody id is 'demandas-tbody'; empty message element is 'demandas-empty'
-  - renderDemandasTable receives the full stats object (with .demandas and .concluidasSet)
-  - Future stories (US-011 pagination, US-012 actions) will extend the table
----
-
-## 2026-03-11 - US-010
-- Added search input above the demandas table with real-time case-insensitive filtering (numero, situacao, responsaveis)
-- Made 4 column headers (Numero, Data Cadastro, Prazo, Dias Restantes) clickable for sorting with arrow indicators
-- Clicking a header sorts ascending; clicking again sorts descending; inactive columns show bi-arrow-down-up icon
-- Search and sort compose: search filters first, then sort applies to filtered results
-- renderDemandasTable(null) re-renders from lastStats cache — used by search/sort handlers without re-fetching data
-- Sort uses timestamps (cadastroTimestamp, prazoTimestamp) for date columns, numeric for Dias Restantes, string for Numero
-- Files changed: modules/dashboard/dashboard.html, modules/dashboard/dashboard.js, modules/dashboard/dashboard.css
-- **Learnings for future iterations:**
-  - lastStats caches the most recent stats object so search/sort can re-render without refreshDashboard()
-  - renderDemandasTable(null) re-renders with cached stats; renderDemandasTable(stats) updates the cache
-  - searchDemandas() and sortDemandas() are standalone pipeline functions — composable with future pagination
-  - Sort indicators update via updateSortIndicators() called at end of renderDemandasTable
-  - Sortable headers have class .sortable-header with data-sort attribute matching field names
----
-
-## 2026-03-11 - US-011
-- Added Bootstrap pagination controls below the demandas table: First, Previous, page numbers, Next, Last buttons
-- Added items-per-page select dropdown with options 10, 25, 50, 100
-- Shows "Mostrando X a Y de Z demandas" info text
-- Pagination resets to page 1 when search query or filter (Minhas/Todas) changes
-- Items per page preference persists via NeuronDB.setPreference('dashboardItemsPerPage', value)
-- On page load, reads saved items per page preference (defaults to 25)
-- Pagination footer hides when no results
-- Files changed: modules/dashboard/dashboard.html, modules/dashboard/dashboard.js, modules/dashboard/dashboard.css
-- **Learnings for future iterations:**
-  - renderPagination(totalFiltered, totalPages) is separate from renderDemandasTable — can be reused
-  - Pagination click handler uses event delegation on #pagination-controls with data-page attributes
-  - Page window shows up to 5 page numbers centered around current page
-  - The pagination footer element id is 'pagination-footer'; hidden when no results
-  - items-per-page select id is 'items-per-page'; pagination nav id is 'pagination-controls'
----
-
-## 2026-03-11 - US-012
-- Added 'Ações' column to the demandas table as the last column
-- Each row has 'Abrir no Fala.BR' button (bi-box-arrow-up-right) that opens d.href in a new tab (disabled if no href)
-- Each row has 'Copiar NUP' button (bi-clipboard) that copies d.numero to clipboard via navigator.clipboard.writeText()
-- Copy feedback: icon changes to bi-clipboard-check and title to 'Copiado!' for 2 seconds, then reverts
-- Buttons use btn-sm btn-outline-secondary classes; compact sizing via CSS
-- Copy click handler uses event delegation on #demandas-table for efficiency
-- Files changed: modules/dashboard/dashboard.html, modules/dashboard/dashboard.js, modules/dashboard/dashboard.css
-- **Learnings for future iterations:**
-  - Demanda objects stored in NeuronDB have an `href` field containing the full Fala.BR URL (e.g., https://falabr.cgu.gov.br/Manifestacao/...)
-  - The href is constructed during extraction in tratar-novo-extract.js from the `navigateurl` attribute; it may be null if the attribute was missing
-  - Event delegation on the table is the right pattern for row action buttons since tbody is re-rendered on every refresh/search/sort/pagination
-  - navigator.clipboard.writeText() is available in Chrome extension pages
+  - Dashboard opens as a new tab, so chrome.tabs.query may return the dashboard tab itself — defaulting to producao is the safe fallback
+  - The storage.onChanged listener was still using old global key names (neuron_demandas) — needed updating to per-site keys
+  - Site selector CSS in dashboard uses slightly different padding to fit the header horizontal layout
+  - Reused selectSite(alias, reload) pattern from popup: reload=false for init(), reload=true for switchSite()
 ---
