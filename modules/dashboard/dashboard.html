@@ -22,6 +22,14 @@
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
+                    <!-- Site Selector -->
+                    <div class="site-selector" id="site-selector">
+                        <div class="site-selector-group">
+                            <button type="button" class="site-btn" data-site="producao">PROD</button>
+                            <button type="button" class="site-btn" data-site="treinamento">TREINA</button>
+                            <button type="button" class="site-btn" data-site="homologacao">HOMOLOG</button>
+                        </div>
+                    </div>
                     <div class="btn-group btn-group-sm" role="group" aria-label="Filtro de demandas" id="filterGroup">
                         <button type="button" class="btn btn-outline-primary active" data-filter="all">
                             <i class="bi bi-collection me-1"></i>
@@ -228,6 +236,7 @@
     <!-- Scripts -->
     <script src="../../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="../../vendor/chart.min.js"></script>
+    <script src="../../shared/js/neuron-site.js"></script>
     <script src="../../shared/js/neuron-db.js"></script>
     <script src="../../shared/js/neuron-sync.js"></script>
     <script src="../../shared/js/neuron-utils.js"></script>

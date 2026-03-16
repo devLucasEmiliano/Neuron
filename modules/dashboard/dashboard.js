@@ -6,10 +6,47 @@
 document.addEventListener('DOMContentLoaded', async () => {
     'use strict';
 
-    // Initialize NeuronDB
-    if (typeof NeuronDB !== 'undefined') {
-        await NeuronDB.init();
+    // ========== Site Selector ==========
+
+    const siteBtns = document.querySelectorAll('.site-btn[data-site]');
+
+    async function detectAndSetSite() {
+        let siteAlias = 'producao';
+        try {
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (tab?.url) {
+                const detected = typeof NeuronSite !== 'undefined' ? NeuronSite.getFromUrl(tab.url) : null;
+                if (detected) siteAlias = detected;
+            }
+        } catch (e) {
+            // Default to producao
+        }
+        await selectSite(siteAlias, false);
     }
+
+    async function selectSite(alias, reload = true) {
+        siteBtns.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.site === alias);
+        });
+        if (typeof NeuronDB !== 'undefined') {
+            if (reload) {
+                await NeuronDB.switchSite(alias);
+            } else {
+                await NeuronDB.init(alias);
+            }
+        }
+        if (reload) {
+            currentPage = 1;
+            await refreshDashboard();
+        }
+    }
+
+    siteBtns.forEach(btn => {
+        btn.addEventListener('click', () => selectSite(btn.dataset.site));
+    });
+
+    // Initialize NeuronDB with site detection
+    await detectAndSetSite();
 
     // Initialize ThemeManager
     if (typeof ThemeManager !== 'undefined') {
@@ -966,11 +1003,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initial load
     await refreshDashboard();
 
-    // Listen for data changes to refresh dashboard
+    // Listen for data changes to refresh dashboard (per-site keys)
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
         chrome.storage.onChanged.addListener((changes, areaName) => {
             if (areaName !== 'local') return;
-            if (changes.neuron_demandas || changes.neuron_concluidas) {
+            const currentSite = typeof NeuronDB !== 'undefined' && NeuronDB.getCurrentSite ? NeuronDB.getCurrentSite() : 'producao';
+            const demandasKey = 'neuron_' + currentSite + '_demandas';
+            const concluidasKey = 'neuron_' + currentSite + '_concluidas';
+            if (changes[demandasKey] || changes[concluidasKey]) {
                 refreshDashboard();
             }
         });
