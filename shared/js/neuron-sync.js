@@ -24,10 +24,21 @@ var NeuronSync = NeuronSync || (function () {
         chrome.storage.onChanged.addListener(function (changes, areaName) {
             if (areaName !== 'local') return;
 
-            // Update NeuronDB cache for any changed keys
+            // Update NeuronDB cache for changed keys that belong to the active site
             Object.keys(changes).forEach(function (storageKey) {
                 if (typeof NeuronDB !== 'undefined' && NeuronDB._updateCache) {
-                    NeuronDB._updateCache(storageKey, changes[storageKey].newValue);
+                    // Check if this is a per-site key (e.g., neuron_producao_demandas)
+                    var perSiteMatch = storageKey.match(/^neuron_(producao|treinamento|homologacao)_(demandas|concluidas|metadata)$/);
+                    if (perSiteMatch) {
+                        // Only update cache if the key belongs to the currently active site
+                        var keyAlias = perSiteMatch[1];
+                        if (typeof NeuronDB._getCurrentSiteAlias === 'function' && keyAlias === NeuronDB._getCurrentSiteAlias()) {
+                            NeuronDB._updateCache(storageKey, changes[storageKey].newValue);
+                        }
+                    } else {
+                        // Global keys (config, preferences) — always update
+                        NeuronDB._updateCache(storageKey, changes[storageKey].newValue);
+                    }
                 }
             });
 
