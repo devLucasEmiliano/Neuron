@@ -203,8 +203,8 @@
     async function inicializarDadosNotificacoes() {
         await carregarConfiguracoes();
         try {
-            // Initialize NeuronDB
-            await NeuronDB.init();
+            // Initialize NeuronDB with site context from current URL
+            await NeuronDB.init(NeuronSite.getFromUrl(window.location.href));
 
             // Load data from chrome.storage.local
             const [demandas, concluidas] = await Promise.all([
