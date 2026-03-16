@@ -54,7 +54,7 @@
 
                 manifestacoesParaProcessar.push({
                     numero: linkNumero.innerText.trim(),
-                    href: urlRelativo ? `https://falabr.cgu.gov.br${urlRelativo}` : null,
+                    href: urlRelativo ? `${window.location.origin}${urlRelativo}` : null,
                     situacao: situacaoElement?.innerText.trim() || '',
                     prazo: prazoElement?.innerText.trim() || '',
                     dataCadastro: cadastroElement?.innerText.trim() || '',
