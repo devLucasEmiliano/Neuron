@@ -71,6 +71,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize theme icon
     await updateThemeIcon();
 
+    // ========== Site Selector ==========
+
+    const siteBtns = document.querySelectorAll('.site-btn[data-site]');
+
+    async function detectAndSetSite() {
+        let siteAlias = 'producao';
+        try {
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (tab?.url) {
+                const detected = NeuronSite.getFromUrl(tab.url);
+                if (detected) siteAlias = detected;
+            }
+        } catch (e) {
+            // Default to producao
+        }
+        await selectSite(siteAlias, false);
+    }
+
+    async function selectSite(alias, reload = true) {
+        siteBtns.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.site === alias);
+        });
+        if (reload) {
+            await NeuronDB.switchSite(alias);
+            userConfig = await carregarConfiguracoes();
+            atualizarUIFromConfig();
+        } else {
+            await NeuronDB.init(alias);
+        }
+    }
+
+    siteBtns.forEach(btn => {
+        btn.addEventListener('click', () => selectSite(btn.dataset.site));
+    });
+
     // ========== Configuration Management ==========
 
     async function carregarConfiguracoes() {
@@ -100,6 +135,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             notificationSettingsSection?.classList.add('disabled');
         }
         itemsInput.disabled = !isEnabled;
+    }
+
+    function atualizarUIFromConfig() {
+        masterSwitch.checked = userConfig.masterEnableNeuron !== false;
+        itemsInput.value = userConfig.generalSettings?.qtdItensTratarTriar || 50;
+
+        const notifSettings = userConfig.notificacoesSettings || DEFAULT_NOTIFICACOES_SETTINGS;
+        if (deadlineThresholdInput) deadlineThresholdInput.value = notifSettings.deadlineThreshold ?? DEFAULT_NOTIFICACOES_SETTINGS.deadlineThreshold;
+        if (dangerCountThresholdInput) dangerCountThresholdInput.value = notifSettings.dangerCountThreshold ?? DEFAULT_NOTIFICACOES_SETTINGS.dangerCountThreshold;
+        if (filterDefaultInput) filterDefaultInput.checked = notifSettings.filterDefault ?? DEFAULT_NOTIFICACOES_SETTINGS.filterDefault;
+
+        const catVis = notifSettings.categoryVisibility || DEFAULT_NOTIFICACOES_SETTINGS.categoryVisibility;
+        if (catPrazosCurtosInput) catPrazosCurtosInput.checked = catVis.prazosCurtos ?? true;
+        if (catPossiveisRespondidasInput) catPossiveisRespondidasInput.checked = catVis.possiveisRespondidas ?? true;
+        if (catComObservacaoInput) catComObservacaoInput.checked = catVis.comObservacao ?? true;
+        if (catProrrogadasInput) catProrrogadasInput.checked = catVis.prorrogadas ?? true;
+        if (catComplementadasInput) catComplementadasInput.checked = catVis.complementadas ?? true;
+
+        atualizarUI();
     }
 
     async function handleMasterSwitchChange() {
@@ -152,31 +206,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function inicializarControlos() {
+        // Detect site from active tab and initialize NeuronDB
+        await detectAndSetSite();
         userConfig = await carregarConfiguracoes();
-        masterSwitch.checked = userConfig.masterEnableNeuron !== false;
-        itemsInput.value = userConfig.generalSettings?.qtdItensTratarTriar || 50;
-
-        // Load notification settings
-        const notifSettings = userConfig.notificacoesSettings || DEFAULT_NOTIFICACOES_SETTINGS;
-        if (deadlineThresholdInput) {
-            deadlineThresholdInput.value = notifSettings.deadlineThreshold ?? DEFAULT_NOTIFICACOES_SETTINGS.deadlineThreshold;
-        }
-        if (dangerCountThresholdInput) {
-            dangerCountThresholdInput.value = notifSettings.dangerCountThreshold ?? DEFAULT_NOTIFICACOES_SETTINGS.dangerCountThreshold;
-        }
-        if (filterDefaultInput) {
-            filterDefaultInput.checked = notifSettings.filterDefault ?? DEFAULT_NOTIFICACOES_SETTINGS.filterDefault;
-        }
-
-        // Load category visibility
-        const catVis = notifSettings.categoryVisibility || DEFAULT_NOTIFICACOES_SETTINGS.categoryVisibility;
-        if (catPrazosCurtosInput) catPrazosCurtosInput.checked = catVis.prazosCurtos ?? true;
-        if (catPossiveisRespondidasInput) catPossiveisRespondidasInput.checked = catVis.possiveisRespondidas ?? true;
-        if (catComObservacaoInput) catComObservacaoInput.checked = catVis.comObservacao ?? true;
-        if (catProrrogadasInput) catProrrogadasInput.checked = catVis.prorrogadas ?? true;
-        if (catComplementadasInput) catComplementadasInput.checked = catVis.complementadas ?? true;
-
-        atualizarUI();
+        atualizarUIFromConfig();
 
         // Master switch and items input listeners
         masterSwitch.addEventListener('change', handleMasterSwitchChange);
@@ -197,22 +230,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             NeuronSync.onConfigChange(async (key, newValue) => {
                 if (key === CONFIG_KEY) {
                     userConfig = newValue || {};
-                    masterSwitch.checked = userConfig.masterEnableNeuron !== false;
-                    itemsInput.value = userConfig.generalSettings?.qtdItensTratarTriar || 50;
-
-                    const notifSettings = userConfig.notificacoesSettings || DEFAULT_NOTIFICACOES_SETTINGS;
-                    if (deadlineThresholdInput) deadlineThresholdInput.value = notifSettings.deadlineThreshold ?? DEFAULT_NOTIFICACOES_SETTINGS.deadlineThreshold;
-                    if (dangerCountThresholdInput) dangerCountThresholdInput.value = notifSettings.dangerCountThreshold ?? DEFAULT_NOTIFICACOES_SETTINGS.dangerCountThreshold;
-                    if (filterDefaultInput) filterDefaultInput.checked = notifSettings.filterDefault ?? DEFAULT_NOTIFICACOES_SETTINGS.filterDefault;
-
-                    const catVis = notifSettings.categoryVisibility || DEFAULT_NOTIFICACOES_SETTINGS.categoryVisibility;
-                    if (catPrazosCurtosInput) catPrazosCurtosInput.checked = catVis.prazosCurtos ?? true;
-                    if (catPossiveisRespondidasInput) catPossiveisRespondidasInput.checked = catVis.possiveisRespondidas ?? true;
-                    if (catComObservacaoInput) catComObservacaoInput.checked = catVis.comObservacao ?? true;
-                    if (catProrrogadasInput) catProrrogadasInput.checked = catVis.prorrogadas ?? true;
-                    if (catComplementadasInput) catComplementadasInput.checked = catVis.complementadas ?? true;
-
-                    atualizarUI();
+                    atualizarUIFromConfig();
                 }
             });
         }
