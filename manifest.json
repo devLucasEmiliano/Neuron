@@ -74,7 +74,10 @@
       "matches": [
         "https://falabr.cgu.gov.br/Manifestacao/ArquivarManifestacao.aspx?*",
         "https://treinafalabr.cgu.gov.br/Manifestacao/ArquivarManifestacao.aspx?*",
-        "https://falabr-h.cgu.gov.br/Manifestacao/ArquivarManifestacao.aspx?*"
+        "https://falabr-h.cgu.gov.br/Manifestacao/ArquivarManifestacao.aspx?*",
+        "https://falabr.cgu.gov.br/web/manifestacao/arquivar?*",
+        "https://treinafalabr.cgu.gov.br/web/manifestacao/arquivar?*",
+        "https://falabr-h.cgu.gov.br/web/manifestacao/arquivar?*"
       ],
       "js": ["shared/js/module-factory.js", "modules/ouvidoria/arquivar/arquivar.js"],
       "css": ["modules/ouvidoria/arquivar/arquivar.css"]
