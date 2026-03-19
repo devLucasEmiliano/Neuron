@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="../../vendor/bootstrap/icons/bootstrap-icons.min.css">
     <link rel="stylesheet" href="../../shared/css/theme.css">
     <link rel="stylesheet" href="options.css">
-    <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
     <!-- Header -->
@@ -32,13 +31,7 @@
         <nav class="options-sidebar" id="optionsSidebar">
             <ul class="sidebar-nav" role="tablist">
                 <li class="sidebar-nav-item" role="presentation">
-                    <a href="#section-dashboard" class="sidebar-nav-link active" data-section="dashboard" role="tab" aria-selected="true">
-                        <i class="bi bi-speedometer2"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li class="sidebar-nav-item" role="presentation">
-                    <a href="#section-general" class="sidebar-nav-link" data-section="general" role="tab">
+                    <a href="#section-general" class="sidebar-nav-link active" data-section="general" role="tab" aria-selected="true">
                         <i class="bi bi-gear"></i>
                         <span>Geral</span>
                     </a>
@@ -78,204 +71,8 @@
 
         <!-- Main Content -->
         <main class="options-content">
-            <!-- Dashboard Section -->
-            <section id="section-dashboard" class="options-section active" role="tabpanel">
-                <div class="section-header">
-                    <h2 class="h5 text-neuron-primary mb-0">
-                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
-                    </h2>
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="site-selector" id="dashboard-site-selector">
-                            <div class="site-selector-group">
-                                <button type="button" class="site-btn" data-site="producao">PRODUÇÃO</button>
-                                <button type="button" class="site-btn" data-site="treinamento">TREINAMENTO</button>
-                                <button type="button" class="site-btn" data-site="homologacao">HOMOLOGAÇÃO</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Stats Cards -->
-                <div id="stats-cards" class="mb-4">
-                    <div class="row g-3">
-                        <div class="col-xl-2 col-md-4 col-sm-6">
-                            <div class="stat-card">
-                                <div class="stat-icon bg-primary bg-opacity-10">
-                                    <i class="bi bi-folder2-open text-primary"></i>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-value" id="stat-total">0</div>
-                                    <div class="stat-label">Total de Demandas</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-2 col-md-4 col-sm-6">
-                            <div class="stat-card">
-                                <div class="stat-icon bg-warning bg-opacity-10">
-                                    <i class="bi bi-hourglass-split text-warning"></i>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-value" id="stat-pendentes">0</div>
-                                    <div class="stat-label">Pendentes</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-2 col-md-4 col-sm-6">
-                            <div class="stat-card">
-                                <div class="stat-icon bg-danger bg-opacity-10">
-                                    <i class="bi bi-alarm text-danger"></i>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-value" id="stat-prazos-curtos">0</div>
-                                    <div class="stat-label">Prazos Curtos</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-2 col-md-4 col-sm-6">
-                            <div class="stat-card">
-                                <div class="stat-icon bg-danger bg-opacity-10">
-                                    <i class="bi bi-exclamation-triangle text-danger"></i>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-value" id="stat-atrasadas">0</div>
-                                    <div class="stat-label">Atrasadas</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-2 col-md-4 col-sm-6">
-                            <div class="stat-card">
-                                <div class="stat-icon bg-success bg-opacity-10">
-                                    <i class="bi bi-check-circle text-success"></i>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-value" id="stat-concluidas">0</div>
-                                    <div class="stat-label">Concluidas</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-2 col-md-4 col-sm-6">
-                            <div class="stat-card">
-                                <div class="stat-icon bg-info bg-opacity-10">
-                                    <i class="bi bi-percent text-info"></i>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-value" id="stat-taxa">0%</div>
-                                    <div class="stat-label">Taxa de Conclusao</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Charts Section -->
-                <div class="mb-4">
-                    <div class="row g-3">
-                        <div class="col-lg-6">
-                            <div class="chart-card">
-                                <div class="chart-title">
-                                    <i class="bi bi-pie-chart me-2"></i>
-                                    Distribuicao por Status
-                                </div>
-                                <div class="chart-container">
-                                    <canvas id="chart-status"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-6">
-                            <div class="chart-card">
-                                <div class="chart-title">
-                                    <i class="bi bi-bar-chart-line me-2"></i>
-                                    Distribuicao de Prazos
-                                </div>
-                                <div class="chart-container">
-                                    <canvas id="chart-prazos"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-6">
-                            <div class="chart-card">
-                                <div class="chart-title">
-                                    <i class="bi bi-people me-2"></i>
-                                    Top 10 Responsaveis
-                                </div>
-                                <div class="chart-container">
-                                    <canvas id="chart-responsaveis"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-6">
-                            <div class="chart-card">
-                                <div class="chart-title">
-                                    <i class="bi bi-graph-up me-2"></i>
-                                    Demandas por Mes
-                                </div>
-                                <div class="chart-container">
-                                    <canvas id="chart-temporal"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Demandas Table -->
-                <div id="table-section">
-                    <div class="card">
-                        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-table me-2"></i>
-                                <span class="fw-semibold">Demandas</span>
-                            </div>
-                            <div class="table-search-wrapper">
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                    <input type="text" class="form-control" id="demandas-search" placeholder="Buscar por numero, situacao ou responsavel...">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover table-striped mb-0" id="demandas-table">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th class="sortable-header" data-sort="numero">Numero <i class="bi bi-arrow-down-up sort-icon text-body-secondary"></i></th>
-                                            <th class="sortable-header" data-sort="dataCadastro">Data Cadastro <i class="bi bi-arrow-down-up sort-icon text-body-secondary"></i></th>
-                                            <th class="sortable-header" data-sort="prazo">Prazo <i class="bi bi-arrow-down-up sort-icon text-body-secondary"></i></th>
-                                            <th class="sortable-header" data-sort="diasRestantes">Dias Restantes <i class="bi bi-arrow-down-up sort-icon text-body-secondary"></i></th>
-                                            <th>Situacao</th>
-                                            <th>Responsaveis</th>
-                                            <th class="text-center">Acoes</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="demandas-tbody">
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="text-center text-body-secondary py-3" id="demandas-empty">
-                                Nenhuma demanda encontrada.
-                            </div>
-                        </div>
-                        <div class="card-footer d-flex align-items-center justify-content-between flex-wrap gap-2 py-2" id="pagination-footer">
-                            <div class="d-flex align-items-center gap-2">
-                                <label for="items-per-page" class="form-label mb-0 small text-body-secondary">Itens por pagina:</label>
-                                <select class="form-select form-select-sm" id="items-per-page" style="width: auto;">
-                                    <option value="10">10</option>
-                                    <option value="25" selected>25</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
-                                </select>
-                                <span class="small text-body-secondary ms-2" id="pagination-info"></span>
-                            </div>
-                            <nav aria-label="Paginacao de demandas">
-                                <ul class="pagination pagination-sm mb-0" id="pagination-controls">
-                                </ul>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
             <!-- General Section -->
-            <section id="section-general" class="options-section" role="tabpanel">
+            <section id="section-general" class="options-section active" role="tabpanel">
                 <div class="section-header">
                     <h2 class="h5 text-neuron-primary mb-0">
                         <i class="bi bi-gear me-2"></i>Configuracoes Gerais
@@ -667,9 +464,6 @@
     <script src="../../shared/js/neuron-sync.js"></script>
     <script src="../../shared/js/neuron-utils.js"></script>
     <script src="../../shared/js/theme-manager.js"></script>
-    <script src="../../vendor/chart.min.js"></script>
-    <script src="../../shared/js/neuron-site.js"></script>
-    <script src="dashboard.js"></script>
     <script src="options.js"></script>
 </body>
 </html>

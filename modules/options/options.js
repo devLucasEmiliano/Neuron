@@ -759,20 +759,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 section.classList.toggle('active', isTarget);
             });
 
-            // Hide save footer on dashboard (read-only view)
-            const footer = document.querySelector('.options-footer');
-            if (footer) {
-                footer.style.display = sectionName === 'dashboard' ? 'none' : '';
-            }
-
             // Initialize section on first show
             if (!sectionsInitialized.has(sectionName)) {
                 switch (sectionName) {
-                    case 'dashboard':
-                        if (typeof NeuronDashboard !== 'undefined') {
-                            NeuronDashboard.init();
-                        }
-                        break;
                     case 'prazos':
                         setupHolidaysTab();
                         break;
@@ -808,8 +797,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // Handle initial hash or default to dashboard
-        const initialSection = window.location.hash.substring(1) || 'dashboard';
+        // Handle initial hash or default to general
+        const initialSection = window.location.hash.substring(1) || 'general';
         showSection(initialSection);
     }
 
