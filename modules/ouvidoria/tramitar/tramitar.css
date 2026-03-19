@@ -25,6 +25,26 @@
     margin-bottom: 5px;
 }
 
+#neuronPainelPrazos {
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    font-size: 0.85em;
+    line-height: 1.8;
+    background-color: #f9f9f9;
+}
+
+#neuronPainelPrazos .neuron-prazo-interno {
+    color: #0056b3;
+    font-weight: bold;
+}
+
+#neuronPainelPrazos .neuron-prazo-dias {
+    color: #6c757d;
+    font-style: italic;
+}
+
 #neuronSelectMensagensTramitar.form-control {
     margin-bottom: 10px;
     background-color: #fff;
