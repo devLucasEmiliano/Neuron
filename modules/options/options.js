@@ -139,6 +139,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const qtdElement = document.getElementById('qtdItensTratarTriar');
         if (qtdElement) qtdElement.value = fullConfig.generalSettings?.qtdItensTratarTriar || 50;
 
+        const limiteArquivarEl = document.getElementById('limiteCaracteresArquivar');
+        if (limiteArquivarEl) limiteArquivarEl.value = fullConfig.generalSettings?.limiteCaracteresArquivar || 300;
+
         const prazosSettings = fullConfig.prazosSettings || {};
         const prazoDiasEl = document.getElementById('tratarNovoPrazoInternoDias');
         if (prazoDiasEl) prazoDiasEl.value = prazosSettings.tratarNovoPrazoInternoDias || -5;
@@ -173,6 +176,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!fullConfig.generalSettings) fullConfig.generalSettings = {};
         const qtdElement = document.getElementById('qtdItensTratarTriar');
         fullConfig.generalSettings.qtdItensTratarTriar = qtdElement ? parseInt(qtdElement.value, 10) || 50 : 50;
+
+        const limiteArquivarEl = document.getElementById('limiteCaracteresArquivar');
+        fullConfig.generalSettings.limiteCaracteresArquivar = limiteArquivarEl ? parseInt(limiteArquivarEl.value, 10) || 300 : 300;
 
         const prazosSettings = fullConfig.prazosSettings || {};
 
@@ -485,7 +491,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Lida com a edição do conteúdo de um modelo simples (string)
             if (target.matches('.model-value')) {
-                const key = target.closest('.option-item').querySelector('.model-key').value;
+                const key = target.closest('.text-model-item').querySelector('.model-key').value;
                 fullConfig.textModels[category][key] = target.value;
             }
 
@@ -539,6 +545,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <i class="bi bi-trash me-1"></i>Remover Modelo
                 </button>`;
 
+            const limiteArquivarHTML = category === 'Arquivar'
+                ? `<small class="text-muted">Limite máximo de ${fullConfig.generalSettings?.limiteCaracteresArquivar || 300} caracteres</small>`
+                : '';
+
             if (typeof value === 'string') {
                 itemDiv.innerHTML = `
                     <div class="mb-3">
@@ -548,6 +558,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Conteudo</label>
                         <textarea class="form-control model-value" rows="5">${escapeHtml(value)}</textarea>
+                        ${limiteArquivarHTML}
                     </div>
                     ${removeBtnHTML}
                 `;
