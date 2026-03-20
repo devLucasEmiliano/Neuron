@@ -4,10 +4,10 @@
  */
 
 // Import NeuronDB and NeuronSync
-importScripts('shared/js/neuron-db.js', 'shared/js/neuron-sync.js');
+importScripts('shared/js/neuron-site.js', 'shared/js/neuron-db.js', 'shared/js/neuron-sync.js');
 
 // Ensure proper extension initialization
-chrome.runtime.onInstalled.addListener(async () => {
+chrome.runtime.onInstalled.addListener(async (details) => {
     console.log('Neuron extension installed/updated successfully');
 
     try {
@@ -21,6 +21,26 @@ chrome.runtime.onInstalled.addListener(async () => {
         }
     } catch (error) {
         console.error('Neuron: Failed to initialize default config:', error);
+    }
+
+    // Clean up old-format storage keys (without site prefix) on install/update
+    if (details.reason === 'install' || details.reason === 'update') {
+        try {
+            const data = await chrome.storage.local.get('neuron_storage_v2');
+            if (!data.neuron_storage_v2) {
+                const oldKeys = ['neuron_demandas', 'neuron_concluidas', 'neuron_metadata'];
+                const oldData = await chrome.storage.local.get(oldKeys);
+                const keysToRemove = oldKeys.filter(key => oldData[key] !== undefined);
+                if (keysToRemove.length > 0) {
+                    await chrome.storage.local.remove(keysToRemove);
+                    console.log('Neuron: Cleaned up old-format storage keys:', keysToRemove);
+                }
+                await chrome.storage.local.set({ neuron_storage_v2: true });
+                console.log('Neuron: Storage migrated to v2 (per-site keys)');
+            }
+        } catch (error) {
+            console.error('Neuron: Failed to clean up old storage keys:', error);
+        }
     }
 });
 

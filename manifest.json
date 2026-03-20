@@ -2,7 +2,11 @@
   "manifest_version": 3,
   "name": "Neuron",
   "version": "2.0.1",
+<<<<<<< HEAD
   "version_name": "2.00.9729b",
+=======
+  "version_name": "2.00.c6b7d",
+>>>>>>> developing
   "description": "Otimizador de fluxos de trabalho na plataforma Fala.br",
   "author": "MAPA - DF",
   "icons": {
@@ -34,7 +38,7 @@
         "https://treinafalabr.cgu.gov.br/*",
         "https://falabr-h.cgu.gov.br/*"
       ],
-      "js": ["shared/js/neuron-db.js", "shared/js/neuron-sync.js", "modules/loading/loading.js"],
+      "js": ["shared/js/neuron-site.js", "shared/js/neuron-db.js", "shared/js/neuron-sync.js", "modules/loading/loading.js"],
       "css": ["modules/loading/loading.css"],
       "run_at": "document_start"
     },
@@ -61,16 +65,23 @@
       "js": [
         "shared/js/neuron-utils.js",
         "shared/js/date-utils.js",
+        "shared/js/selectize-fix.js",
         "modules/ouvidoria/tratar-novo/tratar-novo-pagesize.js",
         "modules/ouvidoria/tratar-novo/tratar-novo-insert.js"
       ],
-      "css": ["modules/ouvidoria/tratar-novo/tratar-novo.css"]
+      "css": [
+        "shared/css/selectize-fix.css",
+        "modules/ouvidoria/tratar-novo/tratar-novo.css"
+      ]
     },
     {
       "matches": [
         "https://falabr.cgu.gov.br/Manifestacao/ArquivarManifestacao.aspx?*",
         "https://treinafalabr.cgu.gov.br/Manifestacao/ArquivarManifestacao.aspx?*",
-        "https://falabr-h.cgu.gov.br/Manifestacao/ArquivarManifestacao.aspx?*"
+        "https://falabr-h.cgu.gov.br/Manifestacao/ArquivarManifestacao.aspx?*",
+        "https://falabr.cgu.gov.br/web/manifestacao/arquivar?*",
+        "https://treinafalabr.cgu.gov.br/web/manifestacao/arquivar?*",
+        "https://falabr-h.cgu.gov.br/web/manifestacao/arquivar?*"
       ],
       "js": ["shared/js/module-factory.js", "modules/ouvidoria/arquivar/arquivar.js"],
       "css": ["modules/ouvidoria/arquivar/arquivar.css"]
@@ -102,10 +113,14 @@
       "js": [
         "shared/js/date-utils.js",
         "shared/js/module-factory.js",
+        "shared/js/selectize-fix.js",
         "modules/ouvidoria/tramitar/tramitar.js",
         "modules/ouvidoria/tramitar/tramitar-pontos-focais.js"
       ],
-      "css": ["modules/ouvidoria/tramitar/tramitar.css"]
+      "css": [
+        "shared/css/selectize-fix.css",
+        "modules/ouvidoria/tramitar/tramitar.css"
+      ]
     },
     {
       "matches": [
@@ -113,8 +128,15 @@
         "https://treinafalabr.cgu.gov.br/Manifestacao/TratarManifestacao.aspx?*",
         "https://falabr-h.cgu.gov.br/Manifestacao/TratarManifestacao.aspx?*"
       ],
-      "js": ["shared/js/module-factory.js", "modules/ouvidoria/tratar/tratar.js"],
-      "css": ["modules/ouvidoria/tratar/tratar.css"]
+      "js": [
+        "shared/js/module-factory.js",
+        "shared/js/selectize-fix.js",
+        "modules/ouvidoria/tratar/tratar.js"
+      ],
+      "css": [
+        "shared/css/selectize-fix.css",
+        "modules/ouvidoria/tratar/tratar.css"
+      ]
     },
     {
       "matches": [
@@ -130,8 +152,15 @@
         "https://treinafalabr.cgu.gov.br/web/manifestacao/tratar?*",
         "https://falabr-h.cgu.gov.br/web/manifestacao/tratar?*"
       ],
-      "js": ["shared/js/date-utils.js", "modules/sic/tratar/sic-tratar-extract.js"],
-      "css": ["modules/sic/tratar/sic-tratar-style.css"]
+      "js": [
+        "shared/js/date-utils.js",
+        "shared/js/selectize-fix.js",
+        "modules/sic/tratar/sic-tratar-extract.js"
+      ],
+      "css": [
+        "shared/css/selectize-fix.css",
+        "modules/sic/tratar/sic-tratar-style.css"
+      ]
     },
     {
       "matches": [

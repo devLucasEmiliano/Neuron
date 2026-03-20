@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="../../vendor/bootstrap/icons/bootstrap-icons.min.css">
     <link rel="stylesheet" href="../../shared/css/theme.css">
     <link rel="stylesheet" href="options.css">
-    <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
     <!-- Header -->
@@ -20,9 +19,11 @@
                 <p class="text-body-secondary mb-0 small d-none d-sm-block">Configuracoes Avancadas</p>
             </div>
         </div>
-        <button type="button" class="btn btn-outline-secondary btn-theme-toggle" id="themeToggle" title="Alternar tema">
-            <i class="bi bi-moon-fill" id="themeIcon"></i>
-        </button>
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-outline-secondary btn-theme-toggle" id="themeToggle" title="Alternar tema">
+                <i class="bi bi-moon-fill" id="themeIcon"></i>
+            </button>
+        </div>
     </header>
 
     <div class="options-layout">
@@ -30,13 +31,7 @@
         <nav class="options-sidebar" id="optionsSidebar">
             <ul class="sidebar-nav" role="tablist">
                 <li class="sidebar-nav-item" role="presentation">
-                    <a href="#section-dashboard" class="sidebar-nav-link active" data-section="dashboard" role="tab" aria-selected="true">
-                        <i class="bi bi-speedometer2"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li class="sidebar-nav-item" role="presentation">
-                    <a href="#section-general" class="sidebar-nav-link" data-section="general" role="tab">
+                    <a href="#section-general" class="sidebar-nav-link active" data-section="general" role="tab" aria-selected="true">
                         <i class="bi bi-gear"></i>
                         <span>Geral</span>
                     </a>
@@ -76,118 +71,8 @@
 
         <!-- Main Content -->
         <main class="options-content">
-            <!-- Dashboard Section -->
-            <section id="section-dashboard" class="options-section active" role="tabpanel">
-                <div class="section-header">
-                    <h2 class="h5 text-neuron-primary mb-0">
-                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
-                    </h2>
-                    <button type="button" class="btn btn-sm btn-outline-primary" id="refreshDashboard" title="Atualizar dados">
-                        <i class="bi bi-arrow-clockwise"></i>
-                    </button>
-                </div>
-
-                <!-- Stats Cards -->
-                <div class="dashboard-stats row g-3 mb-4">
-                    <div class="col-6 col-lg-3">
-                        <div class="stat-card">
-                            <div class="stat-icon bg-primary-subtle">
-                                <i class="bi bi-inbox-fill text-primary"></i>
-                            </div>
-                            <div class="stat-content">
-                                <span class="stat-value" id="stat-total">--</span>
-                                <span class="stat-label">Total Demandas</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-lg-3">
-                        <div class="stat-card">
-                            <div class="stat-icon bg-warning-subtle">
-                                <i class="bi bi-hourglass-split text-warning"></i>
-                            </div>
-                            <div class="stat-content">
-                                <span class="stat-value" id="stat-pendentes">--</span>
-                                <span class="stat-label">Pendentes</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-lg-3">
-                        <div class="stat-card">
-                            <div class="stat-icon bg-danger-subtle">
-                                <i class="bi bi-exclamation-triangle-fill text-danger"></i>
-                            </div>
-                            <div class="stat-content">
-                                <span class="stat-value" id="stat-urgentes">--</span>
-                                <span class="stat-label">Prazos Curtos</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-lg-3">
-                        <div class="stat-card">
-                            <div class="stat-icon bg-success-subtle">
-                                <i class="bi bi-check-circle-fill text-success"></i>
-                            </div>
-                            <div class="stat-content">
-                                <span class="stat-value" id="stat-taxa">--%</span>
-                                <span class="stat-label">Taxa Conclusao</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Charts Row -->
-                <div class="row g-4 mb-4">
-                    <div class="col-lg-6">
-                        <div class="chart-card">
-                            <h6 class="chart-title">
-                                <i class="bi bi-pie-chart me-2"></i>Demandas por Status
-                            </h6>
-                            <div class="chart-container">
-                                <canvas id="chart-status"></canvas>
-                            </div>
-                            <div class="chart-empty" id="chart-status-empty" style="display: none;">
-                                <i class="bi bi-inbox"></i>
-                                <p>Nenhum dado disponivel</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-6">
-                        <div class="chart-card">
-                            <h6 class="chart-title">
-                                <i class="bi bi-bar-chart me-2"></i>Top Responsaveis
-                            </h6>
-                            <div class="chart-container">
-                                <canvas id="chart-responsaveis"></canvas>
-                            </div>
-                            <div class="chart-empty" id="chart-responsaveis-empty" style="display: none;">
-                                <i class="bi bi-people"></i>
-                                <p>Nenhum dado disponivel</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Deadline Distribution -->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="chart-card">
-                            <h6 class="chart-title">
-                                <i class="bi bi-calendar-range me-2"></i>Distribuicao de Prazos
-                            </h6>
-                            <div class="chart-container chart-container-sm">
-                                <canvas id="chart-prazos"></canvas>
-                            </div>
-                            <div class="chart-empty" id="chart-prazos-empty" style="display: none;">
-                                <i class="bi bi-calendar-x"></i>
-                                <p>Nenhum dado disponivel</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
             <!-- General Section -->
-            <section id="section-general" class="options-section" role="tabpanel">
+            <section id="section-general" class="options-section active" role="tabpanel">
                 <div class="section-header">
                     <h2 class="h5 text-neuron-primary mb-0">
                         <i class="bi bi-gear me-2"></i>Configuracoes Gerais
@@ -206,19 +91,6 @@
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" role="switch"
                                        id="masterEnableOptions" style="width: 3em; height: 1.5em;">
-                            </div>
-                        </div>
-                        <hr class="my-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <label for="themeEnabledToggle" class="form-label fw-semibold text-neuron-primary mb-0">
-                                    Habilitar tema personalizado
-                                </label>
-                                <small class="d-block text-body-secondary">Ativa ou desativa o tema visual Neuron</small>
-                            </div>
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch"
-                                       id="themeEnabledToggle" style="width: 3em; height: 1.5em;">
                             </div>
                         </div>
                     </div>
@@ -588,12 +460,10 @@
     </footer>
 
     <script src="../../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="../../vendor/chart.min.js"></script>
     <script src="../../shared/js/neuron-db.js"></script>
     <script src="../../shared/js/neuron-sync.js"></script>
     <script src="../../shared/js/neuron-utils.js"></script>
     <script src="../../shared/js/theme-manager.js"></script>
-    <script src="dashboard.js"></script>
     <script src="options.js"></script>
 </body>
 </html>

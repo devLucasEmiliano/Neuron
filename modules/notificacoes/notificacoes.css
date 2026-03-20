@@ -4,33 +4,33 @@
 /* ========== CSS Custom Properties ========== */
 :root {
     /* Light theme (default) */
-    --neuron-panel-bg: #ffffff;
-    --neuron-panel-border: #dee2e6;
-    --neuron-header-bg: #f8f9fa;
-    --neuron-body-bg: #fdfdfd;
-    --neuron-text-primary: #212529;
-    --neuron-text-secondary: #6c757d;
-    --neuron-text-muted: #adb5bd;
-    --neuron-border-color: #dee2e6;
-    --neuron-border-light: #f1f1f1;
-    --neuron-link-color: #0056b3;
-    --neuron-link-hover: #003d80;
-    --neuron-accent-color: #e85d04;
-    --neuron-group-bg: #e9ecef;
-    --neuron-group-hover: #d1d9e0;
-    --neuron-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-    --neuron-shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.2);
+    --neuron-panel-bg: #FFFFFF;
+    --neuron-panel-border: #E9EAF3;
+    --neuron-header-bg: #F7F9FC;
+    --neuron-body-bg: #FFFFFF;
+    --neuron-text-primary: #0B0E2C;
+    --neuron-text-secondary: #6F7182;
+    --neuron-text-muted: #989AAD;
+    --neuron-border-color: #E9EAF3;
+    --neuron-border-light: #F7F9FC;
+    --neuron-link-color: #1476FF;
+    --neuron-link-hover: #004CFF;
+    --neuron-accent-color: #D5691B;
+    --neuron-group-bg: #E9EAF3;
+    --neuron-group-hover: #DFE1ED;
+    --neuron-shadow: 0 4px 10px rgba(20, 20, 43, 0.04);
+    --neuron-shadow-lg: 0 4px 10px rgba(2, 87, 251, 0.2);
 
     /* Status colors */
-    --neuron-ok: #28a745;
-    --neuron-warning: #ffc107;
-    --neuron-danger: #dc3545;
-    --neuron-primary: #007bff;
-    --neuron-primary-hover: #0056b3;
+    --neuron-ok: #13A570;
+    --neuron-warning: #D5691B;
+    --neuron-danger: #DC2B2B;
+    --neuron-primary: #1476FF;
+    --neuron-primary-hover: #004CFF;
 
     /* Toast */
-    --neuron-toast-bg: #ffc107;
-    --neuron-toast-text: #333;
+    --neuron-toast-bg: #1476FF;
+    --neuron-toast-text: #fff;
 
     /* Modal overlay */
     --neuron-modal-overlay: rgba(255, 255, 255, 0.95);
@@ -38,36 +38,36 @@
 
 /* ========== Dark Theme ========== */
 .neuron-dark {
-    --neuron-panel-bg: #1a1d21;
-    --neuron-panel-border: #495057;
-    --neuron-header-bg: #212529;
-    --neuron-body-bg: #1e2125;
-    --neuron-text-primary: #e9ecef;
-    --neuron-text-secondary: #adb5bd;
-    --neuron-text-muted: #6c757d;
-    --neuron-border-color: #495057;
-    --neuron-border-light: #343a40;
-    --neuron-link-color: #6ea8fe;
-    --neuron-link-hover: #9ec5fe;
-    --neuron-accent-color: #ff9e6d;
-    --neuron-group-bg: #2b3035;
-    --neuron-group-hover: #343a40;
-    --neuron-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
-    --neuron-shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.5);
+    --neuron-panel-bg: #0B0E2C;
+    --neuron-panel-border: #303350;
+    --neuron-header-bg: #141730;
+    --neuron-body-bg: #0B0E2C;
+    --neuron-text-primary: #E9EAF3;
+    --neuron-text-secondary: #989AAD;
+    --neuron-text-muted: #6F7182;
+    --neuron-border-color: #303350;
+    --neuron-border-light: #1E2145;
+    --neuron-link-color: #5A96FF;
+    --neuron-link-hover: #7AAFFF;
+    --neuron-accent-color: #E8974F;
+    --neuron-group-bg: #1E2145;
+    --neuron-group-hover: #303350;
+    --neuron-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --neuron-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
 
-    /* Status colors - slightly adjusted for dark mode */
-    --neuron-ok: #75b798;
-    --neuron-warning: #ffda6a;
-    --neuron-danger: #ea868f;
-    --neuron-primary: #6ea8fe;
-    --neuron-primary-hover: #9ec5fe;
+    /* Status colors - adjusted for dark mode */
+    --neuron-ok: #4FD99A;
+    --neuron-warning: #E8974F;
+    --neuron-danger: #E85A5A;
+    --neuron-primary: #5A96FF;
+    --neuron-primary-hover: #7AAFFF;
 
     /* Toast */
-    --neuron-toast-bg: #3d3a1f;
-    --neuron-toast-text: #ffda6a;
+    --neuron-toast-bg: #141730;
+    --neuron-toast-text: #5A96FF;
 
     /* Modal overlay */
-    --neuron-modal-overlay: rgba(26, 29, 33, 0.95);
+    --neuron-modal-overlay: rgba(11, 14, 44, 0.95);
 }
 
 /* ========== Trigger Button (FAB) ========== */
@@ -130,7 +130,7 @@
     min-width: 20px;
     text-align: center;
     box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     line-height: 1.3;
 }
 
@@ -146,14 +146,14 @@
     width: 380px;
     max-height: 600px;
     background-color: var(--neuron-panel-bg);
-    border-radius: 12px;
+    border-radius: 20px;
     box-shadow: var(--neuron-shadow-lg);
     z-index: 9999;
     display: none;
     flex-direction: column;
     overflow: hidden;
     border: 1px solid var(--neuron-panel-border);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -304,7 +304,7 @@ input:checked + .neuron-slider:before {
     background-color: var(--neuron-group-bg);
     padding: 10px 14px;
     margin-top: 10px;
-    border-radius: 8px;
+    border-radius: 12px;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
@@ -441,7 +441,7 @@ input:checked + .neuron-slider:before {
     background-color: var(--neuron-panel-bg);
     color: var(--neuron-text-primary);
     padding: 10px 14px;
-    border-radius: 8px;
+    border-radius: 12px;
     cursor: pointer;
     font-size: 13px;
     font-weight: 500;
@@ -487,12 +487,12 @@ input:checked + .neuron-slider:before {
     background-color: var(--neuron-toast-bg);
     color: var(--neuron-toast-text);
     padding: 16px 20px;
-    border-radius: 10px;
+    border-radius: 12px;
     box-shadow: var(--neuron-shadow-lg);
     z-index: 10000;
     display: flex;
     align-items: center;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-size: 14px;
     font-weight: 500;
     opacity: 0;
@@ -543,7 +543,7 @@ input:checked + .neuron-slider:before {
 
 .neuron-btn {
     padding: 12px 20px;
-    border-radius: 8px;
+    border-radius: 12px;
     cursor: pointer;
     font-size: 14px;
     font-weight: 500;
@@ -573,21 +573,21 @@ input:checked + .neuron-slider:before {
 }
 
 .neuron-btn-perigo:hover {
-    background-color: #c82333;
-    border-color: #bd2130;
-    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);
+    background-color: #C42626;
+    border-color: #B32222;
+    box-shadow: 0 2px 8px rgba(220, 43, 43, 0.4);
 }
 
 /* ========== Animations ========== */
 @keyframes neuron-pulse {
     0% {
-        box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
+        box-shadow: 0 0 0 0 rgba(20, 118, 255, 0.4);
     }
     70% {
-        box-shadow: 0 0 0 18px rgba(255, 193, 7, 0);
+        box-shadow: 0 0 0 18px rgba(20, 118, 255, 0);
     }
     100% {
-        box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+        box-shadow: 0 0 0 0 rgba(20, 118, 255, 0);
     }
 }
 

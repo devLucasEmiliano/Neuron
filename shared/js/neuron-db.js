@@ -6,20 +6,24 @@
 var NeuronDB = NeuronDB || (function () {
     'use strict';
 
-    // Storage keys mapping (replaces IndexedDB object stores)
-    const KEY_DEMANDAS = 'neuron_demandas';       // object keyed by numero
-    const KEY_CONCLUIDAS = 'neuron_concluidas';     // array of numeros
-    const KEY_METADATA = 'neuron_metadata';         // object key-value
+    // Global storage keys (not per-site)
     const KEY_CONFIG = 'neuron_config';             // object key-value
     const KEY_PREFERENCES = 'neuron_preferences';   // object key-value
 
+    // Per-site storage key builders
+    let siteAlias = 'producao';
+
+    function keyDemandas() { return 'neuron_' + siteAlias + '_demandas'; }
+    function keyConcluidas() { return 'neuron_' + siteAlias + '_concluidas'; }
+    function keyMetadata() { return 'neuron_' + siteAlias + '_metadata'; }
+
     // In-memory cache
     let cache = {
-        [KEY_DEMANDAS]: {},
-        [KEY_CONCLUIDAS]: [],
-        [KEY_METADATA]: {},
-        [KEY_CONFIG]: {},
-        [KEY_PREFERENCES]: {}
+        demandas: {},
+        concluidas: [],
+        metadata: {},
+        config: {},
+        preferences: {}
     };
 
     let initialized = false;
@@ -40,10 +44,16 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function safeStorageSet(data) {
         if (!isContextValid()) {
-            console.warn('NeuronDB: Extension context invalidated, skipping storage write.');
             return;
         }
-        await chrome.storage.local.set(data);
+        try {
+            await chrome.storage.local.set(data);
+        } catch (e) {
+            if (e && e.message && e.message.includes('Extension context invalidated')) {
+                return;
+            }
+            throw e;
+        }
     }
 
     /**
@@ -71,25 +81,44 @@ var NeuronDB = NeuronDB || (function () {
 
     /**
      * Initialize the database - pre-loads all data from chrome.storage.local into cache
+     * @param {string} [newSiteAlias] - Site alias to use for per-site keys. Defaults to 'producao'.
      */
-    async function init() {
+    async function init(newSiteAlias) {
+        // Only the first explicit call (with siteAlias) sets the site.
+        // Internal await init() calls pass no argument and should not override.
+        if (newSiteAlias && newSiteAlias !== siteAlias) {
+            siteAlias = newSiteAlias;
+            initialized = false;
+        } else if (newSiteAlias && !initialized) {
+            siteAlias = newSiteAlias;
+        }
+
         if (initialized) return;
 
         if (!isContextValid()) {
-            console.warn('NeuronDB: Extension context invalidated, using empty cache.');
             initialized = true;
             return;
         }
 
-        const data = await chrome.storage.local.get([
-            KEY_DEMANDAS, KEY_CONCLUIDAS, KEY_METADATA, KEY_CONFIG, KEY_PREFERENCES
-        ]);
+        try {
+            const kDemandas = keyDemandas();
+            const kConcluidas = keyConcluidas();
+            const kMetadata = keyMetadata();
 
-        cache[KEY_DEMANDAS] = data[KEY_DEMANDAS] || {};
-        cache[KEY_CONCLUIDAS] = data[KEY_CONCLUIDAS] || [];
-        cache[KEY_METADATA] = data[KEY_METADATA] || {};
-        cache[KEY_CONFIG] = data[KEY_CONFIG] || {};
-        cache[KEY_PREFERENCES] = data[KEY_PREFERENCES] || {};
+            const data = await chrome.storage.local.get([
+                kDemandas, kConcluidas, kMetadata, KEY_CONFIG, KEY_PREFERENCES
+            ]);
+
+            cache.demandas = data[kDemandas] || {};
+            cache.concluidas = data[kConcluidas] || [];
+            cache.metadata = data[kMetadata] || {};
+            cache.config = data[KEY_CONFIG] || {};
+            cache.preferences = data[KEY_PREFERENCES] || {};
+        } catch (e) {
+            if (!(e && e.message && e.message.includes('Extension context invalidated'))) {
+                throw e;
+            }
+        }
 
         initialized = true;
     }
@@ -111,8 +140,8 @@ var NeuronDB = NeuronDB || (function () {
     async function saveDemanda(demanda) {
         await init();
         const record = prepareDemanda(demanda);
-        cache[KEY_DEMANDAS][record.numero] = record;
-        await safeStorageSet({ [KEY_DEMANDAS]: cache[KEY_DEMANDAS] });
+        cache.demandas[record.numero] = record;
+        await safeStorageSet({ [keyDemandas()]: cache.demandas });
     }
 
     /**
@@ -124,9 +153,9 @@ var NeuronDB = NeuronDB || (function () {
         await init();
         demandas.forEach(d => {
             const record = prepareDemanda(d);
-            cache[KEY_DEMANDAS][record.numero] = record;
+            cache.demandas[record.numero] = record;
         });
-        await safeStorageSet({ [KEY_DEMANDAS]: cache[KEY_DEMANDAS] });
+        await safeStorageSet({ [keyDemandas()]: cache.demandas });
     }
 
     /**
@@ -143,7 +172,7 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function getDemanda(numero) {
         await init();
-        return cache[KEY_DEMANDAS][numero] || undefined;
+        return cache.demandas[numero] || undefined;
     }
 
     /**
@@ -151,7 +180,7 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function getAllDemandas() {
         await init();
-        return Object.values(cache[KEY_DEMANDAS]);
+        return Object.values(cache.demandas);
     }
 
     /**
@@ -159,7 +188,7 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function getAllDemandasAsObject() {
         await init();
-        return { ...cache[KEY_DEMANDAS] };
+        return { ...cache.demandas };
     }
 
     /**
@@ -167,8 +196,8 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function deleteDemanda(numero) {
         await init();
-        delete cache[KEY_DEMANDAS][numero];
-        await safeStorageSet({ [KEY_DEMANDAS]: cache[KEY_DEMANDAS] });
+        delete cache.demandas[numero];
+        await safeStorageSet({ [keyDemandas()]: cache.demandas });
     }
 
     /**
@@ -176,8 +205,8 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function clearDemandas() {
         await init();
-        cache[KEY_DEMANDAS] = {};
-        await safeStorageSet({ [KEY_DEMANDAS]: cache[KEY_DEMANDAS] });
+        cache.demandas = {};
+        await safeStorageSet({ [keyDemandas()]: cache.demandas });
     }
 
     /**
@@ -186,13 +215,13 @@ var NeuronDB = NeuronDB || (function () {
     async function markConcluida(numero, isDone = true) {
         await init();
         if (isDone) {
-            if (!cache[KEY_CONCLUIDAS].includes(numero)) {
-                cache[KEY_CONCLUIDAS].push(numero);
+            if (!cache.concluidas.includes(numero)) {
+                cache.concluidas.push(numero);
             }
         } else {
-            cache[KEY_CONCLUIDAS] = cache[KEY_CONCLUIDAS].filter(n => n !== numero);
+            cache.concluidas = cache.concluidas.filter(n => n !== numero);
         }
-        await safeStorageSet({ [KEY_CONCLUIDAS]: cache[KEY_CONCLUIDAS] });
+        await safeStorageSet({ [keyConcluidas()]: cache.concluidas });
     }
 
     /**
@@ -200,7 +229,7 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function isConcluida(numero) {
         await init();
-        return cache[KEY_CONCLUIDAS].includes(numero);
+        return cache.concluidas.includes(numero);
     }
 
     /**
@@ -208,7 +237,7 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function getConcluidas() {
         await init();
-        return new Set(cache[KEY_CONCLUIDAS]);
+        return new Set(cache.concluidas);
     }
 
     /**
@@ -216,7 +245,7 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function getConcluidasArray() {
         await init();
-        return [...cache[KEY_CONCLUIDAS]];
+        return [...cache.concluidas];
     }
 
     /**
@@ -224,8 +253,8 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function clearConcluidas() {
         await init();
-        cache[KEY_CONCLUIDAS] = [];
-        await safeStorageSet({ [KEY_CONCLUIDAS]: cache[KEY_CONCLUIDAS] });
+        cache.concluidas = [];
+        await safeStorageSet({ [keyConcluidas()]: cache.concluidas });
     }
 
     /**
@@ -233,11 +262,11 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function clearAll() {
         await init();
-        cache[KEY_DEMANDAS] = {};
-        cache[KEY_CONCLUIDAS] = [];
+        cache.demandas = {};
+        cache.concluidas = [];
         await safeStorageSet({
-            [KEY_DEMANDAS]: cache[KEY_DEMANDAS],
-            [KEY_CONCLUIDAS]: cache[KEY_CONCLUIDAS]
+            [keyDemandas()]: cache.demandas,
+            [keyConcluidas()]: cache.concluidas
         });
     }
 
@@ -246,7 +275,7 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function getMetadata(key) {
         await init();
-        return cache[KEY_METADATA][key] !== undefined ? cache[KEY_METADATA][key] : null;
+        return cache.metadata[key] !== undefined ? cache.metadata[key] : null;
     }
 
     /**
@@ -254,8 +283,8 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function setMetadata(key, value) {
         await init();
-        cache[KEY_METADATA][key] = value;
-        await safeStorageSet({ [KEY_METADATA]: cache[KEY_METADATA] });
+        cache.metadata[key] = value;
+        await safeStorageSet({ [keyMetadata()]: cache.metadata });
     }
 
     /**
@@ -263,7 +292,7 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function getConfig(key) {
         await init();
-        return cache[KEY_CONFIG][key] !== undefined ? cache[KEY_CONFIG][key] : null;
+        return cache.config[key] !== undefined ? cache.config[key] : null;
     }
 
     /**
@@ -271,8 +300,8 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function setConfig(key, value) {
         await init();
-        cache[KEY_CONFIG][key] = value;
-        await safeStorageSet({ [KEY_CONFIG]: cache[KEY_CONFIG] });
+        cache.config[key] = value;
+        await safeStorageSet({ [KEY_CONFIG]: cache.config });
     }
 
     /**
@@ -280,7 +309,7 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function getPreference(key) {
         await init();
-        return cache[KEY_PREFERENCES][key] !== undefined ? cache[KEY_PREFERENCES][key] : null;
+        return cache.preferences[key] !== undefined ? cache.preferences[key] : null;
     }
 
     /**
@@ -288,8 +317,8 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function setPreference(key, value) {
         await init();
-        cache[KEY_PREFERENCES][key] = value;
-        await safeStorageSet({ [KEY_PREFERENCES]: cache[KEY_PREFERENCES] });
+        cache.preferences[key] = value;
+        await safeStorageSet({ [KEY_PREFERENCES]: cache.preferences });
     }
 
     /**
@@ -297,8 +326,8 @@ var NeuronDB = NeuronDB || (function () {
      */
     async function getStats() {
         await init();
-        const demandas = Object.values(cache[KEY_DEMANDAS]);
-        const concluidas = new Set(cache[KEY_CONCLUIDAS]);
+        const demandas = Object.values(cache.demandas);
+        const concluidas = new Set(cache.concluidas);
 
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
@@ -433,12 +462,47 @@ var NeuronDB = NeuronDB || (function () {
     }
 
     /**
-     * Update a specific cache key (used by NeuronSync for cross-context updates)
+     * Update a specific cache entry from a storage key (used by NeuronSync for cross-context updates)
      */
-    function _updateCache(key, value) {
-        if (cache.hasOwnProperty(key)) {
-            cache[key] = value;
+    function _updateCache(storageKey, value) {
+        // Map storage keys to cache property names
+        if (storageKey === keyDemandas()) {
+            cache.demandas = value;
+        } else if (storageKey === keyConcluidas()) {
+            cache.concluidas = value;
+        } else if (storageKey === keyMetadata()) {
+            cache.metadata = value;
+        } else if (storageKey === KEY_CONFIG) {
+            cache.config = value;
+        } else if (storageKey === KEY_PREFERENCES) {
+            cache.preferences = value;
         }
+    }
+
+    /**
+     * Switch to a different site context and reload cache from storage
+     * @param {string} newSiteAlias - The site alias to switch to ('producao', 'treinamento', 'homologacao')
+     */
+    async function switchSite(newSiteAlias) {
+        if (!newSiteAlias) return;
+        initialized = false;
+        siteAlias = newSiteAlias;
+        await init(newSiteAlias);
+    }
+
+    /**
+     * Get the current site alias (public API)
+     * @returns {string} The current site alias
+     */
+    function getCurrentSite() {
+        return siteAlias;
+    }
+
+    /**
+     * Get the current site alias (internal, used by NeuronSync)
+     */
+    function _getCurrentSiteAlias() {
+        return siteAlias;
     }
 
     // Public API
@@ -484,8 +548,13 @@ var NeuronDB = NeuronDB || (function () {
         isNotificacaoRelevante,
         getNotificationCount,
 
+        // Site management
+        switchSite,
+        getCurrentSite,
+
         // Internal - used by NeuronSync for cache coherence
-        _updateCache
+        _updateCache,
+        _getCurrentSiteAlias
     };
 })();
 

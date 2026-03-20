@@ -15,15 +15,16 @@
         const demandas = event.detail;
         const DU = window.DateUtils;
         const prazosSettings = config.prazosSettings || {};
+        const prazosOverrides = await NeuronDB.getConfig('neuronPrazosOverrides') || {};
 
-        demandas.forEach(demanda => {
+        for (const demanda of demandas) {
             try {
-                if (!demanda.prazo || !demanda.idPrazoOriginal) return;
+                if (!demanda.prazo || !demanda.idPrazoOriginal) continue;
                 const elemPrazo = document.getElementById(demanda.idPrazoOriginal);
-                if (!elemPrazo || elemPrazo.parentElement.dataset.calculado) return;
+                if (!elemPrazo || elemPrazo.parentElement.dataset.calculado) continue;
 
                 const dataBase = DU.parsearData(demanda.prazo);
-                if (!dataBase) return;
+                if (!dataBase) continue;
 
                 const containerPrazo = elemPrazo.parentElement;
                 containerPrazo.style.display = 'none';
@@ -41,9 +42,15 @@
 
                 const overrideRules = { ajusteFds: prazosSettings.tratarNovoAjusteFds, ajusteFeriado: prazosSettings.tratarNovoAjusteFeriado };
 
-                const prazoFinal = DU.ajustarDataFinal(prazoInternoBase, overrideRules);
+                const prazoFinalCalculado = DU.ajustarDataFinal(prazoInternoBase, overrideRules);
                 const cobrancaFinal = DU.ajustarDataFinal(cobrancaBase, overrideRules);
                 const improrrogavelFinal = DU.ajustarDataFinal(improrrogavelBase, overrideRules);
+
+                const prazoInternoManual = prazosOverrides[demanda.numero];
+                const temOverride = !!prazoInternoManual;
+                const prazoInternoExibir = temOverride ? prazoInternoManual : DU.formatarData(prazoFinalCalculado);
+                const prazoInternoLabel = temOverride ? 'Prazo Interno:' : 'Possível Prazo Interno:';
+                const prazoInternoDias = temOverride ? DU.calcularDiasRestantes(prazoInternoManual) : DU.calcularDiasRestantes(prazoFinalCalculado);
 
                 let htmlImprorrogavel = '';
                 if (!demanda.situacao.includes('Prorrogada')) {
@@ -56,7 +63,7 @@
                     <div style="padding-bottom: 2px; margin-bottom: 2px; border-bottom: 1px dashed #ccc;"><strong>Modo:</strong> ${window.NeuronUtils.escapeHtml(modoTexto)}</div>
                     <div><strong>Cadastro:</strong> ${window.NeuronUtils.escapeHtml(demanda.dataCadastro)}<span style="color: #6c757d; font-style: italic;"> ${window.NeuronUtils.escapeHtml(DU.calcularDiasRestantes(demanda.dataCadastro))}</span></div>
                     <div><strong>Prazo Original:</strong> ${window.NeuronUtils.escapeHtml(DU.formatarData(dataBase))}<span style="color: #6c757d; font-style: italic;"> ${window.NeuronUtils.escapeHtml(DU.calcularDiasRestantes(dataBase))}</span></div>
-                    <div style="color: #0056b3;"><strong>Prazo Interno:</strong> ${window.NeuronUtils.escapeHtml(DU.formatarData(prazoFinal))}<span style="color: #6c757d; font-style: italic;"> ${window.NeuronUtils.escapeHtml(DU.calcularDiasRestantes(prazoFinal))}</span></div>
+                    <div style="color: #0056b3;"><strong>${window.NeuronUtils.escapeHtml(prazoInternoLabel)}</strong> ${window.NeuronUtils.escapeHtml(prazoInternoExibir)}<span style="color: #6c757d; font-style: italic;"> ${window.NeuronUtils.escapeHtml(prazoInternoDias)}</span></div>
                     <div style="color: #c82333;"><strong>Cobrança Interna em:</strong> ${window.NeuronUtils.escapeHtml(DU.formatarData(cobrancaFinal))}<span style="color: #6c757d; font-style: italic;"> ${window.NeuronUtils.escapeHtml(DU.calcularDiasRestantes(cobrancaFinal))}</span></div>
                     ${htmlImprorrogavel}
                 `;
@@ -65,7 +72,7 @@
             } catch (error) {
                 console.error(`%cNeuron (${SCRIPT_ID}): Erro ao processar demanda ${demanda.numero}`, "color: red;", error);
             }
-        });
+        }
     }
 
     function removerBlocosInseridos() {

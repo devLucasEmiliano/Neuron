@@ -1,134 +1,158 @@
 {
-  "title": "Neuron Data Layer Migration - IndexedDB to chrome.storage.local",
-  "branchName": "feat/data-layer-migration",
+  "project": "Neuron",
+  "branchName": "ralph/storage-por-site",
+  "description": "Storage Separado por Site - Isolar dados de demandas, concluídas e metadata por ambiente Fala.BR (produção, treinamento, homologação), mantendo config e preferências globais",
   "userStories": [
     {
       "id": "US-001",
-      "title": "Rewrite NeuronDB to use chrome.storage.local",
+      "title": "Mapeamento de site ativo via URL",
+      "description": "As a developer, I need a utility that identifies the active Fala.BR site from a URL, so the entire system knows which environment the data belongs to.",
+      "acceptanceCriteria": [
+        "Create file shared/js/neuron-site.js with a NeuronSite IIFE (same pattern as NeuronDB)",
+        "NeuronSite.SITES constant maps aliases to domains: { producao: 'falabr.cgu.gov.br', treinamento: 'treinafalabr.cgu.gov.br', homologacao: 'falabr-h.cgu.gov.br' }",
+        "NeuronSite.getFromUrl(url) parses the hostname and returns the alias string ('producao', 'treinamento', or 'homologacao'), or null if unknown",
+        "NeuronSite.getDomain(alias) returns the full domain string for a given alias, or null if unknown",
+        "NeuronSite.getLabel(alias) returns short display labels: { producao: 'PROD', treinamento: 'TREINA', homologacao: 'HOMOLOG' }",
+        "Register neuron-site.js in manifest.json in ALL content_scripts blocks that include neuron-db.js — it must load BEFORE neuron-db.js",
+        "Also add neuron-site.js to the background.js importScripts call",
+        "Typecheck passes"
+      ],
       "priority": 1,
       "passes": true,
-      "description": "Replace the IndexedDB backend in neuron-db.js with chrome.storage.local so that data is shared across all extension contexts.",
-      "acceptanceCriteria": [
-        "neuron-db.js uses chrome.storage.local instead of IndexedDB for all operations",
-        "All 5 stores mapped to chrome.storage.local keys: neuron_demandas (object keyed by numero), neuron_concluidas (array of numeros), neuron_metadata (object key-value), neuron_config (object key-value), neuron_preferences (object key-value)",
-        "init() pre-loads all data from chrome.storage.local into an in-memory cache and returns a resolved promise",
-        "All existing public API methods preserved with same names and signatures",
-        "Batch operations (saveDemandas, saveDemandasFromObject) use a single chrome.storage.local.set() call",
-        "getStats() calculates same statistics operating on the in-memory cache",
-        "Pure utility functions (parseDate, calcularDiasRestantes, isNotificacaoRelevante) remain unchanged",
-        "Write operations update both the in-memory cache and chrome.storage.local",
-        "No references to IndexedDB, idb, or openDB remain in the file"
-      ]
+      "notes": "This is the foundation utility used by all other stories. Check manifest.json for all content_scripts entries that reference shared/js/neuron-db.js and add shared/js/neuron-site.js before it in each js array. Also add it to web_accessible_resources if neuron-db.js is listed there."
     },
     {
       "id": "US-002",
-      "title": "Rewrite NeuronSync to use chrome.storage.onChanged",
+      "title": "Chaves de storage com prefixo por site no NeuronDB",
+      "description": "As a developer, I need storage keys for demandas, concluidas, and metadata to be prefixed with the site alias, so each environment has isolated data.",
+      "acceptanceCriteria": [
+        "In neuron-db.js, the KEY_DEMANDAS, KEY_CONCLUIDAS, and KEY_METADATA constants are replaced with a function or getter that builds keys dynamically based on the active site alias (e.g., 'neuron_producao_demandas')",
+        "KEY_CONFIG ('neuron_config') and KEY_PREFERENCES ('neuron_preferences') remain unchanged (global, no prefix)",
+        "NeuronDB.init() accepts an optional siteAlias parameter — when provided, it sets the active site and builds per-site keys",
+        "When siteAlias is not provided to init(), it defaults to 'producao'",
+        "The in-memory cache loads data from the per-site keys for demandas/concluidas/metadata, and from global keys for config/preferences",
+        "All existing NeuronDB methods (saveDemanda, getAllDemandas, markConcluida, getMetadata, etc.) continue to work transparently using the per-site keys",
+        "The 'initialized' flag is reset when switching sites so init() re-reads from storage",
+        "Typecheck passes"
+      ],
       "priority": 2,
       "passes": true,
-      "description": "Replace BroadcastChannel in neuron-sync.js with chrome.storage.onChanged so that sync events work across all extension contexts.",
-      "acceptanceCriteria": [
-        "neuron-sync.js uses chrome.storage.onChanged listener instead of BroadcastChannel",
-        "broadcast() is no longer needed as changes are detected automatically by chrome.storage.onChanged",
-        "onConfigChange(callback) fires when neuron_config key changes in storage",
-        "onPreferenceChange(callback) fires when neuron_preferences key changes in storage",
-        "Both subscription methods return an unsubscribe function",
-        "No references to BroadcastChannel remain in the file",
-        "The onChanged listener also updates NeuronDB's in-memory cache when changes come from other contexts"
-      ]
+      "notes": "Core change to shared/js/neuron-db.js. Store the current siteAlias in a module-level variable. Build key names like `neuron_${siteAlias}_demandas`. The init() internal calls (await init()) in each method should not override the site — only the first explicit call sets it."
     },
     {
       "id": "US-003",
-      "title": "Update manifest.json and remove idb dependency",
+      "title": "NeuronSync com suporte a chaves por site",
+      "description": "As a developer, I need NeuronSync to maintain cache coherence for per-site prefixed storage keys, so changes in one context are reflected across all others.",
+      "acceptanceCriteria": [
+        "NeuronSync's chrome.storage.onChanged listener detects changes to keys matching the pattern neuron_{alias}_{type} (e.g., neuron_producao_demandas)",
+        "When a per-site key changes, NeuronSync calls NeuronDB._updateCache only if the changed key belongs to the currently active site in NeuronDB",
+        "Add NeuronDB.getCurrentSiteAlias() or similar method so NeuronSync can check the active site",
+        "Config and preference listeners continue working unchanged (global keys, no prefix)",
+        "Typecheck passes"
+      ],
       "priority": 3,
       "passes": true,
-      "description": "Update manifest to add storage permission and remove idb.min.js dependency.",
-      "acceptanceCriteria": [
-        "storage is added to the permissions array in manifest.json",
-        "All references to vendor/idb.min.js removed from manifest.json content_scripts entries",
-        "All references to vendor/idb.min.js removed from options page HTML",
-        "The file vendor/idb.min.js is deleted from the repository",
-        "background.js no longer imports vendor/idb.min.js via importScripts()"
-      ]
+      "notes": "Modify shared/js/neuron-sync.js. The listener in ensureListener() needs to check if a changed key matches the current site before updating cache. Use NeuronDB._getCurrentSiteAlias() or expose it via the public API."
     },
     {
       "id": "US-004",
-      "title": "Update background.js for new data layer",
+      "title": "Inicialização do NeuronDB com contexto de site nos content scripts",
+      "description": "As a content script, I need to initialize NeuronDB with the correct site detected from the page URL, so data is read/written to the correct namespace.",
+      "acceptanceCriteria": [
+        "In modules/ouvidoria/tratar-novo/tratar-novo-insert.js, change NeuronDB.init() to NeuronDB.init(NeuronSite.getFromUrl(window.location.href))",
+        "In modules/loading/loading.js, if it calls NeuronDB.init(), update it similarly",
+        "In any other content script file that explicitly calls NeuronDB.init(), update to pass the site alias",
+        "Search all 17 files that reference NeuronDB for explicit init() calls and update them all",
+        "Data saved while on treinafalabr.cgu.gov.br is stored under neuron_treinamento_* keys",
+        "Data saved while on falabr.cgu.gov.br is stored under neuron_producao_* keys",
+        "Typecheck passes"
+      ],
       "priority": 4,
       "passes": true,
-      "description": "Update background.js to work with the new chrome.storage.local-based NeuronDB.",
-      "acceptanceCriteria": [
-        "importScripts() no longer includes vendor/idb.min.js",
-        "NeuronDB.init() is still called on onInstalled to pre-load the cache",
-        "Default config initialization (config.json loading) still works correctly",
-        "NeuronSync.onConfigChange() listener still works for debug logging",
-        "No other logic changes in background.js"
-      ]
+      "notes": "Search for 'NeuronDB.init()' across all files. Most NeuronDB methods call init() internally, but only the first explicit init() sets the site. Files to check: tratar-novo-insert.js, loading.js, popup.js, dashboard.js, options.js, notificacoes.js, module-factory.js. For popup/dashboard/options (extension pages, not content scripts), use 'producao' as default for now — US-007/US-008 will add the site selector later."
     },
     {
       "id": "US-005",
-      "title": "Verify core consumers - notificacoes.js",
+      "title": "Correção do href hardcoded na extração de demandas",
+      "description": "As a user, I want extracted demand links to point to the correct domain of the site I'm browsing, so I'm not redirected to production when I'm on training.",
+      "acceptanceCriteria": [
+        "In modules/ouvidoria/tratar-novo/tratar-novo-extract.js line 57, replace the hardcoded 'https://falabr.cgu.gov.br' with window.location.origin",
+        "Demands extracted on treinafalabr.cgu.gov.br have href starting with https://treinafalabr.cgu.gov.br",
+        "Demands extracted on falabr-h.cgu.gov.br have href starting with https://falabr-h.cgu.gov.br",
+        "Demands extracted on falabr.cgu.gov.br continue to have href starting with https://falabr.cgu.gov.br",
+        "Typecheck passes"
+      ],
       "priority": 5,
       "passes": true,
-      "description": "Verify that modules/notificacoes/notificacoes.js works correctly with the new data layer.",
-      "acceptanceCriteria": [
-        "NeuronDB.init() call works and pre-loads cache",
-        "getAllDemandasAsObject() returns demandas extracted by content scripts",
-        "getConcluidas() returns the set of completed demanda numbers",
-        "saveDemandas() persists extracted demandas to chrome.storage.local",
-        "markConcluida() persists completion status across all contexts",
-        "clearAll() clears data visible to all contexts",
-        "getConfig(), getPreference(), setPreference() work correctly",
-        "NeuronSync.onConfigChange() and onPreferenceChange() fire when changes occur from other contexts",
-        "No changes to business logic required"
-      ]
+      "notes": "Simple one-line change in tratar-novo-extract.js. Change: href: urlRelativo ? `https://falabr.cgu.gov.br${urlRelativo}` : null → href: urlRelativo ? `${window.location.origin}${urlRelativo}` : null"
     },
     {
       "id": "US-006",
-      "title": "Verify core consumers - dashboard.js and options.js",
+      "title": "Descarte de dados antigos na atualização da extensão",
+      "description": "As a developer, I need to clean up old-format storage data (without site prefix) when the extension is updated, to avoid orphaned or mixed data.",
+      "acceptanceCriteria": [
+        "In background.js onInstalled listener, check if reason is 'install' or 'update'",
+        "Check if old-format keys exist: 'neuron_demandas', 'neuron_concluidas', 'neuron_metadata'",
+        "If they exist, remove them using chrome.storage.local.remove(['neuron_demandas', 'neuron_concluidas', 'neuron_metadata'])",
+        "Do NOT remove neuron_config or neuron_preferences (these are still global)",
+        "Set a flag 'neuron_storage_v2' in chrome.storage.local so this cleanup only runs once",
+        "Log a console message when cleanup is performed",
+        "Typecheck passes"
+      ],
       "priority": 6,
       "passes": true,
-      "description": "Verify that the options page modules work correctly with the new data layer.",
-      "acceptanceCriteria": [
-        "dashboard.js: NeuronDB.getStats() returns real statistics from data extracted by content scripts",
-        "dashboard.js: NeuronSync.onPreferenceChange() fires when preferences change",
-        "options.js: NeuronDB.getConfig() reads config shared across all contexts",
-        "options.js: NeuronDB.setConfig() persists config changes visible to all contexts",
-        "options.js: NeuronSync.onConfigChange() fires when config changes from other contexts",
-        "No changes to business logic required in either file"
-      ]
+      "notes": "Modify background.js. Add cleanup logic inside the existing chrome.runtime.onInstalled listener after the config initialization. Check for the v2 flag first to avoid re-running."
     },
     {
       "id": "US-007",
-      "title": "Verify core consumers - popup.js and theme-manager.js",
+      "title": "NeuronDB.switchSite para troca de contexto",
+      "description": "As a popup/dashboard, I need to query data from any site (not just the active one), to show data from the site chosen by the user.",
+      "acceptanceCriteria": [
+        "Add NeuronDB.switchSite(siteAlias) method that changes the active site and reloads the cache from storage",
+        "switchSite resets the 'initialized' flag and calls init(siteAlias) internally",
+        "Add NeuronDB.getCurrentSite() method that returns the current site alias string",
+        "After switchSite, all read/write operations (getAllDemandas, saveDemanda, etc.) use the new site's keys",
+        "Config and preferences remain global regardless of which site is active",
+        "Typecheck passes"
+      ],
       "priority": 7,
       "passes": true,
-      "description": "Verify that the popup and theme manager work correctly with the new data layer.",
-      "acceptanceCriteria": [
-        "popup.js: NeuronDB.getConfig(), setConfig(), getPreference(), setPreference() all work",
-        "popup.js: NeuronSync.onConfigChange() and onPreferenceChange() fire correctly",
-        "theme-manager.js: NeuronDB.getPreference() and setPreference() work for theme persistence",
-        "Theme changes in popup reflect immediately in dashboard and content scripts via onChanged",
-        "No changes to business logic required in either file"
-      ]
+      "notes": "Modify shared/js/neuron-db.js. switchSite should set initialized=false, update the siteAlias variable, then call init(). Expose getCurrentSite in the public API return object."
     },
     {
       "id": "US-008",
-      "title": "Verify additional consumers",
+      "title": "Seletor de site no Popup",
+      "description": "As a user, I want to see which site's data the popup is showing and switch to another site, to compare demands between environments.",
+      "acceptanceCriteria": [
+        "Add a segmented control (3 buttons side by side) in the popup header with labels PROD, TREINA, HOMOLOG",
+        "On popup open, detect the active tab's URL using chrome.tabs.query({active: true, currentWindow: true}) and auto-select the matching site",
+        "If the active tab is not a Fala.BR site, default to PROD",
+        "Clicking a different site button calls NeuronDB.switchSite() and refreshes all popup data (counters, notifications)",
+        "Color coding: PROD=blue (#2563eb), TREINA=orange (#ea580c), HOMOLOG=green (#16a34a) — active button gets the color, inactive buttons are gray",
+        "The segmented control is placed below the master switch and above the notification settings",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
       "priority": 8,
       "passes": true,
-      "description": "Verify that all additional modules using NeuronDB/NeuronSync continue working with the new data layer.",
+      "notes": "Modify modules/popup/popup.html and modules/popup/popup.js. Use chrome.tabs.query to detect the active URL, then NeuronSite.getFromUrl() to get the alias. Style the segmented control to match the existing popup design. Ensure NeuronSite is available — check that popup.html loads neuron-site.js."
+    },
+    {
+      "id": "US-009",
+      "title": "Seletor de site no Dashboard",
+      "description": "As a user, I want to switch between sites on the Dashboard to view statistics for each environment separately.",
       "acceptanceCriteria": [
-        "shared/js/neuron-utils.js: NeuronDB.getConfig() and NeuronSync.onConfigChange() work correctly",
-        "shared/js/date-utils.js: any NeuronDB usage works correctly",
-        "shared/js/module-factory.js: any NeuronDB usage works correctly",
-        "modules/loading/loading.js: any NeuronDB/NeuronSync usage works correctly",
-        "modules/ouvidoria/resposta/resposta.js: any NeuronDB usage works correctly",
-        "modules/ouvidoria/tramitar/tramitar.js: any NeuronDB usage works correctly",
-        "modules/ouvidoria/tramitar/tramitar-pontos-focais.js: any NeuronDB usage works correctly",
-        "modules/ouvidoria/tratar-novo/tratar-novo-insert.js: any NeuronDB usage works correctly",
-        "modules/ouvidoria/tratar-novo/tratar-novo-pagesize.js: any NeuronDB usage works correctly",
-        "No changes to business logic required"
-      ]
+        "Add a segmented control in the Dashboard header (same visual pattern as popup: PROD, TREINA, HOMOLOG)",
+        "On dashboard open, detect the site from the opener tab or default to PROD",
+        "Clicking a different site button calls NeuronDB.switchSite() and refreshes all charts, demand table, and counters",
+        "Color coding matches the popup: PROD=blue, TREINA=orange, HOMOLOG=green",
+        "The segmented control is placed in the dashboard header area, near the title",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 9,
+      "passes": true,
+      "notes": "Modify modules/dashboard/dashboard.html and modules/dashboard/dashboard.js. The dashboard is opened as an options page or new tab. It may not have a direct reference to the active Fala.BR tab, so default to 'producao' or check via chrome.tabs.query. Ensure neuron-site.js is loaded in dashboard.html. Reuse the same segmented control CSS from the popup story."
     }
   ]
 }

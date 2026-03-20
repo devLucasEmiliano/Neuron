@@ -1,10 +1,24 @@
+/* Página legada */
 .form-group .neuronLabelArquivar {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
 }
 
-#neuronDropdownArquivar {
+.form-group #neuronDropdownArquivar {
     width: 100%;
     margin-top: 5px;
+}
+
+/* Página nova - Design System gov.br */
+.neuron-arquivar-novo {
+    margin-top: 16px;
+}
+
+.neuron-arquivar-novo .br-list {
+    display: none;
+}
+
+.neuron-arquivar-novo[expanded] .br-list {
+    display: block;
 }

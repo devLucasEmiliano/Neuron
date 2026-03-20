@@ -8,8 +8,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Theme toggle setup
     const themeToggle = document.getElementById('themeToggle');
     const themeIcon = document.getElementById('themeIcon');
-    const themeEnabledToggle = document.getElementById('themeEnabledToggle');
-
     async function updateThemeIcon() {
         const preference = await ThemeManager.getPreference();
         if (themeIcon) {
@@ -18,27 +16,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (themeToggle) {
             themeToggle.title = ThemeManager.getLabel(preference);
         }
-    }
-
-    function updateThemeEnabledUI(enabled) {
-        if (themeEnabledToggle) {
-            themeEnabledToggle.checked = enabled;
-        }
-        if (themeToggle) {
-            themeToggle.disabled = !enabled;
-            if (enabled) {
-                themeToggle.classList.remove('theme-toggle-disabled');
-            } else {
-                themeToggle.classList.add('theme-toggle-disabled');
-            }
-        }
-    }
-
-    if (themeEnabledToggle) {
-        themeEnabledToggle.addEventListener('change', async () => {
-            await ThemeManager.setEnabled(themeEnabledToggle.checked);
-            updateThemeEnabledUI(themeEnabledToggle.checked);
-        });
     }
 
     if (themeToggle) {
@@ -50,13 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.addEventListener('neuron-theme-change', updateThemeIcon);
 
-    // Listen for theme enabled changes (from sync or other contexts)
-    document.addEventListener('neuron-theme-enabled-change', (e) => {
-        updateThemeEnabledUI(e.detail.enabled);
-    });
-
     await updateThemeIcon();
-    updateThemeEnabledUI(ThemeManager._enabled);
 
     const ui = {
         masterEnable: document.getElementById('masterEnableOptions'),
@@ -107,8 +78,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const source = sources.shift();
         if (isObject(target) && isObject(source)) {
             for (const key in source) {
-                if (isObject(source[key])) {
-                    if (!target[key]) Object.assign(target, { [key]: {} });
+                if (Array.isArray(source[key])) {
+                    target[key] = source[key];
+                } else if (isObject(source[key])) {
+                    if (!isObject(target[key])) Object.assign(target, { [key]: {} });
                     deepMerge(target[key], source[key]);
                 } else {
                     Object.assign(target, { [key]: source[key] });
@@ -118,6 +91,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         return deepMerge(target, ...sources);
     };
 
+    function ensureResponseArrays() {
+        if (!fullConfig.defaultResponses) return;
+        for (const key in fullConfig.defaultResponses) {
+            if (!Array.isArray(fullConfig.defaultResponses[key].novoDropdownOptions)) {
+                const defaultArr = defaultConfig.defaultResponses?.[key]?.novoDropdownOptions;
+                fullConfig.defaultResponses[key].novoDropdownOptions = defaultArr
+                    ? JSON.parse(JSON.stringify(defaultArr))
+                    : [];
+            }
+        }
+    }
+
     async function loadConfig() {
         try {
             const response = await fetch(chrome.runtime.getURL(DEFAULT_CONFIG_PATH));
@@ -125,6 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             defaultConfig = await response.json();
             const savedConfig = await NeuronDB.getConfig(CONFIG_STORAGE_KEY);
             fullConfig = deepMerge(JSON.parse(JSON.stringify(defaultConfig)), savedConfig || {});
+            ensureResponseArrays();
         } catch (error) {
             displayStatus(ui.globalStatus, `ERRO CRÍTICO: Falha ao carregar configuração. ${error.message}`, true, 15000);
         }
@@ -211,7 +197,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function updateGlobalUIEnableState() {
         const enabled = ui.masterEnable.checked;
         document.querySelectorAll('.options-section input, .options-section select, .options-section textarea, .options-section button').forEach(field => {
-            if (field.id !== 'masterEnableOptions' && field.id !== 'refreshDashboard') {
+            if (field.id !== 'masterEnableOptions') {
                 field.disabled = !enabled;
             }
         });
@@ -319,6 +305,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         const container = document.getElementById('optionsContainer');
         const statusEl = document.getElementById('respostasStatus');
 
+        // Validate each response type has a novoDropdownOptions array
+        if (fullConfig.defaultResponses) {
+            for (const key in fullConfig.defaultResponses) {
+                if (!Array.isArray(fullConfig.defaultResponses[key]?.novoDropdownOptions)) {
+                    const defaultArr = defaultConfig.defaultResponses?.[key]?.novoDropdownOptions;
+                    fullConfig.defaultResponses[key].novoDropdownOptions = defaultArr
+                        ? JSON.parse(JSON.stringify(defaultArr))
+                        : [];
+                }
+            }
+        }
+
         select.innerHTML = '<option value="">Selecione um Tipo de Resposta...</option>';
         Object.keys(fullConfig.defaultResponses).sort().forEach(key => {
             select.innerHTML += `<option value="${key}">${key}</option>`;
@@ -343,6 +341,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 conteudoTextarea: "Escreva o conteúdo aqui...",
                 responsavel: "Defina o responsável"
             };
+            if (!Array.isArray(fullConfig.defaultResponses[tipoResposta].novoDropdownOptions)) {
+                fullConfig.defaultResponses[tipoResposta].novoDropdownOptions = [];
+            }
             fullConfig.defaultResponses[tipoResposta].novoDropdownOptions.push(newOption);
             renderResponseOptions(tipoResposta);
         });
@@ -356,7 +357,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const tipoResposta = select.value;
             if (!tipoResposta || !confirm(`Isso restaurará as respostas de "${tipoResposta}" para o padrão. Deseja continuar?`)) return;
 
-            fullConfig.defaultResponses[tipoResposta] = JSON.parse(JSON.stringify(defaultConfig.defaultResponses[tipoResposta]));
+            const defaultEntry = defaultConfig.defaultResponses?.[tipoResposta];
+            fullConfig.defaultResponses[tipoResposta] = defaultEntry
+                ? JSON.parse(JSON.stringify(defaultEntry))
+                : { novoDropdownOptions: [] };
             renderResponseOptions(tipoResposta);
             displayStatus(statusEl, 'Respostas restauradas para o padrão.', false);
         });
@@ -393,7 +397,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         listEl.querySelectorAll('.remove-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const indexToRemove = parseInt(e.target.closest('.remove-btn').dataset.index, 10);
-                fullConfig.defaultResponses[tipoResposta].novoDropdownOptions.splice(indexToRemove, 1);
+                const opts = fullConfig.defaultResponses[tipoResposta]?.novoDropdownOptions;
+                if (Array.isArray(opts)) {
+                    opts.splice(indexToRemove, 1);
+                }
                 renderResponseOptions(tipoResposta);
             });
         });
@@ -604,6 +611,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         // --- DELEGAÇÃO DE EVENTOS PARA TODA A LISTA ---
+        // Prevent accordion toggle when clicking group name input
+        listEl.addEventListener('click', e => {
+            if (e.target.matches('.focal-point-group-name')) {
+                e.stopPropagation();
+            }
+        });
+
         listEl.addEventListener('click', e => {
             const target = e.target;
             const btn = target.closest('.remove-btn') || target.closest('.add-point-btn');
@@ -702,7 +716,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <h2 class="accordion-header" id="${headerId}">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}">
                         <div class="d-flex align-items-center justify-content-between w-100 me-3">
-                            <input type="text" class="form-control form-control-sm focal-point-group-name me-3" value="${escapeHtml(groupName)}" data-original-name="${escapeHtml(groupName)}" style="max-width: 250px;" onclick="event.stopPropagation();">
+                            <input type="text" class="form-control form-control-sm focal-point-group-name me-3" value="${escapeHtml(groupName)}" data-original-name="${escapeHtml(groupName)}" style="max-width: 250px;">
                             <span class="badge bg-secondary">${points.length} pontos</span>
                         </div>
                     </button>
@@ -745,20 +759,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 section.classList.toggle('active', isTarget);
             });
 
-            // Hide save footer on dashboard (read-only view)
-            const footer = document.querySelector('.options-footer');
-            if (footer) {
-                footer.style.display = sectionName === 'dashboard' ? 'none' : '';
-            }
-
             // Initialize section on first show
             if (!sectionsInitialized.has(sectionName)) {
                 switch (sectionName) {
-                    case 'dashboard':
-                        if (typeof NeuronDashboard !== 'undefined') {
-                            NeuronDashboard.init();
-                        }
-                        break;
                     case 'prazos':
                         setupHolidaysTab();
                         break;
@@ -794,8 +797,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // Handle initial hash or default to dashboard
-        const initialSection = window.location.hash.substring(1) || 'dashboard';
+        // Handle initial hash or default to general
+        const initialSection = window.location.hash.substring(1) || 'general';
         showSection(initialSection);
     }
 
@@ -868,6 +871,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     NeuronSync.onConfigChange(async (key, newValue) => {
         if (key === CONFIG_STORAGE_KEY && newValue) {
             fullConfig = deepMerge(JSON.parse(JSON.stringify(defaultConfig)), newValue);
+            ensureResponseArrays();
             populateAllTabs();
         }
     });
