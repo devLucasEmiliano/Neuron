@@ -10,6 +10,31 @@ The extension targets three environments: production (`falabr.cgu.gov.br`), trai
 
 Language: the codebase, UI, comments, and config are in **Brazilian Portuguese**.
 
+## IMPORTANT
+
+Every directory in the project must contain a `Claude.md` file that documents:
+
+1. **Purpose** — What this part of the project is and why it exists.
+2. **Functionality** — What it does and how it works.
+3. **Key files** — Brief description of the main files in the directory.
+4. **Dependencies** — Any external libraries or internal modules it relies on.
+
+Keep each `Claude.md` concise but complete enough that someone (or Claude) reading it for the first time can understand the directory's role without digging through the code.
+
+
+## Versioning
+
+After every modification, update the version in `manifest.json` (line 5, `version_name`).
+
+Format: `XX.XXX`
+- **XX** — Major version. Increment for significant features or breaking changes.
+- **XXX** — Minor version. Increment for bug fixes and small updates.
+
+Examples:
+- Bug fix: `01.001` → `01.002`
+- New feature (minor): `01.002` → `01.003`
+- Major update: `01.003` → `02.000`
+
 ## Development
 
 No build system, bundler, or test framework. This is a vanilla JS Chrome Extension loaded directly via `chrome://extensions` > "Load unpacked". To test changes, reload the extension in Chrome.
