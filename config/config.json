@@ -1,5 +1,5 @@
 {
-  "configVersion": "4.1.0",
+  "configVersion": "4.2.0",
 
   "masterEnableNeuron": true,
 
@@ -12,7 +12,8 @@
   },
 
   "generalSettings": {
-    "qtdItensTratarTriar": 100
+    "qtdItensTratarTriar": 100,
+    "limiteCaracteresArquivar": 300
   },
 
   "notificacoesSettings": {

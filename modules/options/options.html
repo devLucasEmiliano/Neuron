@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neuron - Configuracoes</title>
+    <title>Fala.BR CGU - Neuron - Configuracoes</title>
     <link rel="stylesheet" href="../../vendor/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="../../vendor/bootstrap/icons/bootstrap-icons.min.css">
     <link rel="stylesheet" href="../../shared/css/theme.css">
     <link rel="stylesheet" href="options.css">
-    <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
     <!-- Header -->
     <header class="options-header border-bottom">
         <div class="d-flex align-items-center">
-            <img src="../../images/icons/neuronon128.png" alt="Neuron" width="40" height="40" class="me-3">
+            <img src="../../images/icons/neuronon128.png" alt="Fala.BR CGU - Neuron" width="40" height="40" class="me-3">
             <div>
-                <h1 class="h5 mb-0 text-neuron-primary fw-bold">Neuron</h1>
+                <h1 class="h5 mb-0 text-neuron-primary fw-bold">Fala.BR CGU - Neuron</h1>
                 <p class="text-body-secondary mb-0 small d-none d-sm-block">Configuracoes Avancadas</p>
             </div>
         </div>
@@ -32,13 +31,7 @@
         <nav class="options-sidebar" id="optionsSidebar">
             <ul class="sidebar-nav" role="tablist">
                 <li class="sidebar-nav-item" role="presentation">
-                    <a href="#section-dashboard" class="sidebar-nav-link active" data-section="dashboard" role="tab" aria-selected="true">
-                        <i class="bi bi-speedometer2"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li class="sidebar-nav-item" role="presentation">
-                    <a href="#section-general" class="sidebar-nav-link" data-section="general" role="tab">
+                    <a href="#section-general" class="sidebar-nav-link active" data-section="general" role="tab" aria-selected="true">
                         <i class="bi bi-gear"></i>
                         <span>Geral</span>
                     </a>
@@ -78,6 +71,7 @@
 
         <!-- Main Content -->
         <main class="options-content">
+<<<<<<< HEAD
             <!-- Dashboard Section -->
             <section id="section-dashboard" class="options-section active" role="tabpanel">
                 <div class="section-header">
@@ -274,8 +268,10 @@
                 </div>
             </section>
 
+=======
+>>>>>>> testing
             <!-- General Section -->
-            <section id="section-general" class="options-section" role="tabpanel">
+            <section id="section-general" class="options-section active" role="tabpanel">
                 <div class="section-header">
                     <h2 class="h5 text-neuron-primary mb-0">
                         <i class="bi bi-gear me-2"></i>Configuracoes Gerais
@@ -287,7 +283,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <label for="masterEnableOptions" class="form-label fw-semibold text-neuron-primary mb-0">
-                                    Habilitar Neuron Globalmente
+                                    Habilitar Fala.BR CGU - Neuron Globalmente
                                 </label>
                                 <small class="d-block text-body-secondary">Ativa ou desativa todas as funcionalidades</small>
                             </div>
@@ -388,6 +384,13 @@
                         </label>
                         <input type="number" class="form-control" id="qtdItensTratarTriar"
                                min="5" max="100" step="5">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="limiteCaracteresArquivar" class="form-label">
+                            Limite de Caracteres (Arquivar)
+                        </label>
+                        <input type="number" class="form-control" id="limiteCaracteresArquivar"
+                               min="50" max="1000" step="10">
                     </div>
                 </div>
             </section>
@@ -667,9 +670,12 @@
     <script src="../../shared/js/neuron-sync.js"></script>
     <script src="../../shared/js/neuron-utils.js"></script>
     <script src="../../shared/js/theme-manager.js"></script>
+<<<<<<< HEAD
     <script src="../../vendor/chart.min.js"></script>
     <script src="../../shared/js/neuron-site.js"></script>
     <script src="dashboard.js"></script>
+=======
+>>>>>>> testing
     <script src="options.js"></script>
 </body>
 </html>
