@@ -14,6 +14,7 @@ createNeuronModule({
      */
     onScriptAtivo: ({ config, log }) => {
         const DROPDOWN_ID_NEURON = 'neuronDropdownArquivar';
+        const limiteCaracteres = config.generalSettings?.limiteCaracteresArquivar || 300;
 
         // IDs da página legada
         const LABEL_FOR_MOTIVO_ORIGINAL = 'ConteudoForm_ConteudoGeral_ConteudoFormComAjax_cmbMotivoArquivamento';
@@ -53,9 +54,17 @@ createNeuronModule({
         const modelosArquivar = config.textModels?.Arquivar || { "Erro": "Modelos não carregados." };
         const numeroManifestacao = document.getElementById(NUMERO_MANIFESTACAO_ID)?.innerText.trim() || '{NUP_NAO_ENCONTRADO}';
 
+        function aplicarTextoComLimite(texto, inputEl) {
+            if (texto.length > limiteCaracteres) {
+                texto = texto.substring(0, limiteCaracteres);
+            }
+            inputEl.value = texto;
+            inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
         const container = document.createElement('div');
         const label = document.createElement('label');
-        label.textContent = 'Modelos de Texto (Neuron):';
+        label.textContent = 'Modelos de Texto (Fala.BR CGU - Neuron):';
 
         if (isPaginaNova) {
             // Estrutura br-select do Design System gov.br
@@ -119,8 +128,7 @@ createNeuronModule({
                 // Ao selecionar um item
                 radio.addEventListener('change', () => {
                     displayInput.value = key;
-                    justificativaInput.value = textoFinal;
-                    justificativaInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    aplicarTextoComLimite(textoFinal, justificativaInput);
                     container.removeAttribute('expanded');
                 });
             });
@@ -166,8 +174,7 @@ createNeuronModule({
             }
 
             dropdown.addEventListener('change', (e) => {
-                justificativaInput.value = e.target.value;
-                justificativaInput.dispatchEvent(new Event('input', { bubbles: true }));
+                aplicarTextoComLimite(e.target.value, justificativaInput);
             });
 
             container.appendChild(label);

@@ -19,7 +19,7 @@ createNeuronModule({
         
         const label = document.createElement('label');
         label.htmlFor = DROPDOWN_ID_NEURON;
-        label.textContent = 'Modelos de Justificativa (Neuron):';
+        label.textContent = 'Modelos de Justificativa (Fala.BR CGU - Neuron):';
         
         const dropdown = document.createElement('select');
         dropdown.id = DROPDOWN_ID_NEURON;

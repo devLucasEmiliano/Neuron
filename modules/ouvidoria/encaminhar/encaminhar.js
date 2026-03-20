@@ -49,7 +49,7 @@ createNeuronModule({
         const container = document.createElement('div');
         container.className = 'form-group neuron-encaminhar-container';
         container.innerHTML = `
-            <label for="${DROPDOWN_ID_NEURON}">Modelos de Texto (Neuron):</label>
+            <label for="${DROPDOWN_ID_NEURON}">Modelos de Texto (Fala.BR CGU - Neuron):</label>
             <select id="${DROPDOWN_ID_NEURON}" class="form-control">
                 <option value="">Selecione um modelo...</option>
             </select>

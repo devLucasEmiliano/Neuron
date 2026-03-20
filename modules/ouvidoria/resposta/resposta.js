@@ -62,7 +62,7 @@
         
         const novoDropdownHTML = `
             <div class="br-select mb-3" id="${ID_NEURON_DROPDOWN_CONTAINER}" style="display: none;">
-                <label for="${ID_NEURON_DROPDOWN_INPUT}">Opções de Resposta (Neuron)</label>
+                <label for="${ID_NEURON_DROPDOWN_INPUT}">Opções de Resposta (Fala.BR CGU - Neuron)</label>
                 <div class="br-input has-icon">
                     <input id="${ID_NEURON_DROPDOWN_INPUT}" type="text" placeholder="Clique para selecionar..." readonly disabled autocomplete="off">
                     <button class="br-button circle" type="button" aria-label="Exibir lista" tabindex="-1">

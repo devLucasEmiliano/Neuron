@@ -539,7 +539,10 @@
 
     const handleStorageChanged = async (changes, areaName) => {
         if (areaName !== 'local' || !isFeatureActive) return;
-        if (changes['neuron_demandas'] || changes['neuron_concluidas']) {
+        const siteAlias = NeuronDB._getCurrentSiteAlias();
+        const keyDemandas = 'neuron_' + siteAlias + '_demandas';
+        const keyConcluidas = 'neuron_' + siteAlias + '_concluidas';
+        if (changes[keyDemandas] || changes[keyConcluidas]) {
             memoriaDeDemandas = await NeuronDB.getAllDemandasAsObject();
             demandasConcluidas = await NeuronDB.getConcluidas();
             renderizarPainel();

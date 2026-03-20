@@ -127,7 +127,7 @@
         painelWrapperDiv.className = 'panel panel-default';
         
         painelWrapperDiv.innerHTML = `
-            <div class="panel-heading">Neuron - Pontos Focais</div>
+            <div class="panel-heading">Fala.BR CGU - Neuron - Pontos Focais</div>
             <div class="panel-body">
                 <div class="form-group">
                     <label for="neuronSecretariasList">Selecione a Secretaria:</label>
