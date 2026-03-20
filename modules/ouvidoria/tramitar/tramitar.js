@@ -172,7 +172,7 @@
         selectElement.id = 'neuronSelectMensagensTramitar';
         selectElement.className = 'form-control';
         
-        selectElement.innerHTML = '<option value="">Neuron: Selecione um modelo de mensagem...</option>';
+        selectElement.innerHTML = '<option value="">Fala.BR CGU - Neuron: Selecione um modelo de mensagem...</option>';
 
         Object.keys(modelos).sort().forEach(chave => {
             const option = document.createElement('option');

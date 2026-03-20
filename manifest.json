@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "Neuron",
+  "name": "Fala.BR CGU - Neuron",
   "version": "2.0.1",
-  "version_name": "2.00.c6b7d",
+  "version_name": "02.001",
   "description": "Otimizador de fluxos de trabalho na plataforma Fala.br",
-  "author": "MAPA - DF",
+  "author": "CGU - Lucas Emiliano",
   "icons": {
     "128": "images/icons/neuronon128.png"
   },

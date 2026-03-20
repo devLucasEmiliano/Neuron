@@ -55,7 +55,7 @@ createNeuronModule({
 
         const container = document.createElement('div');
         const label = document.createElement('label');
-        label.textContent = 'Modelos de Texto (Neuron):';
+        label.textContent = 'Modelos de Texto (Fala.BR CGU - Neuron):';
 
         if (isPaginaNova) {
             // Estrutura br-select do Design System gov.br

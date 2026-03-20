@@ -26,7 +26,7 @@
             return;
         }
 
-        console.log(`%cNeuron (${SCRIPT_ID}): Corrigindo paginação para ${itensPorPaginaDesejado}...`, "color: orange;");
+        console.log(`%cFala.BR CGU - Neuron (${SCRIPT_ID}): Corrigindo paginação para ${itensPorPaginaDesejado}...`, "color: orange;");
         campoTamanho.value = itensPorPaginaDesejado;
         botaoConfirmar.click();
     }

@@ -851,7 +851,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             reader.onload = (event) => {
                 try {
                     const importedConfig = JSON.parse(event.target.result);
-                    if (!importedConfig.modules && importedConfig.masterEnableNeuron === undefined) throw new Error("Arquivo nao parece ser uma configuracao valida do Neuron.");
+                    if (!importedConfig.modules && importedConfig.masterEnableNeuron === undefined) throw new Error("Arquivo nao parece ser uma configuracao valida do Fala.BR CGU - Neuron.");
                     fullConfig = importedConfig;
                     saveConfig();
                     populateAllTabs();
