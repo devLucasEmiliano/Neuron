@@ -774,6 +774,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     case 'pontosfocais':
                         setupFocalPointsTab();
                         break;
+                    case 'melhoria':
+                        setupMelhoriaTab();
+                        break;
                 }
                 sectionsInitialized.add(sectionName);
             }
