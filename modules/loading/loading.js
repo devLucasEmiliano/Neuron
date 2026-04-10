@@ -115,11 +115,7 @@
             iniciarAnimacao();
         } catch (error) {
             if (error?.message?.includes('Extension context invalidated')) return;
-<<<<<<< HEAD
-            console.error(`[Neuron|${SCRIPT_ID}] Falha ao aplicar estilo de loading.`, error);
-=======
             console.error(`[Fala.BR CGU - Neuron|${SCRIPT_ID}] Falha ao aplicar estilo de loading.`, error);
->>>>>>> testing
             reverterEstiloNeuron();
         }
     }
@@ -184,11 +180,7 @@
     NeuronSync.onConfigChange((key) => {
         if (key === CONFIG_KEY) {
             if (!isContextValid()) return;
-<<<<<<< HEAD
-            console.warn(`[Neuron|${SCRIPT_ID}] Configuração alterada. Reavaliando...`);
-=======
             console.debug(`[Fala.BR CGU - Neuron|${SCRIPT_ID}] Configuração alterada. Reavaliando...`);
->>>>>>> testing
             verificarEstadoAtualEAgir();
         }
     });
@@ -244,11 +236,7 @@
         }
 
         // Legacy ASP.NET page: poll for skm_LockPane element
-<<<<<<< HEAD
-        const MAX_ATTEMPTS = 100;
-=======
         const MAX_ATTEMPTS = 30;
->>>>>>> testing
         let attempts = 0;
 
         await new Promise((resolve, reject) => {

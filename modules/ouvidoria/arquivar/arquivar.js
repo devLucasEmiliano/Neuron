@@ -14,10 +14,7 @@ createNeuronModule({
      */
     onScriptAtivo: ({ config, log }) => {
         const DROPDOWN_ID_NEURON = 'neuronDropdownArquivar';
-<<<<<<< HEAD
-=======
         const limiteCaracteres = config.generalSettings?.limiteCaracteresArquivar || 300;
->>>>>>> testing
 
         // IDs da página legada
         const LABEL_FOR_MOTIVO_ORIGINAL = 'ConteudoForm_ConteudoGeral_ConteudoFormComAjax_cmbMotivoArquivamento';
@@ -57,11 +54,6 @@ createNeuronModule({
         const modelosArquivar = config.textModels?.Arquivar || { "Erro": "Modelos não carregados." };
         const numeroManifestacao = document.getElementById(NUMERO_MANIFESTACAO_ID)?.innerText.trim() || '{NUP_NAO_ENCONTRADO}';
 
-<<<<<<< HEAD
-        const container = document.createElement('div');
-        const label = document.createElement('label');
-        label.textContent = 'Modelos de Texto (Neuron):';
-=======
         function aplicarTextoComLimite(texto, inputEl) {
             if (texto.length > limiteCaracteres) {
                 texto = texto.substring(0, limiteCaracteres);
@@ -73,7 +65,6 @@ createNeuronModule({
         const container = document.createElement('div');
         const label = document.createElement('label');
         label.textContent = 'Modelos de Texto (Fala.BR CGU - Neuron):';
->>>>>>> testing
 
         if (isPaginaNova) {
             // Estrutura br-select do Design System gov.br
@@ -141,12 +132,7 @@ createNeuronModule({
                 // Ao selecionar um item
                 radio.addEventListener('change', () => {
                     displayInput.value = key;
-<<<<<<< HEAD
-                    justificativaInput.value = textoFinal;
-                    justificativaInput.dispatchEvent(new Event('input', { bubbles: true }));
-=======
                     aplicarTextoComLimite(textoFinal, justificativaInput);
->>>>>>> testing
                     container.removeAttribute('expanded');
                 });
             });
@@ -194,12 +180,7 @@ createNeuronModule({
             }
 
             dropdown.addEventListener('change', (e) => {
-<<<<<<< HEAD
-                justificativaInput.value = e.target.value;
-                justificativaInput.dispatchEvent(new Event('input', { bubbles: true }));
-=======
                 aplicarTextoComLimite(e.target.value, justificativaInput);
->>>>>>> testing
             });
 
             container.appendChild(label);
