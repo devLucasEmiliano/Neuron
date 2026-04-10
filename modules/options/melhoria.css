@@ -1,4 +1,4 @@
-/* ========== Melhoria - Suggestion Board Styles ========== */
+/* ========== Melhoria - Hexagonal Suggestion Board (Colmeia / Civ Style) ========== */
 
 /* Section header with create button */
 #section-melhoria .section-header {
@@ -7,7 +7,7 @@
     align-items: center;
 }
 
-/* Filter bar */
+/* ========== Filter Bar ========== */
 .melhoria-filters {
     display: flex;
     gap: 0.5rem;
@@ -37,82 +37,142 @@
     color: #fff;
 }
 
-/* ========== Grid Layout ========== */
+/* ========== Hex Grid Container ========== */
 .melhoria-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1rem;
-    margin-top: 0.5rem;
-}
+    --hex-size: 100px;
+    /* flat-top hex: width = 2*size, height = sqrt(3)*size */
+    --hex-width: calc(var(--hex-size) * 2);
+    --hex-height: calc(var(--hex-size) * 1.732);
+    --hex-border: 3px;
 
-/* ========== Suggestion Card ========== */
-.melhoria-card {
-    border: 1px solid var(--neuron-border-color);
-    border-radius: var(--neuron-radius-card);
-    padding: 1rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: var(--bs-body-bg);
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    position: relative;
+    align-items: flex-start;
+    margin-top: 1rem;
+    overflow: visible;
 }
 
-.melhoria-card:hover {
-    border-color: var(--neuron-primary);
-    box-shadow: var(--neuron-shadow-sm);
-    transform: translateY(-2px);
-}
-
-/* Vote prominence tiers */
-.melhoria-card[data-tier="low"] {
-    opacity: 0.8;
-}
-
-.melhoria-card[data-tier="medium"] {
-    border-color: var(--neuron-border-color);
-}
-
-.melhoria-card[data-tier="high"] {
-    grid-column: span 2;
-    border-color: var(--neuron-primary);
-    box-shadow: 0 0 16px rgba(var(--neuron-primary-rgb), 0.15);
-}
-
-.melhoria-card[data-tier="high"]:hover {
-    box-shadow: 0 0 24px rgba(var(--neuron-primary-rgb), 0.25);
-}
-
-/* Card title */
-.melhoria-card-title {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--neuron-text-primary);
-    margin: 0;
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-/* Card footer area */
-.melhoria-card-footer {
+/* ========== Hex Rows ========== */
+.hex-row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: auto;
+    margin-left: 0;
+    /* Gap de 0.5W entre hexes na mesma linha.
+       Esse espaco e preenchido pelos hexes da linha offset, formando colmeia. */
+    gap: calc(var(--hex-width) * 0.5);
 }
 
-/* ========== Category Badges ========== */
+/* Sem margin negativa — hexes nao se sobrepoem */
+.hex-row .hex-cell {
+    margin: 0;
+}
+
+/* Interlocking vertical: cada linha sobe 50% da altura do hex.
+   Passo vertical = H/2 → margin-top negativa = -H/2 */
+.hex-row + .hex-row {
+    margin-top: calc(var(--hex-height) * -0.5);
+}
+
+/* Linhas impares: deslocam 0.75W (metade do passo horizontal de 1.5W) */
+.hex-row-offset {
+    margin-left: calc(var(--hex-width) * 0.75);
+}
+
+/* ========== Hex Cell (wrapper for border effect) ========== */
+.hex-cell {
+    width: var(--hex-width);
+    height: var(--hex-height);
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+    flex-shrink: 0;
+    flex-grow: 0;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+/* The outer hex acts as the colored border */
+.hex-cell[data-category="bug"] {
+    background: var(--neuron-danger);
+}
+.hex-cell[data-category="nova_ferramenta"] {
+    background: var(--neuron-success);
+}
+.hex-cell[data-category="melhoria_ux"] {
+    background: var(--neuron-info);
+}
+.hex-cell[data-category="documentacao"] {
+    background: var(--neuron-warning);
+}
+.hex-cell[data-category="performance"] {
+    background: var(--neuron-primary);
+}
+.hex-cell[data-category="outro"] {
+    background: var(--neuron-text-muted);
+}
+
+/* Hover: scale up and pop above neighbors */
+.hex-cell:hover {
+    transform: scale(1.08);
+    z-index: 10;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+}
+
+/* ========== Hex Card (inner content, slightly smaller hex) ========== */
+.melhoria-card {
+    position: absolute;
+    inset: var(--hex-border);
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+    background: var(--neuron-bg-primary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1.2rem 2.2rem;
+    gap: 0.15rem;
+}
+
+/* ========== Tier System ========== */
+.hex-cell[data-tier="low"] {
+    opacity: 0.75;
+}
+
+.hex-cell[data-tier="medium"] {
+    opacity: 1;
+}
+
+.hex-cell[data-tier="high"] {
+    animation: hex-glow 2s ease-in-out infinite alternate;
+}
+
+.hex-cell[data-tier="high"] .melhoria-card::after {
+    content: '\2605';
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.65rem;
+    color: var(--neuron-primary);
+}
+
+@keyframes hex-glow {
+    0% {
+        filter: drop-shadow(0 0 4px rgba(var(--neuron-primary-rgb), 0.25));
+    }
+    100% {
+        filter: drop-shadow(0 0 14px rgba(var(--neuron-primary-rgb), 0.6));
+    }
+}
+
+/* ========== Content Inside Hex ========== */
+
+/* Category badge */
 .melhoria-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
-    padding: 0.2rem 0.6rem;
+    gap: 0.2rem;
+    padding: 0.1rem 0.4rem;
     border-radius: var(--neuron-radius-pill);
-    font-size: 0.7rem;
+    font-size: 0.58rem;
     font-weight: 600;
     white-space: nowrap;
 }
@@ -121,43 +181,68 @@
     background: var(--neuron-danger-light);
     color: var(--neuron-danger);
 }
-
 .melhoria-badge-nova_ferramenta {
     background: var(--neuron-success-light);
     color: var(--neuron-success);
 }
-
 .melhoria-badge-melhoria_ux {
     background: var(--neuron-info-light);
     color: var(--neuron-info);
 }
-
 .melhoria-badge-documentacao {
     background: var(--neuron-warning-light);
     color: var(--neuron-warning);
 }
-
 .melhoria-badge-performance {
     background: var(--neuron-primary-light);
     color: var(--neuron-primary);
 }
-
 .melhoria-badge-outro {
     background: var(--neuron-bg-tertiary);
     color: var(--neuron-text-secondary);
+}
+
+/* Card title */
+.melhoria-card-title {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--neuron-text-primary);
+    margin: 0;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-width: 100%;
+    word-break: break-word;
+}
+
+/* Card footer */
+.melhoria-card-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+    margin-top: auto;
+}
+
+/* Date */
+.melhoria-date {
+    font-size: 0.52rem;
+    color: var(--neuron-text-muted);
 }
 
 /* ========== Vote Button ========== */
 .vote-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.2rem 0.6rem;
+    gap: 0.2rem;
+    padding: 0.1rem 0.4rem;
     border-radius: var(--neuron-radius-pill);
     border: 1px solid var(--neuron-border-color);
     background: transparent;
     color: var(--neuron-text-secondary);
-    font-size: 0.8rem;
+    font-size: 0.65rem;
     cursor: pointer;
     transition: all 0.2s ease;
     font-weight: 500;
@@ -179,19 +264,13 @@
     border-color: var(--neuron-primary-hover);
 }
 
-/* Vote count on card */
+/* Vote count (used in detail modal) */
 .melhoria-vote-count {
     font-size: 0.75rem;
     color: var(--neuron-text-muted);
     display: flex;
     align-items: center;
     gap: 0.25rem;
-}
-
-/* ========== Date display ========== */
-.melhoria-date {
-    font-size: 0.7rem;
-    color: var(--neuron-text-muted);
 }
 
 /* ========== Empty / Offline States ========== */
@@ -238,18 +317,28 @@
 }
 
 /* ========== Responsive ========== */
-@media (max-width: 767.98px) {
+@media (max-width: 575.98px) {
     .melhoria-grid {
-        grid-template-columns: 1fr;
+        --hex-size: 80px;
     }
 
-    .melhoria-card[data-tier="high"] {
-        grid-column: span 1;
+    .melhoria-card {
+        padding: 0.8rem 1.5rem;
+    }
+
+    .melhoria-card-title {
+        font-size: 0.65rem;
+    }
+}
+
+@media (min-width: 576px) and (max-width: 767.98px) {
+    .melhoria-grid {
+        --hex-size: 85px;
     }
 }
 
 @media (min-width: 768px) and (max-width: 991.98px) {
     .melhoria-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        --hex-size: 92px;
     }
 }
