@@ -71,7 +71,7 @@ O **Neuron** é uma extensão para Google Chrome criada para otimizar e agilizar
 * **Assistente de Tramitação:**
     * Calcula e preenche automaticamente a data de tratamento com base em regras de negócio configuráveis (dias úteis, feriados, etc.).
     * Painel para selecionar **Pontos Focais** e realizar tramitação para múltiplos destinatários de forma automática.
-    * Modelos de texto customizáveis para o despacho, com variáveis como `{PRAZO}` e `{SECRETARIA}`.
+    * Modelos de texto customizáveis para o despacho, com variáveis como `{PRAZO}` e `{SECRETARIA}` — veja o [Manual Neuron.pdf](Manual%20Neuron.pdf) (seção 4.1) para a lista completa de chaves por categoria.
     * Templates por tipo de manifestação: Comunicação, Denúncia, Elogio, Reclamação, Solicitação, Sugestão.
 * **Assistente de Arquivamento:** Menu com modelos de justificativa pré-definidos (Duplicidade, Perda de Objeto, Falta de Urbanidade, Ausência de Elementos, etc.).
 * **Assistente de Encaminhamento:** Templates para mensagens ao destinatário e ao solicitante, com substituição automática de variáveis como `{OUVIDORIA}`.
@@ -108,7 +108,7 @@ O **Neuron** é uma extensão para Google Chrome criada para otimizar e agilizar
 * **Configurações Gerais:** Toggle master, itens por página.
 * **Prazos:** Regras de cálculo de datas completas.
 * **Respostas:** Templates de resposta rápida editáveis.
-* **Modelos de Texto:** Templates para todas as ações (Arquivar, Prorrogar, Encaminhar, Tramitar, Tratar).
+* **Modelos de Texto:** Templates para todas as ações (Arquivar, Prorrogar, Encaminhar, Tramitar), com painel de chaves de substituição por categoria.
 * **Pontos Focais:** Diretório hierárquico de secretarias e órgãos.
 * **JSON:** Importação e exportação completa de configurações.
 

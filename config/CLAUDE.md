@@ -12,13 +12,13 @@ Holds the default configuration that is loaded into `chrome.storage.local` on ex
 - **Notification settings:** `notificacoesSettings` configures deadline thresholds, danger count thresholds, and per-category visibility in the floating notification panel.
 - **Deadline calculation settings:** `prazosSettings` configures the calculation mode (business days vs. calendar days), weekend/holiday adjustment strategies, and internal deadline offsets for the `tratar-novo` module.
 - **Holidays:** `holidays` is an array of dated entries used by `date-utils.js` for business day calculations.
-- **Text templates:** `textModels` provides pre-written text blocks organized by action type (`Arquivar`, `Prorrogar`, `Encaminhar`, `Tramitar`, `Tratar`). Operators select these from dropdowns injected into Fala.BR pages.
+- **Text templates:** `textModels` provides pre-written text blocks organized by action type (`Arquivar`, `Prorrogar`, `Encaminhar`, `Tramitar`, `Tratar`). Operators select these from dropdowns injected into Fala.BR pages. Substitution keys available per category (e.g., `{NUP}`, `{OUVIDORIA}`, `{PRAZO}`, `{SECRETARIA}`) are documented in `shared/js/text-placeholders.js` and in section 4.1 of `Manual Neuron.pdf`.
 - **Default responses:** `defaultResponses` provides template sets for the `tratar-novo` response UI (`Pedido de Complementacao`, `Resposta Conclusiva`, `Resposta Intermediaria`), each containing dropdown options with pre-filled textarea content and a responsible party field.
 - **Focal points:** `focalPoints` maps short organizational codes (e.g., `SDA/DIPOA`) to arrays of full organizational unit names used in routing/tramitacao flows.
 
 ## Key Files
 
-- `config.json` — the only file in this directory; version-tagged via `configVersion` (currently `4.1.0`).
+- `config.json` — the only file in this directory; version-tagged via `configVersion` (currently `5.0.0`).
 
 ## Dependencies
 

@@ -95,37 +95,22 @@ async function setupMelhoriaTab() {
             '<i class="bi ' + icon + '"></i> ' + suggestion.vote_count + '</button>';
     }
 
-    // ========== Hex Grid Helpers ==========
-    function getHexesPerRow() {
-        var containerWidth = grid.clientWidth;
-        // hex-size defaults: 100px (desktop), 92px, 85px, 80px (mobile)
-        var hexSize = 100;
-        if (containerWidth < 576) hexSize = 80;
-        else if (containerWidth < 768) hexSize = 85;
-        else if (containerWidth < 992) hexSize = 92;
-        var hexWidth = hexSize * 2;
-        // Colmeia: passo horizontal = 1.5W (hex W + gap 0.5W)
-        // Largura total de N hexes = N * W + (N-1) * 0.5W = W * (1.5N - 0.5)
-        // N = floor((containerWidth / hexWidth + 0.5) / 1.5)
-        return Math.max(1, Math.floor((containerWidth / hexWidth + 0.5) / 1.5));
-    }
+    // ========== Grid Rendering ==========
+    const HEX_ROW_SIZE = 5;
 
     function renderCard(s) {
         var tier = getTier(s.vote_count);
         var isVoted = myVotedIds.has(s.id);
-        // Outer .hex-cell = colored border hex, inner .melhoria-card = white content hex
-        return '<div class="hex-cell" data-tier="' + tier + '" data-id="' + s.id +
+        return '<div class="melhoria-card" data-tier="' + tier + '" data-id="' + s.id +
             '" data-category="' + s.category + '" title="' + escapeHtml(s.title) + '">' +
-            '<div class="melhoria-card">' +
             renderBadge(s.category) +
             '<h3 class="melhoria-card-title">' + escapeHtml(s.title) + '</h3>' +
             '<div class="melhoria-card-footer">' +
             '<span class="melhoria-date">' + formatDate(s.created_at) + '</span>' +
             renderVoteBtn(s, isVoted) +
-            '</div></div></div>';
+            '</div></div>';
     }
 
-    // ========== Grid Rendering ==========
     function renderGrid() {
         var filtered = activeFilter === 'all'
             ? suggestions
@@ -139,36 +124,17 @@ async function setupMelhoriaTab() {
             return;
         }
 
-        var perRow = getHexesPerRow();
-        var rows = [];
-        var i = 0;
-        var rowIndex = 0;
-
-        while (i < filtered.length) {
-            // Offset rows (odd index) have one fewer hex for stagger effect
-            var count = (rowIndex % 2 === 1) ? Math.max(1, perRow - 1) : perRow;
-            rows.push({
-                items: filtered.slice(i, i + count),
-                isOffset: rowIndex % 2 === 1
-            });
-            i += count;
-            rowIndex++;
-        }
-
-        grid.innerHTML = rows.map(function (row) {
-            var cls = 'hex-row' + (row.isOffset ? ' hex-row-offset' : '');
-            return '<div class="' + cls + '">' +
-                row.items.map(renderCard).join('') +
+        var cardHtml = filtered.map(renderCard);
+        var html = '';
+        for (var i = 0; i < cardHtml.length; i += HEX_ROW_SIZE) {
+            var rowIndex = Math.floor(i / HEX_ROW_SIZE);
+            var offsetCls = rowIndex % 2 === 1 ? ' hex-row-offset' : '';
+            html += '<div class="hex-row' + offsetCls + '">' +
+                cardHtml.slice(i, i + HEX_ROW_SIZE).join('') +
                 '</div>';
-        }).join('');
+        }
+        grid.innerHTML = html;
     }
-
-    // Re-render hex grid on resize (debounced)
-    var resizeTimer;
-    window.addEventListener('resize', function () {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(renderGrid, 200);
-    });
 
     // ========== Filter Rendering ==========
     function renderFilters() {
@@ -362,10 +328,10 @@ async function setupMelhoriaTab() {
             return;
         }
 
-        // Card click = open detail (data-id is on .hex-cell wrapper)
-        const cell = e.target.closest('.hex-cell');
-        if (cell) {
-            openDetail(cell.dataset.id);
+        // Card click = open detail
+        const card = e.target.closest('.melhoria-card');
+        if (card) {
+            openDetail(card.dataset.id);
         }
     });
 
