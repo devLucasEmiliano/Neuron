@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/Mirante5/Neuron/blob/main/images/Intro-Neuron.gif" alt="Animação de Carregamento do Neuron" width="500"/>
+  <img src="https://github.com/devLucasEmiliano/Neuron/blob/stable/images/Intro-Neuron.gif" alt="Animação de Carregamento do Neuron" width="500"/>
 </p>
 
 <h1 align="center">Neuron</h1>
