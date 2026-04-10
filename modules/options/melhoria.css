@@ -1,0 +1,273 @@
+/* ========== Melhoria - Hexagonal Suggestion Board (Colmeia) ========== */
+
+/* Section header with create button */
+#section-melhoria .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ========== Filter Bar ========== */
+.melhoria-filters {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.melhoria-filter-btn {
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--neuron-radius-pill);
+    border: 1px solid var(--neuron-border-color);
+    background: transparent;
+    color: var(--neuron-text-secondary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.melhoria-filter-btn:hover {
+    border-color: var(--neuron-primary);
+    color: var(--neuron-primary);
+}
+
+.melhoria-filter-btn.active {
+    background: var(--neuron-primary);
+    border-color: var(--neuron-primary);
+    color: #fff;
+}
+
+/* ========== Grid Layout (honeycomb) ========== */
+.melhoria-grid {
+    --hex-width: 200px;
+    --hex-height: 231px;           /* width / 0.866 for pointy-top hex ratio */
+    --hex-gap: 10px;
+    --hex-row-overlap: 58px;       /* ~hex-height * 0.25 for vertical interlock */
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 0;
+}
+
+.hex-row {
+    display: flex;
+    gap: var(--hex-gap);
+    margin-top: calc(var(--hex-row-overlap) * -1);
+}
+
+.hex-row:first-child {
+    margin-top: 0;
+}
+
+.hex-row-offset {
+    transform: translateX(calc((var(--hex-width) + var(--hex-gap)) / 2));
+}
+
+/* ========== Suggestion Card (hex) ========== */
+.melhoria-card {
+    width: var(--hex-width);
+    height: var(--hex-height);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: var(--neuron-bg-secondary);
+    border: none;
+    padding: 2rem 2.25rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, filter 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    gap: 0.4rem;
+    position: relative;
+}
+
+.melhoria-card:hover {
+    transform: translateY(-3px) scale(1.02);
+    filter: drop-shadow(0 6px 14px rgba(var(--neuron-primary-rgb), 0.35));
+}
+
+/* ========== Tier System ========== */
+.melhoria-card[data-tier="low"] {
+    filter: brightness(0.9) saturate(0.85);
+}
+
+.melhoria-card[data-tier="medium"] {
+    background: var(--neuron-bg-tertiary);
+}
+
+.melhoria-card[data-tier="high"] {
+    background: linear-gradient(145deg,
+        var(--neuron-primary-light),
+        var(--neuron-accent-light, var(--neuron-primary-light)));
+    filter: drop-shadow(0 0 14px rgba(var(--neuron-primary-rgb), 0.45));
+}
+
+/* ========== Category Badges ========== */
+.melhoria-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--neuron-radius-pill);
+    font-size: 0.62rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.melhoria-badge-bug {
+    background: var(--neuron-danger-light);
+    color: var(--neuron-danger);
+}
+.melhoria-badge-nova_ferramenta {
+    background: var(--neuron-success-light);
+    color: var(--neuron-success);
+}
+.melhoria-badge-melhoria_ux {
+    background: var(--neuron-info-light);
+    color: var(--neuron-info);
+}
+.melhoria-badge-documentacao {
+    background: var(--neuron-warning-light);
+    color: var(--neuron-warning);
+}
+.melhoria-badge-performance {
+    background: var(--neuron-primary-light);
+    color: var(--neuron-primary);
+}
+.melhoria-badge-outro {
+    background: var(--neuron-bg-tertiary);
+    color: var(--neuron-text-secondary);
+}
+
+/* ========== Card Title ========== */
+.melhoria-card-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--neuron-text-primary);
+    margin: 0;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-width: 100%;
+    word-break: break-word;
+}
+
+/* ========== Card Footer ========== */
+.melhoria-card-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: auto;
+}
+
+.melhoria-date {
+    font-size: 0.6rem;
+    color: var(--neuron-text-muted);
+}
+
+/* ========== Vote Button ========== */
+.vote-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: var(--neuron-radius-pill);
+    border: 1px solid var(--neuron-border-color);
+    background: transparent;
+    color: var(--neuron-text-secondary);
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.vote-btn:hover {
+    border-color: var(--neuron-primary);
+    color: var(--neuron-primary);
+}
+
+.vote-btn.voted {
+    background: var(--neuron-primary);
+    border-color: var(--neuron-primary);
+    color: #fff;
+}
+
+.vote-btn.voted:hover {
+    background: var(--neuron-primary-hover);
+    border-color: var(--neuron-primary-hover);
+}
+
+/* Vote count (detail modal) */
+.melhoria-vote-count {
+    font-size: 0.75rem;
+    color: var(--neuron-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* ========== Empty / Offline / Loading States ========== */
+.melhoria-empty,
+.melhoria-offline {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--neuron-text-muted);
+    width: 100%;
+}
+
+.melhoria-empty i,
+.melhoria-offline i {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 1rem;
+    opacity: 0.4;
+}
+
+.melhoria-loading {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--neuron-text-muted);
+    width: 100%;
+}
+
+.melhoria-loading .spinner-border {
+    width: 2rem;
+    height: 2rem;
+    border-width: 0.2rem;
+}
+
+/* ========== Detail Modal ========== */
+#detailDescription {
+    white-space: pre-wrap;
+    line-height: 1.6;
+}
+
+#detailSuggestionModal .modal-header {
+    border-bottom-color: var(--neuron-border-color);
+}
+
+#detailSuggestionModal .modal-footer {
+    border-top-color: var(--neuron-border-color);
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 767.98px) {
+    .melhoria-grid {
+        --hex-width: 150px;
+        --hex-height: 173px;
+        --hex-row-overlap: 43px;
+    }
+
+    .melhoria-card {
+        padding: 1.5rem 1.75rem;
+    }
+
+    .melhoria-card-title {
+        font-size: 0.72rem;
+    }
+}

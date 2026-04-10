@@ -109,7 +109,11 @@ createNeuronModule({
             brList.tabIndex = 0;
 
             Object.entries(modelosArquivar).forEach(([key, textoTemplate], index) => {
-                const textoFinal = String(textoTemplate).replace(/\(NUP\)/g, `(${numeroManifestacao})`);
+                // `{NUP}` é a forma canônica; `(NUP)` continua sendo aceito como fallback
+                // para templates antigos salvos no storage do usuário.
+                const textoFinal = String(textoTemplate)
+                    .replace(/\{NUP\}/g, numeroManifestacao)
+                    .replace(/\(NUP\)/g, `(${numeroManifestacao})`);
                 const itemId = `neuronArquivar-list-item-${index}`;
 
                 const brItem = document.createElement('div');
@@ -181,7 +185,9 @@ createNeuronModule({
 
             for (const [key, textoTemplate] of Object.entries(modelosArquivar)) {
                 const option = document.createElement('option');
-                const textoFinal = String(textoTemplate).replace(/\(NUP\)/g, `(${numeroManifestacao})`);
+                const textoFinal = String(textoTemplate)
+                    .replace(/\{NUP\}/g, numeroManifestacao)
+                    .replace(/\(NUP\)/g, `(${numeroManifestacao})`);
                 option.value = textoFinal;
                 option.textContent = key;
                 dropdown.appendChild(option);

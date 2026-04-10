@@ -482,6 +482,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                     delete fullConfig.textModels[category][keyToRemove];
                     renderTextModels(category);
                 }
+                return;
+            }
+
+            // Lida com o clique em um chip de chave (copia para o clipboard)
+            const chip = e.target.closest('.neuron-placeholder-chip');
+            if (chip) {
+                const token = chip.dataset.token;
+                if (!token) return;
+                navigator.clipboard.writeText(token).then(() => {
+                    displayStatus(statusEl, `Chave ${token} copiada para a área de transferência.`, false, 2500);
+                }).catch(() => {
+                    displayStatus(statusEl, `Não foi possível copiar a chave ${token}.`, true, 3000);
+                });
             }
         });
 
@@ -534,6 +547,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         const listEl = document.getElementById('textModelsList');
         listEl.innerHTML = '';
         const models = fullConfig.textModels[category];
+
+        // Painel informativo com as chaves de substituição disponíveis para a categoria
+        const placeholders = window.NEURON_TEXT_PLACEHOLDERS?.[category];
+        if (placeholders && placeholders.length > 0) {
+            const painelChaves = document.createElement('div');
+            painelChaves.className = 'neuron-placeholder-panel alert alert-info mb-3';
+            const chipsHTML = placeholders.map(p => `
+                <button type="button" class="neuron-placeholder-chip btn btn-sm btn-outline-primary"
+                        data-token="${escapeHtml(p.token)}"
+                        title="Clique para copiar. ${escapeHtml(p.descricao)} (ex: ${escapeHtml(p.exemplo)})">
+                    <code>${escapeHtml(p.token)}</code>
+                    <span class="neuron-placeholder-desc">${escapeHtml(p.descricao)}</span>
+                </button>
+            `).join('');
+            painelChaves.innerHTML = `
+                <div class="fw-semibold mb-2">
+                    <i class="bi bi-braces me-1"></i>Chaves disponíveis para esta categoria
+                </div>
+                <div class="small text-body-secondary mb-2">
+                    Use as chaves abaixo dentro dos seus modelos. Elas serão substituídas automaticamente quando o modelo for inserido no Fala.BR. Clique em uma chave para copiá-la.
+                </div>
+                <div class="neuron-placeholder-chips">${chipsHTML}</div>
+            `;
+            listEl.appendChild(painelChaves);
+        } else if (category) {
+            // Categoria existe mas não possui chaves documentadas
+            const aviso = document.createElement('div');
+            aviso.className = 'neuron-placeholder-panel alert alert-secondary py-2 mb-3 small';
+            aviso.innerHTML = `<i class="bi bi-info-circle me-1"></i>Esta categoria não possui chaves de substituição — o texto é inserido sem modificações.`;
+            listEl.appendChild(aviso);
+        }
 
         for (const key in models) {
             const value = models[key];
@@ -784,6 +828,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         break;
                     case 'pontosfocais':
                         setupFocalPointsTab();
+                        break;
+                    case 'melhoria':
+                        setupMelhoriaTab();
                         break;
                 }
                 sectionsInitialized.add(sectionName);

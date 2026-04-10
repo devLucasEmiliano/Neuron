@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Fala.BR CGU - Neuron",
   "version": "2.0.1",
-  "version_name": "02.005",
+  "version_name": "02.011",
   "description": "Otimizador de fluxos de trabalho na plataforma Fala.br",
   "author": "CGU - Lucas Emiliano",
   "icons": {
@@ -22,7 +22,8 @@
   "host_permissions": [
     "https://falabr.cgu.gov.br/*",
     "https://treinafalabr.cgu.gov.br/*",
-    "https://falabr-h.cgu.gov.br/*"
+    "https://falabr-h.cgu.gov.br/*",
+    "https://nbtsggaahglmshtkbxwv.supabase.co/*"
   ],
   "background": {
     "service_worker": "background.js"
