@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.0-blue.svg" alt="Versão 2.0">
+  <img src="https://img.shields.io/badge/version-2.0.1-blue.svg" alt="Versão 2.0.1">
   <img src="https://img.shields.io/badge/Manifest-V3-brightgreen.svg" alt="Manifest V3">
   <img src="https://img.shields.io/badge/Status-Ativo-success.svg" alt="Status do Projeto: Ativo">
 </p>
@@ -44,8 +44,9 @@ O **Neuron** é uma extensão para Google Chrome criada para otimizar e agilizar
 
 | Feature | Descrição |
 |---------|-----------|
-| **Popup de Controle** | Liga/desliga a extensão, itens por página, tema claro/escuro/sistema |
-| **Painel de Configurações** | Dashboard com gráficos, gerenciamento de modelos de texto e pontos focais |
+| **Popup de Controle** | Liga/desliga a extensão, itens por página, tema claro/escuro/sistema, seletor de site |
+| **Painel de Configurações** | Gerenciamento de modelos de texto, pontos focais e configurações gerais |
+| **Dashboard Dedicado** | Página dedicada com cards de métricas, gráficos, tabela de demandas paginada e seletor de site |
 | **Assistente de Tramitação** | Cálculo automático de datas, seleção de pontos focais, multi-destinatários |
 | **Ações Rápidas** | Modelos pré-definidos para Arquivar, Encaminhar e Prorrogar |
 | **Respostas Rápidas** | Templates por tipo (intermediária, conclusiva, complementação) |
@@ -97,6 +98,15 @@ O **Neuron** é uma extensão para Google Chrome criada para otimizar e agilizar
 * **Filtros:** Alterne entre "Minhas Demandas" e "Todas as Demandas".
 * **Alertas Visuais:** Ícone muda de cor e pulsa para alertar sobre prazos críticos.
 
+### 📊 Dashboard Dedicado
+
+* **Cards de Métricas:** Total de demandas, prazos curtos, prorrogadas, complementadas e taxa de conclusão.
+* **Gráficos:** Distribuição de status, distribuição de prazos, Top 10 responsáveis e gráfico temporal de demandas por mês.
+* **Tabela de Demandas:** Colunas com cores de urgência, busca, ordenação, paginação e ações rápidas (Abrir no Fala.BR, Copiar NUP).
+* **Filtros:** Alterne entre "Minhas Demandas" e "Todas as Demandas".
+* **Seletor de Site:** Alternância entre produção, treinamento e homologação diretamente pelo Dashboard.
+* **Acesso:** Navegação direta via Popup ou Página de Opções.
+
 ### 📋 Módulos SIC
 
 * **SIC Tratar:** Extração de dados e cálculos de prazo para manifestações do Sistema de Informação ao Cidadão.
@@ -104,8 +114,7 @@ O **Neuron** é uma extensão para Google Chrome criada para otimizar e agilizar
 
 ### ⚙️ Página de Opções
 
-* **Dashboard:** Cards estatísticos e gráficos (total de demandas, prazos curtos, prorrogadas, complementadas, taxa de conclusão).
-* **Configurações Gerais:** Toggle master, itens por página.
+* **Configurações Gerais:** Toggle master, itens por página e acesso ao Dashboard dedicado.
 * **Prazos:** Regras de cálculo de datas completas.
 * **Respostas:** Templates de resposta rápida editáveis.
 * **Modelos de Texto:** Templates para todas as ações (Arquivar, Prorrogar, Encaminhar, Tramitar), com painel de chaves de substituição por categoria.
@@ -136,6 +145,31 @@ O **Neuron** é uma extensão para Google Chrome criada para otimizar e agilizar
 
 ## 📝 Changelog
 
+### v2.0.1 — 17/03/2026
+
+**Adicionado**
+- Módulo **Dashboard Dedicado** com cards de métricas, gráficos (status, prazos, Top 10 responsáveis, temporal por mês) e tabela de demandas com busca, ordenação, paginação e ações rápidas (Abrir no Fala.BR, Copiar NUP).
+- Filtro "Minhas Demandas" vs "Todas as Demandas" no Dashboard.
+- Seletor de site (produção/treinamento/homologação) no Dashboard e no Popup.
+- `NeuronSite` para mapeamento de site ativo via URL e isolamento de dados por ambiente.
+- Chaves de storage com prefixo por site (`neuron_{site}_{bucket}`) e `NeuronDB.switchSite` para troca de contexto.
+- Navegação ao Dashboard via Popup e Página de Opções.
+- Captura do nome do usuário logado via content script.
+- `selectize-fix` compartilhado com posicionamento adaptativo de dropup.
+- Loading overlay para páginas `/web/*` (nova UI do Fala.BR).
+- Integração com Supabase para envio de sugestões.
+
+**Alterado**
+- Refatoração do módulo `tratar-novo` em três scripts (`extract`, `insert`, `pagesize`) para melhor separação de responsabilidades.
+- Módulo `arquivar` atualizado para suportar tanto páginas legadas quanto a nova UI.
+- Migração de `chrome.storage.local` e `localStorage` consolidada sob `NeuronDB` com cache em memória.
+
+**Corrigido**
+- `deepMerge` preservando estruturas de array ao mesclar configs.
+- Proteção contra "invalidated context" em chamadas de Chrome API (loading, neuron-db, notificacoes).
+- Referência `href` hardcoded na extração de demandas.
+- Validação runtime de `defaultResponses` em `options.js`.
+
 ### v2.0.0 — 21/01/2025
 
 **Adicionado**
@@ -143,13 +177,11 @@ O **Neuron** é uma extensão para Google Chrome criada para otimizar e agilizar
 - Página de opções para configuração da extensão
 - Configurações e gerenciamento de notificações
 - Padrão Module Factory para content scripts
-- Integração com IndexedDB para persistência de dados (NeuronDB)
-- Sincronização cross-context via BroadcastChannel (NeuronSync)
+- Camada de persistência NeuronDB e sincronização cross-context NeuronSync
 
 **Alterado**
 - Migração completa para Manifest V3
 - Arquitetura de módulos refatorada para melhor manutenibilidade
-- Migração de chrome.storage.local e localStorage para IndexedDB
 
 **Corrigido**
 - Diversas correções de bugs e melhorias de performance
@@ -164,20 +196,22 @@ O **Neuron** é uma extensão para Google Chrome criada para otimizar e agilizar
 
 * JavaScript ES6+ (Async/Await)
 * Chrome Extensions Manifest V3
-* IndexedDB via NeuronDB (wrapper sobre a biblioteca `idb`)
-* BroadcastChannel API via NeuronSync
+* `chrome.storage.local` via NeuronDB (camada de serviço com cache em memória e isolamento de dados por site)
+* `chrome.storage.onChanged` via NeuronSync (sincronização cross-context)
 * Bootstrap 5 + Bootstrap Icons
-* Chart.js (visualizações do dashboard)
+* Chart.js (visualizações do Dashboard)
+* Supabase (integração opcional para envio de sugestões)
 * HTML5 / CSS3 com suporte a temas (claro/escuro/sistema)
 
 ### Arquitetura
 
 * **Design Modular:** Cada funcionalidade reside em seu próprio módulo na pasta `/modules/`, com arquivos JS, CSS e HTML independentes.
-* **Module Factory** (`shared/js/module-factory.js`): Padrão de projeto para criação padronizada de módulos, gerenciando ciclo de vida (ativação/desativação) e leitura de configurações.
-* **NeuronDB** (`shared/js/neuron-db.js`): Camada de serviço IndexedDB com stores para demandas, concluídas, metadata, config e preferences.
-* **NeuronSync** (`shared/js/neuron-sync.js`): Sincronização via BroadcastChannel entre todos os contextos da extensão (popup, options, content scripts, background).
+* **NeuronSite** (`shared/js/neuron-site.js`): Mapeia a URL atual para um alias de ambiente (`producao`, `treinamento`, `homologacao`), permitindo isolamento de dados por site. É carregado primeiro em todos os grupos de content scripts.
+* **NeuronDB** (`shared/js/neuron-db.js`): Camada de serviço sobre `chrome.storage.local` com cache em memória. Gerencia dados por site (`demandas`, `concluidas`, `metadata`) e dados globais (`config`, `preferences`), usando o alias do NeuronSite para namespacing de chaves (ex.: `neuron_producao_demandas`).
+* **NeuronSync** (`shared/js/neuron-sync.js`): Sincronização cross-context via `chrome.storage.onChanged`. Mantém o cache do NeuronDB coerente entre popup, página de opções, content scripts e service worker.
+* **Module Factory** (`shared/js/module-factory.js`): Padrão de projeto para criação padronizada de módulos. Gerencia ciclo de vida (ativação/desativação) lendo `masterEnableNeuron` e o toggle por módulo, e escuta mudanças de configuração via NeuronSync para reavaliar o estado.
 * **Orientado a Configuração:** O comportamento é controlado pelo arquivo `config/config.json` — textos, regras, pontos focais e parâmetros podem ser alterados sem modificar código.
-* **Utilitários Compartilhados** (`shared/js/`): Funções reutilizáveis centralizadas (cálculos de data, gerenciamento de temas, utilidades gerais).
+* **Utilitários Compartilhados** (`shared/js/`): `date-utils` (cálculos de dias úteis e feriados), `neuron-utils` (helpers gerais), `theme-manager` (gestão de temas), `selectize-fix` (ajustes em dropdowns Selectize com posicionamento adaptativo), `text-placeholders` (substituição de variáveis em templates) e `supabase-client` (cliente para integrações opcionais).
 
 ### Estrutura de Diretórios
 
@@ -187,25 +221,28 @@ Neuron/
 ├── manifest.json                 # Configuração da extensão
 ├── config/config.json            # Configurações dinâmicas
 ├── shared/
-│   ├── js/                       # neuron-db, neuron-sync, module-factory, date-utils, theme-manager, neuron-utils
-│   └── css/                      # Estilos compartilhados e temas
+│   ├── js/                       # neuron-site, neuron-db, neuron-sync, module-factory,
+│   │                             # date-utils, theme-manager, neuron-utils, selectize-fix,
+│   │                             # supabase-client, text-placeholders
+│   └── css/                      # Estilos compartilhados, temas e selectize-fix
 ├── modules/
-│   ├── loading/                  # Animação de loading
+│   ├── loading/                  # Animação de loading personalizada
 │   ├── popup/                    # Popup de controle rápido
-│   ├── options/                  # Página de opções + dashboard
-│   ├── notificacoes/             # Sistema de notificações
+│   ├── options/                  # Página de opções (configurações gerais)
+│   ├── dashboard/                # Dashboard dedicado (gráficos + tabela de demandas)
+│   ├── notificacoes/             # Sistema de notificações flutuante
 │   ├── ouvidoria/                # Módulos de ouvidoria
 │   │   ├── arquivar/
 │   │   ├── encaminhar/
 │   │   ├── prorrogar/
 │   │   ├── tramitar/
 │   │   ├── tratar/
-│   │   ├── tratar-novo/
+│   │   ├── tratar-novo/          # Split em extract, insert e pagesize
 │   │   └── resposta/
 │   └── sic/                      # Módulos SIC
-│       ├── tratar/
-│       └── analisar/
-├── vendor/                       # Bootstrap 5, Chart.js, idb.min.js
+│       ├── tratar/               # sic-tratar-extract
+│       └── analisar/             # sic-analisar-move-buttons
+├── vendor/                       # Bootstrap 5, Chart.js, fonts
 └── images/                       # Ícones e assets
 ```
 
