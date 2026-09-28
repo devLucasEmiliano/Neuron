@@ -1,0 +1,627 @@
+/* Fala.BR CGU - Neuron Notificacoes - Content Script Styles
+   All selectors prefixed with #neuron- or .neuron- for isolation */
+
+/* ========== CSS Custom Properties ========== */
+:root {
+    /* Light theme (default) */
+    --neuron-panel-bg: #FFFFFF;
+    --neuron-panel-border: #E9EAF3;
+    --neuron-header-bg: #F7F9FC;
+    --neuron-body-bg: #FFFFFF;
+    --neuron-text-primary: #0B0E2C;
+    --neuron-text-secondary: #6F7182;
+    --neuron-text-muted: #989AAD;
+    --neuron-border-color: #E9EAF3;
+    --neuron-border-light: #F7F9FC;
+    --neuron-link-color: #1476FF;
+    --neuron-link-hover: #004CFF;
+    --neuron-accent-color: #D5691B;
+    --neuron-group-bg: #E9EAF3;
+    --neuron-group-hover: #DFE1ED;
+    --neuron-shadow: 0 4px 10px rgba(20, 20, 43, 0.04);
+    --neuron-shadow-lg: 0 4px 10px rgba(2, 87, 251, 0.2);
+
+    /* Status colors */
+    --neuron-ok: #13A570;
+    --neuron-warning: #D5691B;
+    --neuron-danger: #DC2B2B;
+    --neuron-primary: #1476FF;
+    --neuron-primary-hover: #004CFF;
+
+    /* Toast */
+    --neuron-toast-bg: #1476FF;
+    --neuron-toast-text: #fff;
+
+    /* Modal overlay */
+    --neuron-modal-overlay: rgba(255, 255, 255, 0.95);
+}
+
+/* ========== Dark Theme ========== */
+.neuron-dark {
+    --neuron-panel-bg: #0B0E2C;
+    --neuron-panel-border: #303350;
+    --neuron-header-bg: #141730;
+    --neuron-body-bg: #0B0E2C;
+    --neuron-text-primary: #E9EAF3;
+    --neuron-text-secondary: #989AAD;
+    --neuron-text-muted: #6F7182;
+    --neuron-border-color: #303350;
+    --neuron-border-light: #1E2145;
+    --neuron-link-color: #5A96FF;
+    --neuron-link-hover: #7AAFFF;
+    --neuron-accent-color: #E8974F;
+    --neuron-group-bg: #1E2145;
+    --neuron-group-hover: #303350;
+    --neuron-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --neuron-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+    /* Status colors - adjusted for dark mode */
+    --neuron-ok: #4FD99A;
+    --neuron-warning: #E8974F;
+    --neuron-danger: #E85A5A;
+    --neuron-primary: #5A96FF;
+    --neuron-primary-hover: #7AAFFF;
+
+    /* Toast */
+    --neuron-toast-bg: #141730;
+    --neuron-toast-text: #5A96FF;
+
+    /* Modal overlay */
+    --neuron-modal-overlay: rgba(11, 14, 44, 0.95);
+}
+
+/* ========== Trigger Button (FAB) ========== */
+#neuron-notificacao-trigger {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    background-color: var(--neuron-primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--neuron-shadow-lg);
+    z-index: 9998;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    border: none;
+}
+
+#neuron-notificacao-trigger:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+}
+
+#neuron-notificacao-trigger:active {
+    transform: scale(1.05);
+}
+
+#neuron-notificacao-trigger.pulsating {
+    animation: neuron-pulse 2s infinite;
+}
+
+#neuron-notificacao-trigger.status-ok {
+    background-color: var(--neuron-ok);
+}
+
+#neuron-notificacao-trigger.status-warning {
+    background-color: var(--neuron-warning);
+}
+
+#neuron-notificacao-trigger.status-danger {
+    background-color: var(--neuron-danger);
+}
+
+/* ========== Badge Counter ========== */
+.neuron-contador {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    background-color: var(--neuron-danger);
+    color: white;
+    border-radius: 10px;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    border: 2px solid white;
+    min-width: 20px;
+    text-align: center;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.3;
+}
+
+.neuron-dark .neuron-contador {
+    border-color: var(--neuron-panel-bg);
+}
+
+/* ========== Panel Container ========== */
+#neuron-notificacao-painel {
+    position: fixed;
+    bottom: 100px;
+    right: 25px;
+    width: 380px;
+    max-height: 600px;
+    background-color: var(--neuron-panel-bg);
+    border-radius: 20px;
+    box-shadow: var(--neuron-shadow-lg);
+    z-index: 9999;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--neuron-panel-border);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* ========== Panel Header ========== */
+.neuron-painel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: var(--neuron-header-bg);
+    border-bottom: 1px solid var(--neuron-border-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.neuron-painel-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--neuron-text-primary);
+    transition: color 0.3s ease;
+}
+
+.neuron-header-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.neuron-painel-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--neuron-text-secondary);
+    padding: 0 5px;
+    line-height: 1;
+    transition: color 0.2s ease, transform 0.2s ease;
+    border-radius: 4px;
+}
+
+.neuron-painel-close:hover {
+    color: var(--neuron-text-primary);
+    transform: scale(1.1);
+}
+
+/* ========== Filter Toggle ========== */
+.neuron-filtro-wrapper {
+    display: flex;
+    align-items: center;
+    margin-top: 6px;
+    cursor: pointer;
+}
+
+#neuron-filtro-label {
+    font-size: 12px;
+    color: var(--neuron-text-secondary);
+    margin-left: 8px;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.neuron-switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+}
+
+.neuron-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.neuron-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--neuron-text-muted);
+    transition: background-color 0.3s ease;
+}
+
+.neuron-slider.round {
+    border-radius: 20px;
+}
+
+.neuron-slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: transform 0.3s ease;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+input:checked + .neuron-slider {
+    background-color: var(--neuron-ok);
+}
+
+input:checked + .neuron-slider:before {
+    transform: translateX(16px);
+}
+
+/* ========== Panel Body ========== */
+.neuron-painel-body {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 12px;
+    background-color: var(--neuron-body-bg);
+    color: var(--neuron-text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.neuron-painel-body p {
+    margin: 0;
+    padding: 16px;
+    text-align: center;
+    color: var(--neuron-text-secondary);
+}
+
+/* Custom scrollbar for panel body */
+.neuron-painel-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.neuron-painel-body::-webkit-scrollbar-track {
+    background: var(--neuron-body-bg);
+    border-radius: 4px;
+}
+
+.neuron-painel-body::-webkit-scrollbar-thumb {
+    background: var(--neuron-text-muted);
+    border-radius: 4px;
+}
+
+.neuron-painel-body::-webkit-scrollbar-thumb:hover {
+    background: var(--neuron-text-secondary);
+}
+
+/* ========== Group Header (Collapsible) ========== */
+.neuron-grupo-header {
+    background-color: var(--neuron-group-bg);
+    padding: 10px 14px;
+    margin-top: 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s ease;
+    user-select: none;
+}
+
+.neuron-grupo-header:hover {
+    background-color: var(--neuron-group-hover);
+}
+
+.neuron-grupo-header:first-child {
+    margin-top: 0;
+}
+
+.neuron-grupo-header h5 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--neuron-text-primary);
+    transition: color 0.3s ease;
+}
+
+.neuron-grupo-header::after {
+    content: '\25B2';
+    font-size: 10px;
+    color: var(--neuron-text-secondary);
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.neuron-grupo-header.open::after {
+    transform: rotate(180deg);
+}
+
+/* ========== Group List (Collapsible Content) ========== */
+.neuron-grupo-lista {
+    padding-left: 12px;
+    border-left: 3px solid var(--neuron-primary);
+    margin-top: 10px;
+    transition: max-height 0.4s ease-in-out, margin-top 0.3s ease;
+}
+
+.neuron-grupo-lista.collapsed {
+    max-height: 0;
+    margin-top: 0;
+    padding-left: 12px;
+    overflow: hidden;
+}
+
+/* ========== Notification Item ========== */
+.neuron-item-notificacao {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--neuron-border-light);
+    transition: background-color 0.2s ease, border-color 0.3s ease;
+    border-radius: 4px;
+}
+
+.neuron-item-notificacao:last-child {
+    border-bottom: none;
+}
+
+.neuron-item-notificacao:hover {
+    background-color: var(--neuron-group-bg);
+}
+
+/* ========== Link Wrapper ========== */
+.neuron-link-wrapper {
+    flex-grow: 1;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    padding-right: 10px;
+}
+
+.neuron-link-numero {
+    font-size: 14px;
+    color: var(--neuron-link-color);
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.neuron-link-wrapper:hover .neuron-link-numero {
+    color: var(--neuron-link-hover);
+    text-decoration: underline;
+}
+
+.neuron-link-detalhe {
+    font-size: 12px;
+    color: var(--neuron-accent-color);
+    font-weight: 600;
+    margin-top: 2px;
+    transition: color 0.3s ease;
+}
+
+/* ========== Done Checkbox ========== */
+.neuron-done-check {
+    margin-left: 10px;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--neuron-primary);
+}
+
+/* ========== Done State ========== */
+.neuron-item-notificacao.done {
+    opacity: 0.7;
+}
+
+.neuron-item-notificacao.done .neuron-link-numero,
+.neuron-item-notificacao.done .neuron-link-detalhe {
+    text-decoration: line-through;
+    color: var(--neuron-text-muted);
+    font-weight: normal;
+}
+
+/* ========== Panel Footer ========== */
+.neuron-painel-footer {
+    padding: 12px;
+    border-top: 1px solid var(--neuron-border-color);
+    background-color: var(--neuron-header-bg);
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.neuron-footer-btn {
+    flex-grow: 1;
+    border: 1px solid var(--neuron-border-color);
+    background-color: var(--neuron-panel-bg);
+    color: var(--neuron-text-primary);
+    padding: 10px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.neuron-footer-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.neuron-footer-btn:active {
+    transform: translateY(0);
+}
+
+.neuron-btn-atualizar:hover {
+    background-color: var(--neuron-group-bg);
+    border-color: var(--neuron-text-muted);
+}
+
+.neuron-btn-limpar {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: var(--neuron-danger);
+    border-color: var(--neuron-danger);
+}
+
+.neuron-dark .neuron-btn-limpar {
+    background-color: rgba(234, 134, 143, 0.15);
+}
+
+.neuron-btn-limpar:hover {
+    background-color: var(--neuron-danger);
+    color: white;
+    border-color: var(--neuron-danger);
+}
+
+/* ========== Toast Notification ========== */
+.neuron-toast-aviso {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: var(--neuron-toast-bg);
+    color: var(--neuron-toast-text);
+    padding: 16px 20px;
+    border-radius: 12px;
+    box-shadow: var(--neuron-shadow-lg);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateX(100%);
+    animation: neuron-toast-in 0.5s forwards, neuron-toast-out 0.5s 4.5s forwards;
+}
+
+.neuron-toast-aviso::before {
+    content: '\26A0\FE0F';
+    font-size: 20px;
+    margin-right: 12px;
+}
+
+/* ========== Confirmation Modal ========== */
+.neuron-confirm-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--neuron-modal-overlay);
+    z-index: 10001;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 24px;
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+.neuron-confirm-mensagem {
+    font-size: 15px;
+    color: var(--neuron-text-primary);
+    font-weight: 500;
+    margin-bottom: 0;
+    line-height: 1.5;
+    transition: color 0.3s ease;
+}
+
+.neuron-confirm-botoes {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    justify-content: center;
+}
+
+.neuron-btn {
+    padding: 12px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--neuron-border-color);
+    background-color: var(--neuron-panel-bg);
+    color: var(--neuron-text-primary);
+    text-align: center;
+    text-decoration: none;
+    flex-grow: 1;
+    max-width: 140px;
+    font-family: inherit;
+}
+
+.neuron-btn:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.neuron-btn:active {
+    transform: scale(0.98);
+}
+
+.neuron-btn-perigo {
+    background-color: var(--neuron-danger);
+    color: white;
+    border-color: var(--neuron-danger);
+}
+
+.neuron-btn-perigo:hover {
+    background-color: #C42626;
+    border-color: #B32222;
+    box-shadow: 0 2px 8px rgba(220, 43, 43, 0.4);
+}
+
+/* ========== Animations ========== */
+@keyframes neuron-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(20, 118, 255, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 18px rgba(20, 118, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(20, 118, 255, 0);
+    }
+}
+
+@keyframes neuron-toast-in {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes neuron-toast-out {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+/* ========== Responsive Adjustments ========== */
+@media (max-width: 420px) {
+    #neuron-notificacao-painel {
+        width: calc(100vw - 20px);
+        right: 10px;
+        bottom: 90px;
+        max-height: calc(100vh - 120px);
+    }
+
+    #neuron-notificacao-trigger {
+        width: 52px;
+        height: 52px;
+        right: 15px;
+        bottom: 15px;
+    }
+}
