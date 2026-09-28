@@ -26,3 +26,4 @@ docs/
 web-ext.config.ts
 stats.html
 stats-*.json
+.superpowers/

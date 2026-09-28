@@ -32,6 +32,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Diferenças aceitas:
   - A preferência interna `themeEnabled=false` (sem UI desde 2.0.1) deixa de desativar a folha de estilo do tema e apenas remove `data-bs-theme`.
   - O Dashboard passa a ser `chrome-extension://<id>/dashboard.html`.
+  - O fallback interno `'corridos'` para `prazosSettings.tratarNovoModoCalculo` (valor inválido para o `<select>`) passa a ser `'diasCorridos'`; os consumidores só testam `=== 'diasUteis'`.
+  - O `MutationObserver` do overlay de loading usa `attributes: true` no lugar do array inválido `['style','class']` (equivalente em runtime: todos os atributos já eram observados).
   - A instalação passa a exigir build (`bun run build`) ou o zip de release.
 
 ## [2.00.19b4s] - 2026-03-17
