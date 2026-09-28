@@ -1,0 +1,240 @@
+import { NeuronDB } from '@/lib/neuron-db';
+import { NeuronSync } from '@/lib/neuron-sync';
+import type { NeuronUserConfig } from '@/lib/types';
+
+export function initResposta(): void {
+    'use strict';
+
+    const SCRIPT_ID = 'resposta';
+    const CONFIG_KEY = 'neuronUserConfig';
+
+    const ID_TIPO_RESPOSTA_SELECT = 'slTipoResposta';
+    const ID_TIPO_RESPOSTA_LIST = 'slTipoResposta-list';
+    const ID_TEXTAREA_RESPOSTA = 'txtResposta-textarea';
+    const ID_INPUT_RESPONSAVEL = 'responsavelResposta-input';
+
+    const ID_NEURON_DROPDOWN_CONTAINER = 'neuron-novoDropdown';
+    const ID_NEURON_DROPDOWN_INPUT = 'neuron-novoDropdown-input';
+    const ID_NEURON_DROPDOWN_LIST = 'neuron-novoDropdown-list';
+
+    let config: NeuronUserConfig = {};
+    let isFeatureActive = false;
+    let tipoRespostaObserver: MutationObserver | null = null;
+
+    async function carregarConfiguracoes() {
+        config = await NeuronDB.getConfig(CONFIG_KEY) || {};
+        console.log(`%cNeuron (${SCRIPT_ID}): Configurações carregadas.`, "color: blue; font-weight: bold;");
+    }
+
+    function isScriptAtivo() {
+        if (!config || typeof config !== 'object') return false;
+        return config.masterEnableNeuron !== false && config.modules?.[SCRIPT_ID] !== false;
+    }
+
+    function isTipoRespostaSelecionado() {
+        const input = document.querySelector<HTMLInputElement>(`#${ID_TIPO_RESPOSTA_SELECT} input[type="text"]`);
+        if (!input) return false;
+        const valor = input.value.trim();
+        return valor !== '' && valor !== 'Selecione...';
+    }
+
+    function atualizarVisibilidadeNeuron() {
+        const container = document.getElementById(ID_NEURON_DROPDOWN_CONTAINER);
+        if (!container) return;
+        container.style.display = isTipoRespostaSelecionado() ? '' : 'none';
+    }
+
+    function iniciarObservadorTipoResposta() {
+        const tipoContainer = document.getElementById(ID_TIPO_RESPOSTA_SELECT);
+        if (!tipoContainer || tipoRespostaObserver) return;
+        tipoRespostaObserver = new MutationObserver(atualizarVisibilidadeNeuron);
+        tipoRespostaObserver.observe(tipoContainer, { subtree: true, attributes: true, childList: true, characterData: true });
+    }
+
+    function pararObservadorTipoResposta() {
+        if (tipoRespostaObserver) {
+            tipoRespostaObserver.disconnect();
+            tipoRespostaObserver = null;
+        }
+    }
+
+    function criarUI() {
+        if (document.getElementById(ID_NEURON_DROPDOWN_CONTAINER)) return;
+
+        const containerOriginal = document.getElementById(ID_TIPO_RESPOSTA_SELECT);
+        if (!containerOriginal) return;
+
+        const novoDropdownHTML = `
+            <div class="br-select mb-3" id="${ID_NEURON_DROPDOWN_CONTAINER}" style="display: none;">
+                <label for="${ID_NEURON_DROPDOWN_INPUT}">Opções de Resposta (Fala.BR CGU - Neuron)</label>
+                <div class="br-input has-icon">
+                    <input id="${ID_NEURON_DROPDOWN_INPUT}" type="text" placeholder="Clique para selecionar..." readonly disabled autocomplete="off">
+                    <button class="br-button circle" type="button" aria-label="Exibir lista" tabindex="-1">
+                        <i class="fas fa-angle-down" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="br-list" id="${ID_NEURON_DROPDOWN_LIST}" tabindex="-1" style="display: none;"></div>
+            </div>`;
+
+        containerOriginal.insertAdjacentHTML('afterend', novoDropdownHTML);
+        console.log(`%cNeuron (${SCRIPT_ID}): UI de resposta criada.`, "color: green;");
+    }
+
+    function removerUI() {
+        document.getElementById(ID_NEURON_DROPDOWN_CONTAINER)?.remove();
+    }
+
+    function renderizarOpcoesDeResposta(tipoResposta: string) {
+        const dropdownList = document.getElementById(ID_NEURON_DROPDOWN_LIST);
+        // #neuron-novoDropdown-input é o <input> criado em criarUI()
+        const dropdownInput = document.getElementById(ID_NEURON_DROPDOWN_INPUT) as HTMLInputElement | null;
+        // #txtResposta-textarea é o <textarea> de resposta da página
+        const txtResposta = document.getElementById(ID_TEXTAREA_RESPOSTA) as HTMLTextAreaElement | null;
+        // #responsavelResposta-input é o <input> de responsável da página
+        const inputResponsavel = document.getElementById(ID_INPUT_RESPONSAVEL) as HTMLInputElement | null;
+
+        if (!dropdownList || !dropdownInput || !txtResposta || !inputResponsavel) return;
+
+        dropdownInput.value = '';
+        txtResposta.value = '';
+        inputResponsavel.value = '';
+        dropdownList.innerHTML = '';
+        dropdownInput.setAttribute('disabled', 'disabled');
+
+        const optionsData = config.defaultResponses?.[tipoResposta]?.novoDropdownOptions;
+
+        if (optionsData && Array.isArray(optionsData) && optionsData.length > 0) {
+            dropdownInput.removeAttribute('disabled');
+            optionsData.forEach((option, index) => {
+                const item = document.createElement('div');
+                item.className = 'br-item';
+                item.setAttribute('tabindex', '-1');
+                item.innerHTML = `
+                    <div class="br-radio">
+                        <input id="neuron-novoDropdown-item-${index}" type="radio" name="neuron-response-option" value="${option.text}">
+                        <label for="neuron-novoDropdown-item-${index}">${option.text}</label>
+                    </div>`;
+                item.addEventListener('click', () => {
+                    dropdownInput.value = option.text || '';
+                    txtResposta.value = option.conteudoTextarea || '';
+                    inputResponsavel.value = option.responsavel || '';
+                    // Trigger input event to notify other scripts if necessary
+                    txtResposta.dispatchEvent(new Event('input', { bubbles: true }));
+                    inputResponsavel.dispatchEvent(new Event('input', { bubbles: true }));
+                    dropdownList.style.display = 'none';
+                });
+                dropdownList.appendChild(item);
+            });
+        }
+    }
+
+    /**
+     * NOVO: Verifica o estado inicial do seletor de tipo de resposta.
+     * Se um valor já estiver selecionado na carga da página, aciona a renderização.
+     */
+    function verificarTipoRespostaInicial() {
+        const listaRespostas = document.getElementById(ID_TIPO_RESPOSTA_LIST);
+        if (!listaRespostas) return;
+
+        // O componente br-select pode indicar o valor selecionado no input principal
+        const inputPrincipal = document.querySelector<HTMLInputElement>(`#${ID_TIPO_RESPOSTA_SELECT} input[type="text"]`);
+        if (inputPrincipal && inputPrincipal.value) {
+            const textoSelecionado = inputPrincipal.value.trim();
+            if (textoSelecionado) {
+                console.log(`%cNeuron (${SCRIPT_ID}): Estado inicial detectado: "${textoSelecionado}". Renderizando opções.`, "color: purple; font-weight: bold;");
+                renderizarOpcoesDeResposta(textoSelecionado);
+                atualizarVisibilidadeNeuron();
+            }
+        }
+    }
+
+    const handleUiInteraction = (event: MouseEvent) => {
+        const dropdownList = document.getElementById(ID_NEURON_DROPDOWN_LIST);
+        const dropdownInput = document.getElementById(ID_NEURON_DROPDOWN_INPUT);
+        const dropdownContainer = document.getElementById(ID_NEURON_DROPDOWN_CONTAINER);
+
+        if (!dropdownList || !dropdownInput || !dropdownContainer) return;
+
+        // TS: event.target é EventTarget | null; contains()/closest() exigem Node/Element.
+        // Em cliques reais o alvo é sempre um Element, então cada ramo se comporta como no legado.
+        const target = event.target instanceof Element ? event.target : null;
+
+        // Abrir/fechar dropdown do Neuron ao clicar no input
+        if (event.target === dropdownInput && !dropdownInput.hasAttribute('disabled')) {
+            const isHidden = dropdownList.style.display !== 'block';
+            dropdownList.style.display = isHidden ? 'block' : 'none';
+        }
+        // Fechar dropdown do Neuron se clicar fora dele
+        else if (!dropdownContainer.contains(target)) {
+            dropdownList.style.display = 'none';
+        }
+
+        // Atualizar dropdown do Neuron quando um item do dropdown original é selecionado
+        const tipoRespostaItem = target?.closest(`#${ID_TIPO_RESPOSTA_LIST} .br-item`);
+        if (tipoRespostaItem) {
+            const selectedText = tipoRespostaItem.querySelector('label')?.textContent.trim();
+            if (selectedText) {
+                renderizarOpcoesDeResposta(selectedText);
+                atualizarVisibilidadeNeuron();
+            }
+        }
+    };
+
+    function ativarFuncionalidade() {
+        if (isFeatureActive) return;
+        criarUI();
+        iniciarObservadorTipoResposta();
+        atualizarVisibilidadeNeuron();
+        document.addEventListener('click', handleUiInteraction);
+        isFeatureActive = true;
+
+        // NOVO: Chama a verificação do estado inicial logo após ativar.
+        // Adicionado um pequeno delay para garantir que a UI da página alvo foi totalmente renderizada.
+        setTimeout(verificarTipoRespostaInicial, 200);
+
+        console.log(`%cNeuron (${SCRIPT_ID}): Funcionalidade ATIVADA.`, "color: green; font-weight: bold;");
+    }
+
+    function desativarFuncionalidade() {
+        if (!isFeatureActive) return;
+        pararObservadorTipoResposta();
+        removerUI();
+        document.removeEventListener('click', handleUiInteraction);
+        isFeatureActive = false;
+        console.log(`%cNeuron (${SCRIPT_ID}): Funcionalidade DESATIVADA.`, "color: red; font-weight: bold;");
+    }
+
+    async function verificarEstadoAtualEAgir() {
+        await carregarConfiguracoes();
+        if (isScriptAtivo()) {
+            ativarFuncionalidade();
+        } else {
+            desativarFuncionalidade();
+        }
+    }
+
+    NeuronSync.onConfigChange((key) => {
+        if (key === CONFIG_KEY) {
+            console.log(`%cNeuron (${SCRIPT_ID}): Configuração alterada. Reavaliando...`, "color: orange; font-weight: bold;");
+            verificarEstadoAtualEAgir();
+        }
+    });
+
+    const observer = new MutationObserver(() => {
+        const tipoRespostaElement = document.getElementById(ID_TIPO_RESPOSTA_SELECT);
+        const textAreaElement = document.getElementById(ID_TEXTAREA_RESPOSTA);
+
+        if (tipoRespostaElement && textAreaElement) {
+            init();
+            observer.disconnect();
+        }
+    });
+
+    async function init() {
+        observer.disconnect();
+        await verificarEstadoAtualEAgir();
+    }
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
+}
