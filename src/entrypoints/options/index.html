@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fala.BR CGU - Neuron - Configuracoes</title>
+    <meta name="manifest.open_in_tab" content="true">
+    <script type="module" src="./main.ts"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="options-header border-bottom">
+        <div class="d-flex align-items-center">
+            <img src="/icon/128.png" alt="Fala.BR CGU - Neuron" width="40" height="40" class="me-3">
+            <div>
+                <h1 class="h5 mb-0 text-neuron-primary fw-bold">Fala.BR CGU - Neuron</h1>
+                <p class="text-body-secondary mb-0 small d-none d-sm-block">Configuracoes Avancadas</p>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-outline-secondary btn-theme-toggle" id="themeToggle" title="Alternar tema">
+                <i class="bi bi-moon-fill" id="themeIcon"></i>
+            </button>
+        </div>
+    </header>
+
+    <div class="options-layout">
+        <!-- Sidebar Navigation -->
+        <nav class="options-sidebar" id="optionsSidebar">
+            <ul class="sidebar-nav" role="tablist">
+                <li class="sidebar-nav-item" role="presentation">
+                    <a href="#section-general" class="sidebar-nav-link active" data-section="general" role="tab" aria-selected="true">
+                        <i class="bi bi-gear"></i>
+                        <span>Geral</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item" role="presentation">
+                    <a href="#section-prazos" class="sidebar-nav-link" data-section="prazos" role="tab">
+                        <i class="bi bi-calendar-event"></i>
+                        <span>Prazos</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item" role="presentation">
+                    <a href="#section-respostas" class="sidebar-nav-link" data-section="respostas" role="tab">
+                        <i class="bi bi-chat-dots"></i>
+                        <span>Respostas</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item" role="presentation">
+                    <a href="#section-textos" class="sidebar-nav-link" data-section="textos" role="tab">
+                        <i class="bi bi-file-text"></i>
+                        <span>Modelos</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item" role="presentation">
+                    <a href="#section-pontosfocais" class="sidebar-nav-link" data-section="pontosfocais" role="tab">
+                        <i class="bi bi-people"></i>
+                        <span>Pontos Focais</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item" role="presentation">
+                    <a href="#section-json" class="sidebar-nav-link" data-section="json" role="tab">
+                        <i class="bi bi-code-slash"></i>
+                        <span>JSON</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item" role="presentation">
+                    <a href="#section-melhoria" class="sidebar-nav-link" data-section="melhoria" role="tab">
+                        <i class="bi bi-lightbulb"></i>
+                        <span>Melhorias</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="options-content">
+            <!-- General Section -->
+            <section id="section-general" class="options-section active" role="tabpanel">
+                <div class="section-header">
+                    <h2 class="h5 text-neuron-primary mb-0">
+                        <i class="bi bi-gear me-2"></i>Configuracoes Gerais
+                    </h2>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <label for="masterEnableOptions" class="form-label fw-semibold text-neuron-primary mb-0">
+                                    Habilitar Fala.BR CGU - Neuron Globalmente
+                                </label>
+                                <small class="d-block text-body-secondary">Ativa ou desativa todas as funcionalidades</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                       id="masterEnableOptions" style="width: 3em; height: 1.5em;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="h6 text-body-secondary mb-3">
+                    <i class="bi bi-toggle-on me-1"></i>Modulos
+                </h3>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <!-- Notificacoes -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <label for="enableNotificacoes" class="form-label fw-semibold mb-0">
+                                    <i class="bi bi-bell me-1 text-info"></i>Notificacoes
+                                </label>
+                                <small class="d-block text-body-secondary">Painel de demandas pendentes no Fala.br</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                       id="enableNotificacoes" style="width: 3em; height: 1.5em;">
+                            </div>
+                        </div>
+                        <hr class="my-3">
+                        <!-- Prazos -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <label for="enablePrazos" class="form-label fw-semibold mb-0">
+                                    <i class="bi bi-calendar-event me-1 text-warning"></i>Prazos e Feriados
+                                </label>
+                                <small class="d-block text-body-secondary">Calculo de prazos internos e feriados</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                       id="enablePrazos" style="width: 3em; height: 1.5em;">
+                            </div>
+                        </div>
+                        <hr class="my-3">
+                        <!-- Respostas -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <label for="enableRespostas" class="form-label fw-semibold mb-0">
+                                    <i class="bi bi-chat-left-text me-1 text-success"></i>Respostas Rapidas
+                                </label>
+                                <small class="d-block text-body-secondary">Opcoes de resposta predefinidas</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                       id="enableRespostas" style="width: 3em; height: 1.5em;">
+                            </div>
+                        </div>
+                        <hr class="my-3">
+                        <!-- Modelos de Texto -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <label for="enableModelos" class="form-label fw-semibold mb-0">
+                                    <i class="bi bi-file-text me-1 text-primary"></i>Modelos de Texto
+                                </label>
+                                <small class="d-block text-body-secondary">Templates para arquivar, tramitar, etc</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                       id="enableModelos" style="width: 3em; height: 1.5em;">
+                            </div>
+                        </div>
+                        <hr class="my-3">
+                        <!-- Pontos Focais -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <label for="enablePontosFocais" class="form-label fw-semibold mb-0">
+                                    <i class="bi bi-diagram-3 me-1 text-danger"></i>Pontos Focais
+                                </label>
+                                <small class="d-block text-body-secondary">Grupos de destinatarios para tramitacao</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                       id="enablePontosFocais" style="width: 3em; height: 1.5em;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="h6 text-body-secondary mb-3">
+                    <i class="bi bi-sliders me-1"></i>Configuracoes Gerais
+                </h3>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="qtdItensTratarTriar" class="form-label">
+                            Itens por Pagina (Triar/Tratar)
+                        </label>
+                        <input type="number" class="form-control" id="qtdItensTratarTriar"
+                               min="5" max="100" step="5">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="limiteCaracteresArquivar" class="form-label">
+                            Limite de Caracteres (Arquivar)
+                        </label>
+                        <input type="number" class="form-control" id="limiteCaracteresArquivar"
+                               min="50" max="1000" step="10">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Prazos Section -->
+            <section id="section-prazos" class="options-section" role="tabpanel">
+                <div class="section-header">
+                    <h2 class="h5 text-neuron-primary mb-0">
+                        <i class="bi bi-calendar-event me-2"></i>Prazos e Feriados
+                    </h2>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="h6 mb-0">Prazos para Tela Tratar/Triar</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="tratarNovoPrazoInternoDias" class="form-label">
+                                    Offset para Prazo Interno (dias)
+                                </label>
+                                <input type="number" class="form-control" id="tratarNovoPrazoInternoDias">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="tratarNovoCobrancaInternaDias" class="form-label">
+                                    Offset para Cobranca Interna (dias)
+                                </label>
+                                <input type="number" class="form-control" id="tratarNovoCobrancaInternaDias">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="tratarNovoModoCalculo" class="form-label">
+                                    Modo de Calculo de Offset
+                                </label>
+                                <select class="form-select" id="tratarNovoModoCalculo">
+                                    <option value="diasCorridos">Dias Corridos</option>
+                                    <option value="diasUteis">Dias Uteis</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="tratarNovoAjusteFds" class="form-label">
+                                    Ajuste de Data (Fim de Semana)
+                                </label>
+                                <select class="form-select" id="tratarNovoAjusteFds">
+                                    <option value="modo1">Anterior (Sab/Dom -> Sex)</option>
+                                    <option value="modo2">Proximo (Sab/Dom -> Seg)</option>
+                                    <option value="modo3">Dividido (Sab -> Sex, Dom -> Seg)</option>
+                                    <option value="none">Nao ajustar</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="tratarNovoAjusteFeriado" class="form-label">
+                                    Ajuste de Data (Feriados)
+                                </label>
+                                <select class="form-select" id="tratarNovoAjusteFeriado">
+                                    <option value="proximo_dia">Mover para Proximo Dia Util</option>
+                                    <option value="dia_anterior">Mover para Dia Util Anterior</option>
+                                    <option value="none">Nao ajustar</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="h6 mb-0">Configuracao de Feriados</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2 mb-3">
+                            <div class="col-auto">
+                                <input type="text" class="form-control" id="holidayInput"
+                                       placeholder="DD/MM/AAAA" style="width: 130px;">
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control" id="holidayDescriptionInput"
+                                       placeholder="Descricao do Feriado">
+                            </div>
+                            <div class="col-auto">
+                                <button type="button" class="btn btn-neuron-accent" id="addHolidayButton">
+                                    <i class="bi bi-plus-lg me-1"></i>Adicionar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="list-group list-group-flush holiday-list" id="holidaysList">
+                            <!-- Dynamic content -->
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div id="holidaysStatus"></div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="button" class="btn btn-neuron-primary" id="saveHolidaysButton">
+                                <i class="bi bi-save me-1"></i>Salvar Feriados
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="resetHolidaysButton">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar Padrao
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Respostas Section -->
+            <section id="section-respostas" class="options-section" role="tabpanel">
+                <div class="section-header">
+                    <h2 class="h5 text-neuron-primary mb-0">
+                        <i class="bi bi-chat-dots me-2"></i>Respostas Automaticas
+                    </h2>
+                </div>
+
+                <select class="form-select mb-3" id="selectTipoRespostaConfig">
+                    <option value="">Selecione um tipo de resposta...</option>
+                </select>
+
+                <div id="optionsContainer" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="h6 mb-0">Opcoes para: <span id="currentTipoResposta" class="text-neuron-primary"></span></h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="dropdownOptionsList">
+                                <!-- Dynamic content -->
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div id="respostasStatus"></div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-neuron-accent" id="addOptionBtn">
+                                    <i class="bi bi-plus-lg me-1"></i>Adicionar Nova Opcao
+                                </button>
+                                <button type="button" class="btn btn-neuron-primary" id="saveResponsesBtn">
+                                    <i class="bi bi-save me-1"></i>Salvar Respostas
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="resetResponsesBtn">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar Padrao
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Textos Section -->
+            <section id="section-textos" class="options-section" role="tabpanel">
+                <div class="section-header">
+                    <h2 class="h5 text-neuron-primary mb-0">
+                        <i class="bi bi-file-text me-2"></i>Modelos de Texto
+                    </h2>
+                </div>
+
+                <select class="form-select mb-3" id="selectTextModelCategory">
+                    <option value="">Selecione uma categoria...</option>
+                </select>
+
+                <div id="textModelsContainer" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="h6 mb-0">Modelos para: <span id="currentTextModelCategory" class="text-neuron-primary"></span></h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="textModelsList">
+                                <!-- Dynamic content -->
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div id="textModelsStatus"></div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-neuron-accent" id="addTextModelBtn">
+                                    <i class="bi bi-plus-lg me-1"></i>Adicionar Novo Modelo
+                                </button>
+                                <button type="button" class="btn btn-neuron-primary" id="saveTextModelsBtn">
+                                    <i class="bi bi-save me-1"></i>Salvar Modelos
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="resetTextModelsBtn">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar Padrao
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pontos Focais Section -->
+            <section id="section-pontosfocais" class="options-section" role="tabpanel">
+                <div class="section-header">
+                    <h2 class="h5 text-neuron-primary mb-0">
+                        <i class="bi bi-people me-2"></i>Pontos Focais
+                    </h2>
+                </div>
+
+                <div class="accordion" id="focalPointsAccordion">
+                    <div id="focalPointsList">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <div id="focalPointsStatus"></div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="button" class="btn btn-neuron-accent" id="addFocalPointBtn">
+                            <i class="bi bi-plus-lg me-1"></i>Adicionar Grupo
+                        </button>
+                        <button type="button" class="btn btn-neuron-primary" id="saveFocalPointsBtn">
+                            <i class="bi bi-save me-1"></i>Salvar Pontos Focais
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="resetFocalPointsBtn">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar Padrao
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- JSON Section -->
+            <section id="section-json" class="options-section" role="tabpanel">
+                <div class="section-header">
+                    <h2 class="h5 text-neuron-primary mb-0">
+                        <i class="bi bi-code-slash me-2"></i>Configuracao JSON
+                    </h2>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <textarea class="form-control font-monospace" id="rawConfigJsonEditor"
+                                  rows="20" spellcheck="false"></textarea>
+                    </div>
+                    <div class="card-footer">
+                        <div id="rawConfigJsonStatus"></div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="button" class="btn btn-neuron-primary" id="saveRawConfigJsonButton">
+                                <i class="bi bi-save me-1"></i>Salvar Configuracao
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="resetRawConfigJsonButton">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar Padrao Global
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="h6 mb-0"><i class="bi bi-arrow-left-right me-2"></i>Importar/Exportar Configuracoes</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <h4 class="h6 text-body-secondary mb-3">Exportar Backup</h4>
+                                <button type="button" class="btn btn-success" id="exportConfigButton">
+                                    <i class="bi bi-download me-1"></i>Exportar
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="h6 text-body-secondary mb-3">Importar Backup</h4>
+                                <input type="file" class="form-control mb-2" id="importConfigFileInput" accept=".json">
+                                <button type="button" class="btn btn-info" id="importConfigButton">
+                                    <i class="bi bi-upload me-1"></i>Importar
+                                </button>
+                                <div id="importConfigStatus" class="mt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Melhoria Section -->
+            <section id="section-melhoria" class="options-section" role="tabpanel">
+                <div class="section-header">
+                    <h2 class="h5 text-neuron-primary mb-0">
+                        <i class="bi bi-lightbulb me-2"></i>Sugestoes e Melhorias
+                    </h2>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="refreshMelhoriaBtn" title="Atualizar">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                        <button type="button" class="btn btn-neuron-accent btn-sm" id="createSuggestionBtn">
+                            <i class="bi bi-plus-lg me-1"></i>Nova Sugestao
+                        </button>
+                    </div>
+                </div>
+
+                <div id="melhoriaStatus"></div>
+                <div id="melhoriaFilters" class="melhoria-filters"></div>
+                <div id="melhoriaGrid" class="melhoria-grid"></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Create Suggestion Modal -->
+    <div class="modal fade" id="createSuggestionModal" tabindex="-1" aria-labelledby="createSuggestionLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createSuggestionLabel">
+                        <i class="bi bi-lightbulb me-2 text-neuron-accent"></i>Nova Sugestao
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="suggestionCategory" class="form-label fw-medium">Categoria</label>
+                        <select class="form-select" id="suggestionCategory">
+                            <option value="bug">Problema Tecnico / Bug</option>
+                            <option value="nova_ferramenta">Nova Ferramenta</option>
+                            <option value="melhoria_ux">Melhoria de UX</option>
+                            <option value="documentacao">Documentacao</option>
+                            <option value="performance">Performance</option>
+                            <option value="outro">Outro</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="suggestionTitle" class="form-label fw-medium">Titulo</label>
+                        <input type="text" class="form-control" id="suggestionTitle" maxlength="100"
+                               placeholder="Titulo curto e descritivo">
+                        <div class="invalid-feedback">O titulo deve ter pelo menos 3 caracteres.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="suggestionDescription" class="form-label fw-medium">Descricao</label>
+                        <textarea class="form-control" id="suggestionDescription" rows="5"
+                                  maxlength="2000" placeholder="Descreva em detalhes a sugestao..."></textarea>
+                        <div class="invalid-feedback">A descricao deve ter pelo menos 10 caracteres.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-neuron-primary" id="submitSuggestionBtn">
+                        <i class="bi bi-send me-1"></i>Enviar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Suggestion Modal -->
+    <div class="modal fade" id="detailSuggestionModal" tabindex="-1" aria-labelledby="detailSuggestionLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2" id="detailCategoryBadge"></div>
+                    <div class="mb-3 text-body-secondary small" id="detailMeta"></div>
+                    <p id="detailDescription"></p>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <div id="detailVoteArea"></div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Save Footer -->
+    <footer class="options-footer border-top">
+        <button type="button" class="btn btn-neuron-primary btn-lg" id="saveAllOptionsButton">
+            <i class="bi bi-save-fill me-2"></i>Salvar Todas as Alteracoes
+        </button>
+        <div id="globalStatus" class="mt-2"></div>
+    </footer>
+</body>
+</html>
