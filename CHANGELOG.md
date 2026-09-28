@@ -13,6 +13,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - Module boilerplate generation from templates
   - Configuration synchronization for manifest.json and config.json
 
+## [02.012] - 2026-09-28
+
+### Alterado
+- Migração do sistema de build para WXT 0.21 (Vite 8) + TypeScript 5.9 + Bun: o código passa a viver em `src/` (`entrypoints/`, `features/`, `lib/`, `styles/`, `config/`) e o `manifest.json` é gerado a partir de `wxt.config.ts` e das opções de cada entrypoint (`version` 2.0.1, `version_name` 02.012).
+- Bibliotecas de terceiros (Bootstrap 5.3.3, Bootstrap Icons 1.11.3, Chart.js 4.5.1 e fonte Inter via `@fontsource/inter`) passam a ser instaladas via npm.
+- `config/config.json` e `config/supabase.json` são empacotados no build e não são mais expostos via `web_accessible_resources` — agora apenas `images/Intro-Neuron.gif` é acessível pelas páginas do Fala.BR.
+- Template do overlay de loading embutido no bundle (sem fetch em runtime).
+- Cada content script é um bundle próprio, que importa explicitamente o que usa e inicializa o `NeuronDB` com o site da URL.
+
+### Removido
+- `modules/options/dashboard.js` e `dashboard.css` (não referenciados).
+- Ícones não usados em `images/icons/`.
+- Pasta `vendor/` (substituída pelas dependências do npm).
+
+### Observações
+- Sem mudanças funcionais para o usuário.
+- Diferenças aceitas:
+  - A preferência interna `themeEnabled=false` (sem UI desde 2.0.1) deixa de desativar a folha de estilo do tema e apenas remove `data-bs-theme`.
+  - O Dashboard passa a ser `chrome-extension://<id>/dashboard.html`.
+  - A instalação passa a exigir build (`bun run build`) ou o zip de release.
+
 ## [2.00.19b4s] - 2026-03-17
 
 ### Changes
