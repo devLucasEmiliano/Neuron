@@ -1,0 +1,110 @@
+import { NeuronDB } from '@/lib/neuron-db';
+import { DateUtils } from '@/lib/date-utils';
+import { CONFIG_KEY, escapeHtml, isScriptAtivo, createStorageListener } from '@/lib/neuron-utils';
+import type { Demanda, NeuronUserConfig, PrazosSettings } from '@/lib/types';
+
+export function initInsert(): void {
+    const SCRIPT_ID = 'tratarTriar';
+    let isListenerAtivo = false;
+
+    async function processarDemandas(event: CustomEvent<Demanda[]>) {
+        if (!await isScriptAtivo(SCRIPT_ID)) {
+            removerBlocosInseridos();
+            return;
+        }
+
+        await DateUtils.ready;
+        const config: NeuronUserConfig = await NeuronDB.getConfig(CONFIG_KEY) || {};
+        const demandas = event.detail;
+        const DU = DateUtils;
+        const prazosSettings: Partial<PrazosSettings> = config.prazosSettings || {};
+        const prazosOverrides: Record<string, string> = await NeuronDB.getConfig('neuronPrazosOverrides') || {};
+
+        for (const demanda of demandas) {
+            try {
+                if (!demanda.prazo || !demanda.idPrazoOriginal) continue;
+                const elemPrazo = document.getElementById(demanda.idPrazoOriginal);
+                // parentElement!: no legado, parentElement null lançava TypeError (capturado pelo catch abaixo)
+                if (!elemPrazo || elemPrazo.parentElement!.dataset.calculado) continue;
+
+                const dataBase = DU.parsearData(demanda.prazo);
+                if (!dataBase) continue;
+
+                const containerPrazo = elemPrazo.parentElement!;
+                containerPrazo.style.display = 'none';
+                containerPrazo.dataset.calculado = 'true';
+
+                // null → getElementById devolve null, como no legado
+                const elemCadastro = document.getElementById(demanda.idCadastroOriginal ?? '');
+                if (elemCadastro) elemCadastro.parentElement!.style.display = 'none';
+
+                const funcaoDeCalculo: (d: Date, n: number) => Date = prazosSettings.tratarNovoModoCalculo === 'diasUteis' ? DU.adicionarDiasUteis : DU.adicionarDiasCorridos;
+                const modoTexto = prazosSettings.tratarNovoModoCalculo === 'diasUteis' ? 'Dias Úteis' : 'Dias Corridos';
+
+                // !: o legado passa o valor bruto sem fallback (Partial<PrazosSettings> só o torna number | undefined no tipo)
+                const prazoInternoBase = funcaoDeCalculo(dataBase, prazosSettings.tratarNovoPrazoInternoDias!);
+                const cobrancaBase = funcaoDeCalculo(dataBase, prazosSettings.tratarNovoCobrancaInternaDias!);
+                const improrrogavelBase = DU.adicionarDiasCorridos(dataBase, 31);
+
+                const overrideRules = { ajusteFds: prazosSettings.tratarNovoAjusteFds, ajusteFeriado: prazosSettings.tratarNovoAjusteFeriado };
+
+                const prazoFinalCalculado = DU.ajustarDataFinal(prazoInternoBase, overrideRules);
+                const cobrancaFinal = DU.ajustarDataFinal(cobrancaBase, overrideRules);
+                const improrrogavelFinal = DU.ajustarDataFinal(improrrogavelBase, overrideRules);
+
+                const prazoInternoManual = prazosOverrides[demanda.numero];
+                const temOverride = !!prazoInternoManual;
+                const prazoInternoExibir = temOverride ? prazoInternoManual : DU.formatarData(prazoFinalCalculado);
+                const prazoInternoLabel = temOverride ? 'Prazo Interno:' : 'Possível Prazo Interno:';
+                const prazoInternoDias = temOverride ? DU.calcularDiasRestantes(prazoInternoManual) : DU.calcularDiasRestantes(prazoFinalCalculado);
+
+                let htmlImprorrogavel = '';
+                if (!demanda.situacao.includes('Prorrogada')) {
+                    htmlImprorrogavel = `<div style="color: #e0a800; font-weight: bold;"><strong>Improrrogável em:</strong> ${escapeHtml(DU.formatarData(improrrogavelFinal))}<span style="color: #6c757d; font-style: italic;"> ${escapeHtml(DU.calcularDiasRestantes(improrrogavelFinal))}</span></div>`;
+                }
+
+                const nossoBloco = document.createElement('div');
+                nossoBloco.style.cssText = "border: 1px solid #e0e0e0; border-radius: 5px; padding: 5px; margin-top: 5px; font-size: 0.8em; line-height: 1.8; width: 290px;";
+                nossoBloco.innerHTML = `
+                    <div style="padding-bottom: 2px; margin-bottom: 2px; border-bottom: 1px dashed #ccc;"><strong>Modo:</strong> ${escapeHtml(modoTexto)}</div>
+                    <div><strong>Cadastro:</strong> ${escapeHtml(demanda.dataCadastro)}<span style="color: #6c757d; font-style: italic;"> ${escapeHtml(DU.calcularDiasRestantes(demanda.dataCadastro))}</span></div>
+                    <div><strong>Prazo Original:</strong> ${escapeHtml(DU.formatarData(dataBase))}<span style="color: #6c757d; font-style: italic;"> ${escapeHtml(DU.calcularDiasRestantes(dataBase))}</span></div>
+                    <div style="color: #0056b3;"><strong>${escapeHtml(prazoInternoLabel)}</strong> ${escapeHtml(prazoInternoExibir)}<span style="color: #6c757d; font-style: italic;"> ${escapeHtml(prazoInternoDias)}</span></div>
+                    <div style="color: #c82333;"><strong>Cobrança Interna em:</strong> ${escapeHtml(DU.formatarData(cobrancaFinal))}<span style="color: #6c757d; font-style: italic;"> ${escapeHtml(DU.calcularDiasRestantes(cobrancaFinal))}</span></div>
+                    ${htmlImprorrogavel}
+                `;
+
+                containerPrazo.insertAdjacentElement('afterend', nossoBloco);
+            } catch (error) {
+                console.error(`%cNeuron (${SCRIPT_ID}): Erro ao processar demanda ${demanda.numero}`, "color: red;", error);
+            }
+        }
+    }
+
+    function removerBlocosInseridos() {
+        // seletor 'div[...]' → HTMLDivElement
+        document.querySelectorAll<HTMLDivElement>('div[data-calculado="true"]').forEach(container => {
+            container.style.display = '';
+            delete container.dataset.calculado;
+            const nossoBloco = container.nextElementSibling as HTMLElement | null; // legado: só testa truthiness
+            if (nossoBloco && nossoBloco.style.cssText.includes('border-radius: 5px')) {
+                nossoBloco.remove();
+            }
+        });
+    }
+
+    async function gerenciarEstado() {
+        if (await isScriptAtivo(SCRIPT_ID)) {
+            if (isListenerAtivo) return;
+            document.addEventListener('dadosExtraidosNeuron', processarDemandas);
+            isListenerAtivo = true;
+        } else {
+            document.removeEventListener('dadosExtraidosNeuron', processarDemandas);
+            isListenerAtivo = false;
+            removerBlocosInseridos();
+        }
+    }
+
+    createStorageListener(SCRIPT_ID, gerenciarEstado);
+    gerenciarEstado();
+}
