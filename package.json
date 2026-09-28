@@ -1,0 +1,34 @@
+{
+  "name": "neuron",
+  "version": "2.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Otimizador de fluxos de trabalho na plataforma Fala.br",
+  "author": "CGU - Lucas Emiliano",
+  "license": "CC0-1.0",
+  "engines": {
+    "bun": ">=1.2",
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "zip": "wxt zip",
+    "compile": "tsc --noEmit",
+    "check": "bun run compile && bun run build",
+    "postinstall": "wxt prepare"
+  },
+  "devDependencies": {
+    "@types/bootstrap": "5.2.11",
+    "typescript": "5.9.3",
+    "vite": "8.3.1",
+    "wxt": "0.21.4"
+  },
+  "dependencies": {
+    "@fontsource/inter": "5.3.0",
+    "@popperjs/core": "2.11.8",
+    "bootstrap": "5.3.3",
+    "bootstrap-icons": "1.11.3",
+    "chart.js": "4.5.1"
+  }
+}

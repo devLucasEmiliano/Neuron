@@ -19,3 +19,10 @@ docs/
 # Temporary files
 *.tmp
 *.log
+
+# WXT / Vite
+.output/
+.wxt/
+web-ext.config.ts
+stats.html
+stats-*.json
