@@ -47,6 +47,14 @@ export default defineBackground({
                 } catch (error) {
                     console.error('Neuron: Failed to clean up old storage keys:', error);
                 }
+
+                // Remove the session key left behind by the suggestions board removed in 02.013
+                try {
+                    await browser.storage.local.remove('neuron_supabase_session');
+                    console.log('Neuron: Removed legacy neuron_supabase_session key');
+                } catch (error) {
+                    console.error('Neuron: Failed to remove legacy session key:', error);
+                }
             }
         });
 

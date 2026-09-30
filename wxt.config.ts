@@ -1,5 +1,5 @@
 import { defineConfig } from 'wxt';
-import { ALL_SITES_MATCH, SUPABASE_ORIGIN } from './src/lib/sites';
+import { ALL_SITES_MATCH } from './src/lib/sites';
 
 /** Ordem do array content_scripts do manifest legado (E1..E11). */
 const LEGACY_ORDER = [
@@ -23,19 +23,19 @@ export default defineConfig({
   manifest: {
     name: 'Fala.BR CGU - Neuron',
     description: 'Otimizador de fluxos de trabalho na plataforma Fala.br',
-    // `version` precisa ser explícito: sem ele o WXT deriva de version_name ("02.012" → "0").
+    // `version` precisa ser explícito: sem ele o WXT deriva de version_name ("02.013" → "0").
     version: '2.0.1',
-    version_name: '02.012',
+    version_name: '02.013',
     icons: { 128: 'icon/128.png' },
     action: { default_icon: { 128: 'icon/128.png' } },
     permissions: ['storage'],
-    host_permissions: [...ALL_SITES_MATCH, `${SUPABASE_ORIGIN}/*`],
+    host_permissions: ALL_SITES_MATCH,
     web_accessible_resources: [
       { resources: ['images/Intro-Neuron.gif'], matches: ALL_SITES_MATCH },
     ],
   },
   zip: {
-    // → neuron-02.012-chrome.zip
+    // → neuron-02.013-chrome.zip
     artifactTemplate: '{{name}}-{{versionName}}-{{browser}}.zip',
   },
   hooks: {

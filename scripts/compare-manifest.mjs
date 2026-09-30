@@ -20,6 +20,9 @@ const EXPECTED_NAMES = [
   'prorrogar', 'tramitar', 'tratar', 'resposta', 'sic-tratar', 'sic-analisar',
 ];
 
+/** Origem do Supabase presente no manifest legado; removida em 02.013 junto com a aba Melhorias. */
+const SUPABASE_HOST = 'https://nbtsggaahglmshtkbxwv.supabase.co/*';
+
 const oldManifest = JSON.parse(
   execFileSync('git', ['show', `${LEGACY_REF}:manifest.json`], { encoding: 'utf8' }),
 );
@@ -31,13 +34,25 @@ const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const sorted = (arr) => [...arr].sort();
 
 // 1. Campos que devem ser idênticos
-for (const key of ['manifest_version', 'name', 'version', 'version_name', 'description', 'author', 'permissions']) {
+for (const key of ['manifest_version', 'name', 'version', 'description', 'author', 'permissions']) {
   if (!same(oldManifest[key], newManifest[key])) {
     problems.push(`${key}: legado=${JSON.stringify(oldManifest[key])} novo=${JSON.stringify(newManifest[key])}`);
   }
 }
-if (!same(sorted(oldManifest.host_permissions), sorted(newManifest.host_permissions))) {
-  problems.push(`host_permissions: legado=${JSON.stringify(oldManifest.host_permissions)} novo=${JSON.stringify(newManifest.host_permissions)}`);
+// version_name: a única diferença aceita é o bump 02.012 → 02.013 (remoção da aba Melhorias/Supabase)
+if (oldManifest.version_name === '02.012' && newManifest.version_name === '02.013') {
+  expected.push(`version_name: ${oldManifest.version_name} → ${newManifest.version_name}`);
+} else if (!same(oldManifest.version_name, newManifest.version_name)) {
+  problems.push(`version_name: legado=${JSON.stringify(oldManifest.version_name)} novo=${JSON.stringify(newManifest.version_name)}`);
+}
+// host_permissions: o legado inclui a origem Supabase, removida em 02.013
+const oldHosts = oldManifest.host_permissions ?? [];
+const newHosts = newManifest.host_permissions ?? [];
+const expectedHosts = oldHosts.filter((h) => h !== SUPABASE_HOST);
+if (!same(sorted(expectedHosts), sorted(newHosts))) {
+  problems.push(`host_permissions: legado=${JSON.stringify(oldHosts)} novo=${JSON.stringify(newHosts)} (esperado ${JSON.stringify(expectedHosts)})`);
+} else if (expectedHosts.length !== oldHosts.length) {
+  expected.push('host_permissions: origem Supabase removida (02.013)');
 }
 if (oldManifest.options_ui?.open_in_tab !== newManifest.options_ui?.open_in_tab) {
   problems.push(`options_ui.open_in_tab: legado=${oldManifest.options_ui?.open_in_tab} novo=${newManifest.options_ui?.open_in_tab}`);

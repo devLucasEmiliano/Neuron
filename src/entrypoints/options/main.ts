@@ -5,7 +5,6 @@ import '@fontsource/inter/500.css';
 import '@fontsource/inter/700.css';
 import '@/styles/theme.css';
 import './options.css';
-import './melhoria.css';
 import 'bootstrap';
 import { NeuronDB } from '@/lib/neuron-db';
 import { NeuronSync } from '@/lib/neuron-sync';
@@ -14,7 +13,6 @@ import { escapeHtml, errorMessage } from '@/lib/neuron-utils';
 import { NEURON_TEXT_PLACEHOLDERS } from '@/lib/text-placeholders';
 import { isNeuronUserConfigLike, isTextModelCategory } from '@/lib/types';
 import defaultConfigJson from '@/config/config.json';
-import { setupMelhoriaTab } from './melhoria';
 import type {
     FocalPoints,
     ModuleToggles,
@@ -888,9 +886,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         break;
                     case 'pontosfocais':
                         setupFocalPointsTab();
-                        break;
-                    case 'melhoria':
-                        setupMelhoriaTab();
                         break;
                 }
                 sectionsInitialized.add(sectionName);

@@ -129,7 +129,7 @@ O **Neuron** é uma extensão para Google Chrome criada para otimizar e agilizar
 
 ### Opção A — Zip de release
 
-1. Baixe o `neuron-02.012-chrome.zip` da release e descompacte em uma pasta.
+1. Baixe o `neuron-02.013-chrome.zip` da release e descompacte em uma pasta.
 2. Abra o Google Chrome e navegue até `chrome://extensions`.
 3. Ative o **"Modo do desenvolvedor"** no canto superior direito.
 4. Clique em **"Carregar sem compactação"** e selecione a pasta descompactada.
@@ -158,7 +158,7 @@ Pré-requisito: [Bun](https://bun.sh) ≥ 1.2 (Node ≥ 22 também funciona).
 | `bun install` | Instala as dependências e executa `wxt prepare` |
 | `bun run dev` | Servidor de desenvolvimento do WXT; abre um Chromium com a extensão carregada de `.output/chrome-mv3-dev` |
 | `bun run build` | Build de produção em `.output/chrome-mv3` |
-| `bun run zip` | Empacota o build em `.output/neuron-02.012-chrome.zip` |
+| `bun run zip` | Empacota o build em `.output/neuron-02.013-chrome.zip` |
 | `bun run compile` | Checagem de tipos (`tsc --noEmit`) |
 | `bun run check` | `compile` + `build` |
 | `node scripts/compare-manifest.mjs` | Compara o manifest gerado com o manifest legado (tag `wxt-migration-base`) |
@@ -185,12 +185,16 @@ export default defineWebExtConfig({
 
 ## 📝 Changelog
 
+### 02.013 — 29/09/2026
+- **Removido:** aba "Melhorias" da página de opções e a integração com o backend de sugestões (cliente REST, permissão de host e configuração). 
+- **Alterado:** a chave de sessão dessa integração é limpa do storage no próximo update.
+
 ### 02.012 — 28/09/2026
 
 **Alterado**
 - Migração do build para **WXT 0.21 + TypeScript + Bun**: a raiz do repositório deixa de ser carregável como extensão; a instalação passa a exigir `bun run build` (pasta `.output/chrome-mv3`) ou o zip de release.
 - Bibliotecas de terceiros (Bootstrap, Bootstrap Icons, Chart.js, fonte Inter) passam a vir do npm.
-- `config.json` e `supabase.json` são empacotados no build e não são mais expostos via `web_accessible_resources` — apenas `images/Intro-Neuron.gif` continua acessível pelas páginas do Fala.BR.
+- Os arquivos de `src/config/` são empacotados no build e não são mais expostos via `web_accessible_resources` — apenas `images/Intro-Neuron.gif` continua acessível pelas páginas do Fala.BR.
 - Cada content script é um bundle próprio, que importa explicitamente o que usa e inicializa o `NeuronDB` com o site da URL. O template do overlay de loading é embutido no bundle (sem fetch em runtime).
 - O Dashboard passa a ser `chrome-extension://<id>/dashboard.html`.
 
@@ -211,7 +215,6 @@ export default defineWebExtConfig({
 - Captura do nome do usuário logado via content script.
 - `selectize-fix` compartilhado com posicionamento adaptativo de dropup.
 - Loading overlay para páginas `/web/*` (nova UI do Fala.BR).
-- Integração com Supabase para envio de sugestões.
 
 **Alterado**
 - Refatoração do módulo `tratar-novo` em três scripts (`extract`, `insert`, `pagesize`) para melhor separação de responsabilidades.
@@ -256,7 +259,6 @@ export default defineWebExtConfig({
 * `chrome.storage.onChanged` via NeuronSync (sincronização cross-context)
 * Bootstrap 5.3 + Bootstrap Icons + fonte Inter (`@fontsource/inter`), via npm
 * Chart.js 4.5 (visualizações do Dashboard), via npm
-* Supabase (integração opcional para envio de sugestões)
 * HTML5 / CSS3 com suporte a temas (claro/escuro/sistema)
 
 ### Arquitetura
@@ -268,7 +270,7 @@ export default defineWebExtConfig({
 * **NeuronSync** (`src/lib/neuron-sync.ts`): Sincronização cross-context via `chrome.storage.onChanged`. Mantém o cache do NeuronDB coerente entre popup, página de opções, content scripts e service worker.
 * **Module Factory** (`src/lib/module-factory.ts`): Padrão de projeto para criação padronizada de módulos. Gerencia ciclo de vida (ativação/desativação) lendo `masterEnableNeuron` e o toggle por módulo, e escuta mudanças de configuração via NeuronSync para reavaliar o estado.
 * **Orientado a Configuração:** O comportamento é controlado pelo arquivo `src/config/config.json` — textos, regras, pontos focais e parâmetros podem ser alterados sem modificar código. Os arquivos de `src/config/` são empacotados no build e não são expostos via `web_accessible_resources`.
-* **Utilitários Compartilhados** (`src/lib/`): `date-utils` (cálculos de dias úteis e feriados), `neuron-utils` (helpers gerais), `theme-manager` (gestão de temas), `selectize-fix` (ajustes em dropdowns Selectize com posicionamento adaptativo), `text-placeholders` (substituição de variáveis em templates), `supabase-client` (cliente para integrações opcionais), `sites` (URLs e `matches` dos ambientes) e `types` (tipos compartilhados).
+* **Utilitários Compartilhados** (`src/lib/`): `date-utils` (cálculos de dias úteis e feriados), `neuron-utils` (helpers gerais), `theme-manager` (gestão de temas), `selectize-fix` (ajustes em dropdowns Selectize com posicionamento adaptativo), `text-placeholders` (substituição de variáveis em templates), `sites` (URLs e `matches` dos ambientes) e `types` (tipos compartilhados).
 
 ### Estrutura de Diretórios
 
@@ -284,18 +286,18 @@ Neuron/
    │  ├─ background.ts
    │  ├─ *.content.ts           # 11 content scripts: loading, notificacoes, tratar-triar, arquivar, encaminhar, prorrogar, tramitar, tratar, resposta, sic-tratar, sic-analisar
    │  ├─ popup/   (index.html, main.ts, popup.css)
-   │  ├─ options/ (index.html, main.ts, melhoria.ts, options.css, melhoria.css)
+   │  ├─ options/ (index.html, main.ts, options.css)
    │  └─ dashboard/ (index.html, main.ts, dashboard.css)  → /dashboard.html
    ├─ features/                 # lógica dos content scripts
    │  ├─ loading/  notificacoes/
    │  ├─ ouvidoria/ (tratar-triar, arquivar, encaminhar, prorrogar, tramitar, tratar, resposta)
    │  └─ sic/ (tratar, analisar)
-   ├─ lib/                      # módulos compartilhados (neuron-db, neuron-sync, neuron-site, neuron-utils, date-utils, module-factory, selectize-fix, supabase-client, text-placeholders, theme-manager, sites, types)
+   ├─ lib/                      # módulos compartilhados (neuron-db, neuron-sync, neuron-site, neuron-utils, date-utils, module-factory, selectize-fix, text-placeholders, theme-manager, sites, types)
    ├─ styles/ (theme.css, selectize-fix.css)
-   └─ config/ (config.json, supabase.json — empacotados no build)
+   └─ config/ (config.json — empacotado no build)
 ```
 
-O build de produção é gerado em `.output/chrome-mv3` (ignorado pelo git) e o zip de release em `.output/neuron-02.012-chrome.zip`. O `Manual Neuron.pdf` permanece na raiz do repositório e não é incluído no pacote da extensão.
+O build de produção é gerado em `.output/chrome-mv3` (ignorado pelo git) e o zip de release em `.output/neuron-02.013-chrome.zip`. O `Manual Neuron.pdf` permanece na raiz do repositório e não é incluído no pacote da extensão.
 
 ---
 

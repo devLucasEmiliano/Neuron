@@ -13,6 +13,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - Module boilerplate generation from templates
   - Configuration synchronization for manifest.json and config.json
 
+## [02.013] - 2026-09-29
+
+### Removido
+- Aba "Melhorias" da página de opções (mural de sugestões) e a integração com o Supabase: cliente REST (`lib/supabase-client.ts`), configuração `config/supabase.json`, permissão de host `https://nbtsggaahglmshtkbxwv.supabase.co/*` e os tipos correspondentes (`SupabaseSession`, `SuggestionCategory`, `Suggestion`, `Vote`, `CreateSuggestionInput`).
+
+### Alterado
+- A chave `neuron_supabase_session` é removida do `chrome.storage.local` na próxima atualização da extensão (limpeza no `onInstalled`).
+- `version_name` 02.013 (a `version` do manifest permanece 2.0.1).
+
 ## [02.012] - 2026-09-28
 
 ### Alterado

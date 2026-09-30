@@ -3,8 +3,8 @@
  *
  * Fonte única para as formas de dados que circulam entre os módulos:
  * configuração do usuário (config.json), demandas extraídas do Fala.BR,
- * chaves/valores do chrome.storage.local, contratos dos módulos de conteúdo,
- * Supabase (mural de melhorias) e eventos customizados do documento.
+ * chaves/valores do chrome.storage.local, contratos dos módulos de conteúdo
+ * e eventos customizados do documento.
  *
  * Módulo puro: apenas tipos e type guards, sem efeitos colaterais.
  */
@@ -242,7 +242,6 @@ export type PerSiteStorageSchema = {
 export interface StorageSchema extends PerSiteStorageSchema {
   neuron_config: ConfigBucket;
   neuron_preferences: Preferences;
-  neuron_supabase_session: SupabaseSession;
   /** flag da migração para chaves por site (background) */
   neuron_storage_v2: boolean;
 }
@@ -312,53 +311,6 @@ export interface NeuronModuleOptions {
 export type ConfigChangeListener = (key: string, newValue: unknown) => void;
 /** Callback de NeuronSync.onPreferenceChange: mesma assinatura. */
 export type PreferenceChangeListener = ConfigChangeListener;
-
-// ============================================================================
-// Supabase (mural de melhorias)
-// ============================================================================
-
-/** Sessão anônima persistida em 'neuron_supabase_session'. */
-export interface SupabaseSession {
-  access_token: string;
-  refresh_token: string;
-  /** epoch em segundos */
-  expires_at: number;
-  user_id: string | undefined;
-}
-
-/** Categorias do <select id="suggestionCategory"> (melhoria.js: CATEGORIES). */
-export type SuggestionCategory =
-  | 'bug'
-  | 'nova_ferramenta'
-  | 'melhoria_ux'
-  | 'documentacao'
-  | 'performance'
-  | 'outro';
-
-/** Linha da tabela `suggestions`. */
-export interface Suggestion {
-  id: string;
-  title: string;
-  description: string;
-  category: SuggestionCategory;
-  vote_count: number;
-  /** ISO 8601 */
-  created_at: string;
-  author_id?: string;
-}
-
-/** Linha da tabela `votes` (getMyVotes seleciona apenas suggestion_id). */
-export interface Vote {
-  suggestion_id: string;
-  voter_id?: string;
-  created_at?: string;
-}
-
-export interface CreateSuggestionInput {
-  title: string;
-  description: string;
-  category: SuggestionCategory;
-}
 
 // ============================================================================
 // Placeholders de texto (text-placeholders)

@@ -15,8 +15,6 @@ export const SITE_LABELS = {
   homologacao: 'HOMOLOG',
 } as const;
 
-export const SUPABASE_ORIGIN = 'https://nbtsggaahglmshtkbxwv.supabase.co';
-
 /** `https://<host>/*` para os 3 hosts, na ordem legada do manifest. */
 export const ALL_SITES_MATCH: string[] = Object.values(SITE_HOSTS).map((h) => `https://${h}/*`);
 
